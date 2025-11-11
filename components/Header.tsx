@@ -12,7 +12,7 @@ export default function Header() {
   const [loading, setLoading] = useState(true)
   const [isExpanded, setIsExpanded] = useState(false)
   const [showProfileMenu, setShowProfileMenu] = useState(false)
-  const { theme, toggleTheme, isDark } = useTheme()
+  const { theme } = useTheme()
   const supabase = createSupabaseClient()
 
   useEffect(() => {
@@ -112,24 +112,6 @@ export default function Header() {
                     </div>
                   </motion.div>
                 ))}
-
-                {/* Theme Toggle */}
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: navItems.length * 0.05 }}
-                  className="relative group"
-                >
-                  <button
-                    onClick={toggleTheme}
-                    className="w-14 h-14 rounded-full premium-card glass flex items-center justify-center transition-all duration-300 hover:scale-110"
-                  >
-                    <span className="text-lg">{isDark ? '☀️' : '🌙'}</span>
-                  </button>
-                  <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none premium-card glass">
-                    {isDark ? 'Light Mode' : 'Dark Mode'}
-                  </div>
-                </motion.div>
 
                 {/* Profile Menu (if logged in) */}
                 {user && (

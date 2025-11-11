@@ -13,7 +13,7 @@ export default function Navbar() {
   const [loading, setLoading] = useState(true)
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const [showMobileMenu, setShowMobileMenu] = useState(false)
-  const { theme, toggleTheme, isDark } = useTheme()
+  const { theme } = useTheme()
   const supabase = createSupabaseClient()
 
   useEffect(() => {
@@ -67,18 +67,19 @@ export default function Navbar() {
           className="flex items-center gap-3 group"
           onClick={() => setShowMobileMenu(false)}
         >
-          <div className="relative h-10 w-10 flex items-center justify-center">
+          <div className="relative h-12 w-12 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#ffd700] to-[#d4af37] rounded-lg blur-md opacity-50 group-hover:opacity-75 transition-opacity animate-glow"></div>
             <Image 
               src="https://media.discordapp.net/attachments/1049403383603273758/1437875664316399809/a4ea2ab422827bd939a023a7ff248ce5.webp?ex=6914d590&is=69138410&hm=4b163a993bcdbd87924ab3d6689abeae0f0a26e4ad260eb1f33a8875826cc361&=&format=webp&width=1022&height=1022" 
               alt="Duna Logo" 
-              width={40}
-              height={40}
-              className="object-contain transition-transform duration-300 group-hover:scale-110"
+              width={48}
+              height={48}
+              className="object-contain relative z-10 filter drop-shadow-[0_0_15px_rgba(255,215,0,0.6)]"
               priority
               unoptimized
             />
           </div>
-          <span className="text-xl font-bold text-gradient hidden sm:block">Duna</span>
+          <span className="text-xl font-bold text-gradient hidden sm:block glow-hover">Duna</span>
         </Link>
 
         {/* Desktop Navigation Links */}
@@ -110,45 +111,6 @@ export default function Navbar() {
 
         {/* Desktop Right Section */}
         <div className="hidden md:flex items-center gap-4">
-          {/* Theme Toggle */}
-          <button
-            onClick={toggleTheme}
-            className="relative p-2 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-primary)] hover:border-[var(--accent-primary)] transition-all duration-300 hover:scale-110"
-            aria-label="Toggle theme"
-          >
-            <AnimatePresence mode="wait">
-              {isDark ? (
-                <motion.svg
-                  key="sun"
-                  initial={{ rotate: -90, opacity: 0 }}
-                  animate={{ rotate: 0, opacity: 1 }}
-                  exit={{ rotate: 90, opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="w-5 h-5 text-[var(--accent-primary)]"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                </motion.svg>
-              ) : (
-                <motion.svg
-                  key="moon"
-                  initial={{ rotate: 90, opacity: 0 }}
-                  animate={{ rotate: 0, opacity: 1 }}
-                  exit={{ rotate: -90, opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="w-5 h-5 text-[var(--accent-primary)]"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                </motion.svg>
-              )}
-            </AnimatePresence>
-          </button>
-
           {loading ? (
             <div className="w-5 h-5 border-2 border-[var(--border-secondary)] border-t-[var(--accent-primary)] rounded-full animate-spin" />
           ) : user ? (
@@ -286,15 +248,6 @@ export default function Navbar() {
                 Discord
               </a>
               
-              {/* Theme Toggle Mobile */}
-              <button
-                onClick={toggleTheme}
-                className="w-full flex items-center justify-between py-2.5 px-3 text-sm font-medium text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] rounded-lg transition-all"
-              >
-                <span>Theme</span>
-                {isDark ? '☀️' : '🌙'}
-              </button>
-
               {user ? (
                 <>
                   <div className="pt-2 border-t border-[var(--border-primary)]">

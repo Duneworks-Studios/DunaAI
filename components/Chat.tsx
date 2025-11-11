@@ -33,7 +33,7 @@ export default function Chat() {
   const [showUpgrade, setShowUpgrade] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const { isDark } = useTheme()
+  const { theme } = useTheme()
   const supabase = createSupabaseClient()
 
   useEffect(() => {
