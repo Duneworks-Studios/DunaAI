@@ -21,6 +21,11 @@ export const metadata: Metadata = {
   title: 'Duna – Premium AI Browser by Duneworks',
   description: 'A luxurious AI-powered browser that redefines intelligent browsing. Created by Duneworks Studios.',
   keywords: ['AI browser', 'Duna', 'Duneworks', 'intelligent browsing', 'AI assistant'],
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 5,
+  },
   openGraph: {
     title: 'Duna – Premium AI Browser by Duneworks',
     description: 'A luxurious AI-powered browser that redefines intelligent browsing.',
