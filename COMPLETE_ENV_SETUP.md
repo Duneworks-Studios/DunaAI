@@ -40,7 +40,7 @@ NEXT_PUBLIC_SUPABASE_URL="https://xxxxx.supabase.co"
 
 **Add to `.env.local`:**
 ```bash
-NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+NEXT_PUBLIC_SUPABASE_ANON_KEY="your_supabase_anon_key_here"
 ```
 
 ### 2.3 Get Supabase Service Role Key (for Webhooks)
@@ -52,7 +52,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 
 **Add to `.env.local`:**
 ```bash
-SUPABASE_SERVICE_ROLE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+SUPABASE_SERVICE_ROLE_KEY="your_service_role_key_here"
 ```
 
 ### 2.4 Get Database Connection String
@@ -237,8 +237,8 @@ DATABASE_URL="postgresql://postgres:YOUR_PASSWORD@db.xxxxx.supabase.co:5432/post
 
 # Supabase Configuration
 NEXT_PUBLIC_SUPABASE_URL="https://xxxxx.supabase.co"
-NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-SUPABASE_SERVICE_ROLE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+NEXT_PUBLIC_SUPABASE_ANON_KEY="your_supabase_anon_key_here"
+SUPABASE_SERVICE_ROLE_KEY="your_service_role_key_here"
 
 # NextAuth
 NEXTAUTH_URL="http://localhost:3000"

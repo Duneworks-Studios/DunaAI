@@ -5,7 +5,7 @@
 ### Step 1: Open Supabase Dashboard
 1. Go to https://supabase.com/dashboard
 2. Sign in to your account
-3. Select your project: **jjfjzpcnclccmjwdglgh**
+3. Select your project (or create a new one)
 
 ### Step 2: Open SQL Editor
 1. In the left sidebar, click on **"SQL Editor"** (it has a `</>` icon)

@@ -47,24 +47,24 @@ netlify deploy --prod
 
 ```bash
 # Supabase
-NEXT_PUBLIC_SUPABASE_URL=https://jjfjzpcnclccmjwdglgh.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpqZmp6cGNuY2xjY21qd2RnbGdoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI4NzU3MDAsImV4cCI6MjA3ODQ1MTcwMH0.ePSNR_oLhjwHQhaIlzm-xVrcy1seMW-Hu-cXB0UCGvQ
+NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT_ID.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key_here
 
 # Supabase Service Role (for webhooks)
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
 
 # AI Service (DeepSeek)
-AI_TOKEN=sk-56252bb00f6649c8a570b70a35e907b9
+AI_TOKEN=your_ai_token_here
 AI_ENDPOINT=https://api.deepseek.com/v1/chat/completions
 AI_MODEL=deepseek-chat
 
 # Whop Integration
-WHOP_API_KEY=pik_4S8gJzo2Msj9F_C2683376_b38afad87b6bc5beab4915b9428be57113b90898bb093f12f73f20ff761c5196
+WHOP_API_KEY=your_whop_api_key_here
 WHOP_WEBHOOK_SECRET=your_whop_webhook_secret_here
 
 # Whop Checkout URLs
-NEXT_PUBLIC_WHOP_CHECKOUT_MONTHLY=https://whop.com/checkout/plan_vhBLiFWs6AJNx?d2c=true
-NEXT_PUBLIC_WHOP_CHECKOUT_LIFETIME=https://whop.com/checkout/plan_nAv9o4mMRgV37?d2c=true
+NEXT_PUBLIC_WHOP_CHECKOUT_MONTHLY=https://whop.com/checkout/plan_YOUR_MONTHLY_PLAN_ID?d2c=true
+NEXT_PUBLIC_WHOP_CHECKOUT_LIFETIME=https://whop.com/checkout/plan_YOUR_LIFETIME_PLAN_ID?d2c=true
 ```
 
 ## Step 4: Update Webhook URL
