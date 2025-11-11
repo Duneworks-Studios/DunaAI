@@ -135,7 +135,7 @@ export async function POST(request: NextRequest) {
       try {
         const { error: upsertError } = await supabase.from('user_plans').upsert({
           user_id: user.id,
-          plan_type: 'pro',
+          plan_type: planType, // Use the planType variable (pro or pro_lifetime)
           subscription_status: 'active',
           subscription_id: subscriptionId,
           whop_plan_id: planId,
@@ -146,6 +146,8 @@ export async function POST(request: NextRequest) {
         
         if (upsertError) {
           console.warn('Error upserting user_plans:', upsertError)
+        } else {
+          console.log(`✅ Updated user_plans table with plan_type: ${planType}`)
         }
       } catch (error) {
         console.warn('user_plans table may not exist:', error)
