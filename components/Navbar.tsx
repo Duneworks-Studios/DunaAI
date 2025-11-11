@@ -59,7 +59,7 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 h-16 glass border-b border-[var(--border-primary)]">
+    <nav className="fixed top-0 left-0 right-0 z-50 h-16 glass border-b border-[rgba(212,175,55,0.3)]">
       <div className="max-w-7xl mx-auto h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between">
         {/* Logo */}
         <Link 
@@ -117,9 +117,9 @@ export default function Navbar() {
             <div className="relative">
               <button
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
-                className="flex items-center gap-3 px-3 py-2 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-primary)] hover:border-[var(--accent-primary)] transition-all duration-300 group"
+                className="flex items-center gap-3 px-3 py-2 rounded-xl bg-[var(--bg-elevated)] border border-[rgba(212,175,55,0.3)] hover:border-[rgba(255,215,0,0.6)] transition-all duration-300 group"
               >
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-secondary)] flex items-center justify-center text-white font-semibold text-sm shadow-lg">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-secondary)] flex items-center justify-center text-black font-semibold text-sm shadow-lg glow">
                   {user.email?.charAt(0).toUpperCase() || 'U'}
                 </div>
                 <span className="hidden lg:inline text-sm font-medium text-[var(--text-primary)] max-w-[120px] truncate">
@@ -138,19 +138,21 @@ export default function Navbar() {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -10, scale: 0.95 }}
                     transition={{ duration: 0.2 }}
-                    className="absolute right-0 top-full mt-2 w-56 premium-card z-50 overflow-hidden"
+                    className="absolute right-0 top-full mt-2 w-56 premium-card glass-strong overflow-hidden z-[100]"
+                    onClick={(e) => e.stopPropagation()}
                   >
                     <div className="p-2">
-                      <div className="px-4 py-3 text-xs text-[var(--text-secondary)] border-b border-[var(--border-primary)] truncate mb-1">
+                      <div className="px-4 py-3 text-xs text-[var(--text-secondary)] border-b border-[rgba(212,175,55,0.2)] mb-1 break-all">
                         {user.email}
                       </div>
                       <Link
                         href="/chat"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation()
                           setShowProfileMenu(false)
                           setShowMobileMenu(false)
                         }}
-                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-[var(--text-primary)] hover:text-[var(--accent-primary)] hover:bg-[var(--bg-tertiary)] rounded-lg transition-all duration-200"
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-[var(--text-primary)] hover:text-[var(--accent-primary)] hover:bg-[rgba(212,175,55,0.1)] rounded-lg transition-all duration-200 cursor-pointer relative z-10"
                       >
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -158,8 +160,11 @@ export default function Navbar() {
                         Chat
                       </Link>
                       <button
-                        onClick={handleSignOut}
-                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-[var(--text-primary)] hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all duration-200 text-left"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleSignOut()
+                        }}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-[var(--text-primary)] hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all duration-200 text-left cursor-pointer relative z-10"
                       >
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -221,7 +226,7 @@ export default function Navbar() {
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.2 }}
-            className="md:hidden overflow-hidden glass border-t border-[var(--border-primary)]"
+            className="md:hidden overflow-hidden glass border-t border-[rgba(212,175,55,0.3)]"
           >
             <div className="px-4 py-4 space-y-2">
               <Link
@@ -250,8 +255,8 @@ export default function Navbar() {
               
               {user ? (
                 <>
-                  <div className="pt-2 border-t border-[var(--border-primary)]">
-                    <div className="px-3 py-2 text-xs text-[var(--text-secondary)] truncate mb-2">
+                  <div className="pt-2 border-t border-[rgba(212,175,55,0.2)]">
+                    <div className="px-3 py-2 text-xs text-[var(--text-secondary)] break-all mb-2">
                       {user.email}
                     </div>
                     <Link
@@ -296,12 +301,11 @@ export default function Navbar() {
       </AnimatePresence>
 
       {/* Click outside to close dropdowns */}
-      {(showProfileMenu || showMobileMenu) && (
+      {showProfileMenu && (
         <div
-          className="fixed inset-0 z-40"
+          className="fixed inset-0 z-[99]"
           onClick={() => {
             setShowProfileMenu(false)
-            setShowMobileMenu(false)
           }}
         />
       )}
