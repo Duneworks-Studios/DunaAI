@@ -1,8 +1,11 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { useTheme } from '@/contexts/ThemeContext'
 
 export default function Integration() {
+  const { theme } = useTheme()
+
   return (
     <section className="relative py-32 px-6">
       <div className="max-w-4xl mx-auto text-center">
@@ -23,7 +26,9 @@ export default function Integration() {
           </motion.h2>
           
           <motion.p
-            className="text-lg md:text-xl text-dune-sand-light leading-relaxed mb-8 max-w-2xl mx-auto"
+            className={`text-lg md:text-xl leading-relaxed mb-8 max-w-2xl mx-auto ${
+              theme === 'gray' ? 'text-gray-light' : 'text-dune-sand-light'
+            }`}
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -40,15 +45,18 @@ export default function Integration() {
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.6 }}
           >
-            <div className="text-dune-gold mb-4 text-4xl">🔒</div>
-            <h3 className="text-2xl font-semibold text-dune-gold mb-3 font-display">
+            <h3 className={`text-2xl font-semibold mb-3 font-display ${
+              theme === 'gray' ? 'text-gray-white-gray' : 'text-dune-gold'
+            }`}>
               Secure Payment Processing
             </h3>
-            <p className="text-dune-sand-light">
+            <p className={theme === 'gray' ? 'text-gray-light' : 'text-dune-sand-light'}>
               All transactions are processed securely through Whop's encrypted payment system. 
               Your financial information is never stored on our servers.
             </p>
-            <p className="text-sm text-dune-sand-dark mt-4 italic">
+            <p className={`text-sm mt-4 italic ${
+              theme === 'gray' ? 'text-gray-mid' : 'text-dune-sand-dark'
+            }`}>
               Note: Whop integration tokens are configured in the environment variables.
             </p>
           </motion.div>
@@ -57,4 +65,3 @@ export default function Integration() {
     </section>
   )
 }
-

@@ -53,24 +53,24 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-6 py-20">
+    <div className="min-h-screen flex items-center justify-center px-6 py-20 pt-[80px] bg-[#1a1a1a]">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md premium-card"
+        className="w-full max-w-md bg-[#2a2a2a] border border-[#444] rounded-lg p-8"
       >
-        <h1 className="font-display text-4xl font-bold text-gradient mb-2">Welcome Back</h1>
-        <p className="text-dune-sand-dark mb-8">Sign in to continue your journey with Duna</p>
+        <h1 className="font-display text-3xl font-bold text-[#EEEEEE] mb-2">Welcome Back</h1>
+        <p className="text-[#888888] mb-8 text-sm">Sign in to continue your journey with Duna</p>
 
         {error && (
-          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm">
+          <div className="mb-6 p-4 bg-red-500 bg-opacity-10 border border-red-500 border-opacity-30 rounded-lg text-red-400 text-sm">
             {error}
           </div>
         )}
 
         <form onSubmit={handleEmailLogin} className="space-y-4">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-dune-sand-light mb-2">
+            <label htmlFor="email" className="block text-sm font-medium text-[#BBBBBB] mb-2">
               Email
             </label>
             <input
@@ -79,13 +79,13 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-4 py-3 premium-border bg-dune-black-soft rounded-lg text-dune-sand-light focus:outline-none focus:border-dune-gold/50 transition-colors"
+              className="w-full px-4 py-3 bg-[#333] border border-[#444] rounded-lg text-[#EEEEEE] focus:outline-none focus:border-[#d4c4a0] focus:border-opacity-50 transition-colors"
               placeholder="your@email.com"
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-dune-sand-light mb-2">
+            <label htmlFor="password" className="block text-sm font-medium text-[#BBBBBB] mb-2">
               Password
             </label>
             <input
@@ -94,7 +94,7 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full px-4 py-3 premium-border bg-dune-black-soft rounded-lg text-dune-sand-light focus:outline-none focus:border-dune-gold/50 transition-colors"
+              className="w-full px-4 py-3 bg-[#333] border border-[#444] rounded-lg text-[#EEEEEE] focus:outline-none focus:border-[#d4c4a0] focus:border-opacity-50 transition-colors"
               placeholder="••••••••"
             />
           </div>
@@ -102,22 +102,22 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full px-6 py-3 bg-dune-gold text-dune-black font-semibold rounded-lg hover:bg-dune-gold-light glow-gold-hover transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full px-6 py-3 bg-[#d4c4a0] bg-opacity-20 text-[#d4c4a0] font-semibold rounded-lg hover:bg-opacity-30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
 
         <div className="my-6 flex items-center">
-          <div className="flex-1 border-t border-dune-bronze/30"></div>
-          <span className="px-4 text-sm text-dune-sand-dark">or</span>
-          <div className="flex-1 border-t border-dune-bronze/30"></div>
+          <div className="flex-1 border-t border-[#444]"></div>
+          <span className="px-4 text-sm text-[#888888]">or</span>
+          <div className="flex-1 border-t border-[#444]"></div>
         </div>
 
         <button
           onClick={handleGoogleLogin}
           disabled={loading}
-          className="w-full px-6 py-3 premium-border text-dune-sand-light hover:border-dune-gold/50 hover:text-dune-gold rounded-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+          className="w-full px-6 py-3 border border-[#444] text-[#BBBBBB] hover:border-[#d4c4a0] hover:text-[#d4c4a0] rounded-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path
@@ -143,17 +143,17 @@ export default function LoginPage() {
         <div className="mt-6 text-center">
           <Link
             href="/auth/forgot-password"
-            className="text-sm text-dune-sand-dark hover:text-dune-gold transition-colors"
+            className="text-sm text-[#888888] hover:text-[#d4c4a0] transition-colors"
           >
             Forgot password?
           </Link>
         </div>
 
         <div className="mt-4 text-center">
-          <span className="text-sm text-dune-sand-dark">Don't have an account? </span>
+          <span className="text-sm text-[#888888]">Don't have an account? </span>
           <Link
             href="/auth/signup"
-            className="text-sm text-dune-gold hover:text-dune-gold-light font-semibold transition-colors"
+            className="text-sm text-[#d4c4a0] hover:text-[#d4c4a0] hover:opacity-80 font-semibold transition-colors"
           >
             Sign up
           </Link>
@@ -162,4 +162,3 @@ export default function LoginPage() {
     </div>
   )
 }
-

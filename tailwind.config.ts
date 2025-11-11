@@ -9,6 +9,14 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // Gray theme palette
+        gray: {
+          dark: '#333333',
+          mid: '#888888',
+          light: '#BBBBBB',
+          'white-gray': '#EEEEEE',
+          accent: '#FFFFFF',
+        },
         // Dune-inspired color palette
         dune: {
           sand: '#D4A574',
@@ -20,14 +28,14 @@ const config: Config = {
           bronze: '#8B6F47',
           'bronze-light': '#A6895F',
           'bronze-dark': '#6B5635',
-          black: '#0A0A0A',
+          black: '#0d0d0d',
           'black-soft': '#1A1A1A',
           'black-lighter': '#2A2A2A',
         },
       },
       fontFamily: {
-        sans: ['var(--font-manrope)', 'system-ui', 'sans-serif'],
-        display: ['var(--font-orbitron)', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-satoshi)', 'var(--font-manrope)', 'Inter', 'system-ui', 'sans-serif'],
+        display: ['var(--font-satoshi)', 'var(--font-manrope)', 'system-ui', 'sans-serif'],
       },
       animation: {
         'dune-wave': 'dune-wave 20s ease-in-out infinite',

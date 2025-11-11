@@ -1,7 +1,9 @@
 import type { Metadata } from 'next'
-import { Manrope, Orbitron } from 'next/font/google'
+import { Manrope, Inter } from 'next/font/google'
 import './globals.css'
-import Header from '@/components/Header'
+import Navbar from '@/components/Navbar'
+import { ThemeProvider } from '@/contexts/ThemeContext'
+import { AgentProvider } from '@/contexts/AgentContext'
 
 const manrope = Manrope({
   subsets: ['latin'],
@@ -9,9 +11,9 @@ const manrope = Manrope({
   display: 'swap',
 })
 
-const orbitron = Orbitron({
+const inter = Inter({
   subsets: ['latin'],
-  variable: '--font-orbitron',
+  variable: '--font-satoshi',
   display: 'swap',
 })
 
@@ -32,10 +34,14 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className="scroll-smooth">
-      <body className={`${manrope.variable} ${orbitron.variable} font-sans antialiased`}>
-        <Header />
-        {children}
+    <html lang="en" className="scroll-smooth" data-theme="gray">
+      <body className={`${manrope.variable} ${inter.variable} font-sans antialiased`}>
+        <ThemeProvider>
+          <AgentProvider>
+            <Navbar />
+            {children}
+          </AgentProvider>
+        </ThemeProvider>
       </body>
     </html>
   )

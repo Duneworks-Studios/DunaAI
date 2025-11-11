@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import { useTheme } from '@/contexts/ThemeContext'
 
 const plans = [
   {
@@ -41,11 +42,19 @@ const plans = [
 ]
 
 export default function Pricing() {
+  const { theme } = useTheme()
 
   return (
     <section id="pricing" className="relative py-32 px-6 overflow-hidden">
-      {/* Background */}
-      <div className="absolute inset-0 dune-gradient opacity-10" />
+      {/* Background - Theme aware */}
+      <div
+        className="absolute inset-0 opacity-10"
+        style={{
+          background: theme === 'gray'
+            ? 'linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 50%, #333333 100%)'
+            : 'linear-gradient(135deg, rgba(212, 165, 116, 0.1) 0%, rgba(201, 169, 97, 0.05) 50%, rgba(139, 111, 71, 0.1) 100%)',
+        }}
+      />
       
       <div className="relative z-10 max-w-6xl mx-auto">
         <motion.div
@@ -58,7 +67,9 @@ export default function Pricing() {
           <h2 className="font-display text-5xl md:text-6xl lg:text-7xl font-bold mb-6 text-gradient">
             Choose Your Plan
           </h2>
-          <p className="text-xl text-dune-sand-dark max-w-2xl mx-auto">
+          <p className={`text-xl max-w-2xl mx-auto ${
+            theme === 'gray' ? 'text-gray-mid' : 'text-dune-sand-dark'
+          }`}>
             Flexible options for every explorer
           </p>
         </motion.div>
@@ -69,8 +80,12 @@ export default function Pricing() {
               key={plan.name}
               className={`premium-card relative ${
                 plan.highlight
-                  ? 'border-dune-gold/50 bg-gradient-to-br from-dune-black-soft to-dune-black-lighter glow-gold'
-                  : 'border-dune-bronze/30'
+                  ? theme === 'gray'
+                    ? 'border-gray-light/50 bg-gradient-to-br from-gray-dark to-gray-dark glow-accent'
+                    : 'border-dune-gold/50 bg-gradient-to-br from-dune-black-soft to-dune-black-lighter glow-accent'
+                  : theme === 'gray'
+                    ? 'border-gray-mid/30'
+                    : 'border-dune-bronze/30'
               }`}
               initial={{ opacity: 0, y: 50 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -81,28 +96,42 @@ export default function Pricing() {
               {/* Recommended badge */}
               {plan.badge && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <span className="bg-dune-gold text-dune-black px-4 py-1 rounded-full text-sm font-semibold">
+                  <span className={`px-4 py-1 rounded-full text-sm font-semibold ${
+                    theme === 'gray'
+                      ? 'bg-gray-mid text-gray-dark'
+                      : 'bg-dune-gold text-dune-black'
+                  }`}>
                     {plan.badge}
                   </span>
                 </div>
               )}
 
               <div className="text-center mb-8">
-                <h3 className="text-3xl font-bold text-dune-gold mb-4 font-display">
+                <h3 className={`text-3xl font-bold mb-4 font-display ${
+                  theme === 'gray' ? 'text-gray-white-gray' : 'text-dune-gold'
+                }`}>
                   {plan.name}
                 </h3>
                 <div className="mb-2">
-                  <span className="text-5xl font-bold text-dune-sand">
+                  <span className={`text-5xl font-bold ${
+                    theme === 'gray' ? 'text-gray-white-gray' : 'text-dune-sand'
+                  }`}>
                     {plan.price}
                   </span>
-                  <span className="text-dune-sand-dark ml-2">/{plan.period}</span>
+                  <span className={`ml-2 ${
+                    theme === 'gray' ? 'text-gray-mid' : 'text-dune-sand-dark'
+                  }`}>/{plan.period}</span>
                 </div>
                 {plan.altPrice && (
                   <div className="mt-2">
-                    <span className="text-2xl font-semibold text-dune-gold">
+                    <span className={`text-2xl font-semibold ${
+                      theme === 'gray' ? 'text-gray-light' : 'text-dune-gold'
+                    }`}>
                       or {plan.altPrice}
                     </span>
-                    <span className="text-dune-sand-dark ml-2">/{plan.altPeriod}</span>
+                    <span className={`ml-2 ${
+                      theme === 'gray' ? 'text-gray-mid' : 'text-dune-sand-dark'
+                    }`}>/{plan.altPeriod}</span>
                   </div>
                 )}
               </div>
@@ -110,8 +139,12 @@ export default function Pricing() {
               <ul className="space-y-4 mb-8">
                 {plan.features.map((feature, i) => (
                   <li key={i} className="flex items-start">
-                    <span className="text-dune-gold mr-3 text-xl">✓</span>
-                    <span className="text-dune-sand-light">{feature}</span>
+                    <span className={`mr-3 text-xl ${
+                      theme === 'gray' ? 'text-gray-light' : 'text-dune-gold'
+                    }`}>✓</span>
+                    <span className={theme === 'gray' ? 'text-gray-white-gray' : 'text-dune-sand-light'}>
+                      {feature}
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -123,9 +156,9 @@ export default function Pricing() {
                     target="_blank"
                     rel="noopener noreferrer"
                     className={`block w-full text-center py-4 rounded-lg font-semibold transition-all duration-300 cursor-pointer relative overflow-hidden ${
-                      plan.highlight
-                        ? 'bg-dune-gold text-dune-black hover:bg-dune-gold-light glow-gold-hover'
-                        : 'premium-border text-dune-gold hover:border-dune-gold/50'
+                      theme === 'gray'
+                        ? 'bg-gray-mid text-gray-dark hover:bg-gray-light'
+                        : 'bg-dune-gold text-dune-black hover:bg-dune-gold-light glow-accent-hover'
                     }`}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
@@ -135,10 +168,10 @@ export default function Pricing() {
                 ) : (
                   <Link
                     href={plan.href}
-                    className={`block w-full text-center py-4 rounded-lg font-semibold transition-all duration-300 ${
-                      plan.highlight
-                        ? 'bg-dune-gold text-dune-black hover:bg-dune-gold-light glow-gold-hover'
-                        : 'premium-border text-dune-gold hover:border-dune-gold/50'
+                    className={`block w-full text-center py-4 rounded-lg font-semibold transition-all duration-300 premium-border ${
+                      theme === 'gray'
+                        ? 'text-gray-white-gray hover:border-gray-light/50'
+                        : 'text-dune-gold hover:border-dune-gold/50'
                     }`}
                   >
                     {plan.cta}
@@ -149,7 +182,11 @@ export default function Pricing() {
                     href={plan.lifetimeUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block w-full text-center py-4 premium-border text-dune-sand rounded-lg font-semibold hover:border-dune-gold/50 transition-all duration-300 cursor-pointer"
+                    className={`block w-full text-center py-4 premium-border rounded-lg font-semibold transition-all duration-300 cursor-pointer ${
+                      theme === 'gray'
+                        ? 'text-gray-white-gray hover:border-gray-light/50'
+                        : 'text-dune-sand hover:border-dune-gold/50'
+                    }`}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >

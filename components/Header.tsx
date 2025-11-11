@@ -1,26 +1,33 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { createSupabaseClient } from '@/lib/supabase'
+import { useTheme } from '@/contexts/ThemeContext'
 import type { User } from '@supabase/supabase-js'
 
 export default function Header() {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const [isExpanded, setIsExpanded] = useState(false)
+  const [showProfileMenu, setShowProfileMenu] = useState(false)
+  const { theme, toggleTheme } = useTheme()
   const supabase = createSupabaseClient()
 
   useEffect(() => {
-    // Get initial session
     const getSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      setUser(session?.user ?? null)
-      setLoading(false)
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        setUser(session?.user ?? null)
+      } catch (error) {
+        console.error('Error getting session:', error)
+      } finally {
+        setLoading(false)
+      }
     }
     getSession()
 
-    // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -33,105 +40,237 @@ export default function Header() {
   const handleSignOut = async () => {
     try {
       await supabase.auth.signOut()
+      setShowProfileMenu(false)
     } catch (error) {
       console.error('Error signing out:', error)
     }
   }
 
+  const navItems = [
+    { href: '/', label: 'Home', icon: '⌂' },
+    { href: '/chat', label: 'Chat', icon: '💬' },
+    { href: '#pricing', label: 'Pricing', icon: '💳' },
+  ]
+
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 premium-border border-b border-dune-gold/20 bg-dune-black/80 backdrop-blur-md">
-      <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 group">
-          <motion.span
-            className="font-display text-2xl font-bold text-gradient"
-            whileHover={{ scale: 1.05 }}
+    <>
+      {/* Circular Floating Navbar */}
+      <motion.nav
+        className="fixed top-6 right-6 z-50"
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        transition={{ type: 'spring', stiffness: 200, damping: 20 }}
+      >
+        <div className="relative">
+          {/* Main Circle */}
+          <motion.button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className={`w-16 h-16 rounded-full premium-border flex items-center justify-center backdrop-blur-md transition-all duration-300 ${
+              theme === 'gray' 
+                ? 'bg-gray-dark/90 border-gray-mid/40 hover:border-gray-light/60' 
+                : 'bg-dune-black-soft/90 border-dune-gold/30 hover:border-dune-gold/50'
+            } ${isExpanded ? 'scale-110' : ''}`}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
           >
-            Duna
-          </motion.span>
-        </Link>
-
-        {/* Navigation */}
-        <nav className="hidden md:flex items-center gap-8">
-          <Link
-            href="/"
-            className="text-dune-sand-light hover:text-dune-gold transition-colors duration-300"
-          >
-            Home
-          </Link>
-          <Link
-            href="/chat"
-            className="text-dune-sand-light hover:text-dune-gold transition-colors duration-300"
-          >
-            Chat with Duna
-          </Link>
-          <Link
-            href="#pricing"
-            className="text-dune-sand-light hover:text-dune-gold transition-colors duration-300"
-          >
-            Pricing
-          </Link>
-        </nav>
-
-        {/* Right side - Discord & Auth */}
-        <div className="flex items-center gap-4">
-          {/* Discord Link */}
-          <motion.a
-            href="https://discord.gg/Duneworks"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 text-dune-sand-light hover:text-dune-gold transition-colors duration-300 group"
-            whileHover={{ scale: 1.05 }}
-          >
-            <svg
-              className="w-6 h-6 group-hover:drop-shadow-[0_0_8px_rgba(201,169,97,0.6)] transition-all duration-300"
-              fill="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.007-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928-1.793 6.4-3.498 6.4-3.498a.07.07 0 0 0 .031-.056c.004-.1-.015-.2-.056-.292a11.93 11.93 0 0 0-1.019-1.644.077.077 0 0 1 .01-.078c.12-.17.24-.34.35-.52a.074.074 0 0 1 .06-.033c2.56.19 5.1.19 7.62 0a.074.074 0 0 1 .061.033c.109.18.228.35.35.52a.077.077 0 0 1 .01.078 12.08 12.08 0 0 0-1.02 1.644.077.077 0 0 0-.025.292c.002.02.01.04.031.056 0 0 2.47 1.705 6.4 3.498a.077.077 0 0 0 .078.01 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z" />
-            </svg>
-            <span className="hidden sm:inline text-sm font-medium">Join Community</span>
-          </motion.a>
-
-          {/* Auth Section */}
-          {loading ? (
-            <div className="w-8 h-8 border-2 border-dune-gold/30 border-t-dune-gold rounded-full animate-spin" />
-          ) : user ? (
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-dune-gold/20 flex items-center justify-center text-dune-gold font-semibold">
-                  {user.email?.charAt(0).toUpperCase() || 'U'}
-                </div>
-                <span className="hidden md:inline text-sm text-dune-sand-light">
-                  {user.email?.split('@')[0] || 'User'}
-                </span>
+            {user ? (
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-mid to-gray-dark flex items-center justify-center text-gray-white-gray font-semibold text-sm">
+                {user.email?.charAt(0).toUpperCase() || 'U'}
               </div>
-              <button
-                onClick={handleSignOut}
-                className="px-4 py-2 premium-border text-dune-sand-light hover:text-dune-gold hover:border-dune-gold/50 rounded-lg text-sm transition-all duration-300"
+            ) : (
+              <span className="text-xl">☰</span>
+            )}
+          </motion.button>
+
+          {/* Expanded Menu Items */}
+          <AnimatePresence>
+            {isExpanded && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.2 }}
+                className="absolute top-0 right-0 flex flex-col gap-3"
               >
-                Sign Out
-              </button>
-            </div>
-          ) : (
-            <div className="flex items-center gap-3">
-              <Link
-                href="/auth/login"
-                className="px-4 py-2 premium-border text-dune-sand-light hover:text-dune-gold hover:border-dune-gold/50 rounded-lg text-sm transition-all duration-300"
-              >
-                Login
-              </Link>
-              <Link
-                href="/auth/signup"
-                className="px-4 py-2 bg-dune-gold text-dune-black hover:bg-dune-gold-light rounded-lg text-sm font-semibold transition-all duration-300"
-              >
-                Sign Up
-              </Link>
-            </div>
-          )}
+                {/* Navigation Items */}
+                {navItems.map((item, index) => (
+                  <motion.div
+                    key={item.href}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    className="relative group"
+                  >
+                    <Link
+                      href={item.href}
+                      onClick={() => setIsExpanded(false)}
+                      className={`w-14 h-14 rounded-full premium-border flex items-center justify-center backdrop-blur-md transition-all duration-300 ${
+                        theme === 'gray'
+                          ? 'bg-gray-dark/90 border-gray-mid/40 hover:border-gray-light/60 hover:bg-gray-dark'
+                          : 'bg-dune-black-soft/90 border-dune-gold/30 hover:border-dune-gold/50 hover:bg-dune-black-soft'
+                      }`}
+                    >
+                      <span className="text-lg">{item.icon}</span>
+                    </Link>
+                    {/* Tooltip */}
+                    <div className={`absolute right-full mr-3 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none ${
+                      theme === 'gray'
+                        ? 'bg-gray-dark/95 text-gray-white-gray border border-gray-mid/30'
+                        : 'bg-dune-black-soft/95 text-dune-sand-light border border-dune-gold/30'
+                    }`}>
+                      {item.label}
+                    </div>
+                  </motion.div>
+                ))}
+
+                {/* Theme Toggle */}
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: navItems.length * 0.05 }}
+                  className="relative group"
+                >
+                  <button
+                    onClick={toggleTheme}
+                    className={`w-14 h-14 rounded-full premium-border flex items-center justify-center backdrop-blur-md transition-all duration-300 ${
+                      theme === 'gray'
+                        ? 'bg-gray-dark/90 border-gray-mid/40 hover:border-gray-light/60 hover:bg-gray-dark'
+                        : 'bg-dune-black-soft/90 border-dune-gold/30 hover:border-dune-gold/50 hover:bg-dune-black-soft'
+                    }`}
+                  >
+                    <span className="text-lg">{theme === 'gray' ? '☀️' : '🌑'}</span>
+                  </button>
+                  <div className={`absolute right-full mr-3 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none ${
+                    theme === 'gray'
+                      ? 'bg-gray-dark/95 text-gray-white-gray border border-gray-mid/30'
+                      : 'bg-dune-black-soft/95 text-dune-sand-light border border-dune-gold/30'
+                  }`}>
+                    {theme === 'gray' ? 'Dune Theme' : 'Gray Theme'}
+                  </div>
+                </motion.div>
+
+                {/* Profile Menu (if logged in) */}
+                {user && (
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: (navItems.length + 1) * 0.05 }}
+                    className="relative"
+                  >
+                    <button
+                      onClick={() => setShowProfileMenu(!showProfileMenu)}
+                      className={`w-14 h-14 rounded-full premium-border flex items-center justify-center backdrop-blur-md transition-all duration-300 ${
+                        theme === 'gray'
+                          ? 'bg-gray-dark/90 border-gray-mid/40 hover:border-gray-light/60'
+                          : 'bg-dune-black-soft/90 border-dune-gold/30 hover:border-dune-gold/50'
+                      }`}
+                    >
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold ${
+                        theme === 'gray'
+                          ? 'bg-gray-mid text-gray-dark'
+                          : 'bg-dune-gold/30 text-dune-gold'
+                      }`}>
+                        {user.email?.charAt(0).toUpperCase() || 'U'}
+                      </div>
+                    </button>
+                    
+                    {/* Profile Dropdown */}
+                    <AnimatePresence>
+                      {showProfileMenu && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          className={`absolute right-0 top-full mt-2 w-48 rounded-lg backdrop-blur-md ${
+                            theme === 'gray'
+                              ? 'bg-gray-dark/95 border border-gray-mid/30'
+                              : 'bg-dune-black-soft/95 border border-dune-gold/30'
+                          }`}
+                        >
+                          <div className="p-2">
+                            <div className={`px-3 py-2 text-sm ${
+                              theme === 'gray' ? 'text-gray-light' : 'text-dune-sand-light'
+                            }`}>
+                              {user.email}
+                            </div>
+                            <Link
+                              href="/profile"
+                              onClick={() => setShowProfileMenu(false)}
+                              className={`block px-3 py-2 text-sm rounded hover:bg-opacity-50 transition-colors ${
+                                theme === 'gray'
+                                  ? 'text-gray-white-gray hover:bg-gray-mid/20'
+                                  : 'text-dune-sand-light hover:bg-dune-gold/10'
+                              }`}
+                            >
+                              Profile
+                            </Link>
+                            <Link
+                              href="/settings"
+                              onClick={() => setShowProfileMenu(false)}
+                              className={`block px-3 py-2 text-sm rounded hover:bg-opacity-50 transition-colors ${
+                                theme === 'gray'
+                                  ? 'text-gray-white-gray hover:bg-gray-mid/20'
+                                  : 'text-dune-sand-light hover:bg-dune-gold/10'
+                              }`}
+                            >
+                              Settings
+                            </Link>
+                            <button
+                              onClick={handleSignOut}
+                              className={`w-full text-left px-3 py-2 text-sm rounded hover:bg-opacity-50 transition-colors ${
+                                theme === 'gray'
+                                  ? 'text-gray-white-gray hover:bg-gray-mid/20'
+                                  : 'text-dune-sand-light hover:bg-dune-gold/10'
+                              }`}
+                            >
+                              Logout
+                            </button>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                )}
+
+                {/* Auth Buttons (if not logged in) */}
+                {!user && !loading && (
+                  <>
+                    <motion.div
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: (navItems.length + 1) * 0.05 }}
+                      className="relative group"
+                    >
+                      <Link
+                        href="/auth/login"
+                        onClick={() => setIsExpanded(false)}
+                        className={`w-14 h-14 rounded-full premium-border flex items-center justify-center backdrop-blur-md transition-all duration-300 ${
+                          theme === 'gray'
+                            ? 'bg-gray-dark/90 border-gray-mid/40 hover:border-gray-light/60'
+                            : 'bg-dune-black-soft/90 border-dune-gold/30 hover:border-dune-gold/50'
+                        }`}
+                      >
+                        <span className="text-sm font-semibold">Login</span>
+                      </Link>
+                    </motion.div>
+                  </>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
-      </div>
-    </header>
+      </motion.nav>
+
+      {/* Click outside to close */}
+      {isExpanded && (
+        <div
+          className="fixed inset-0 z-40"
+          onClick={() => {
+            setIsExpanded(false)
+            setShowProfileMenu(false)
+          }}
+        />
+      )}
+    </>
   )
 }
-

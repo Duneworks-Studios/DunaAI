@@ -2,45 +2,53 @@
 
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import { useTheme } from '@/contexts/ThemeContext'
 
 export default function Footer() {
   const currentYear = new Date().getFullYear()
+  const { theme } = useTheme()
 
   return (
     <footer className="relative py-16 px-6 overflow-hidden">
-      {/* Animated dune background */}
+      {/* Animated background - Theme aware */}
       <div className="absolute inset-0 z-0">
-        <motion.div
-          className="absolute bottom-0 left-0 right-0 h-64 dune-gradient opacity-20"
-          animate={{
-            y: [0, -15, 0],
-            scale: [1, 1.03, 1],
-          }}
-          transition={{
-            duration: 25,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-          style={{
-            clipPath: 'polygon(0 30%, 100% 25%, 100% 100%, 0% 100%)',
-          }}
-        />
-        <motion.div
-          className="absolute bottom-0 left-0 right-0 h-48 dune-gradient opacity-15"
-          animate={{
-            y: [0, -10, 0],
-            scale: [1, 1.02, 1],
-          }}
-          transition={{
-            duration: 30,
-            repeat: Infinity,
-            ease: 'easeInOut',
-            delay: 0.3,
-          }}
-          style={{
-            clipPath: 'polygon(0 40%, 100% 35%, 100% 100%, 0% 100%)',
-          }}
-        />
+        {theme === 'dune' && (
+          <>
+            <motion.div
+              className="absolute bottom-0 left-0 right-0 h-64 opacity-20"
+              style={{
+                background: 'linear-gradient(135deg, rgba(212, 165, 116, 0.1) 0%, rgba(201, 169, 97, 0.05) 50%, rgba(139, 111, 71, 0.1) 100%)',
+                clipPath: 'polygon(0 30%, 100% 25%, 100% 100%, 0% 100%)',
+              }}
+              animate={{
+                y: [0, -15, 0],
+                scale: [1, 1.03, 1],
+              }}
+              transition={{
+                duration: 25,
+                repeat: Infinity,
+                ease: 'easeInOut',
+              }}
+            />
+            <motion.div
+              className="absolute bottom-0 left-0 right-0 h-48 opacity-15"
+              style={{
+                background: 'linear-gradient(135deg, rgba(212, 165, 116, 0.1) 0%, rgba(201, 169, 97, 0.05) 50%, rgba(139, 111, 71, 0.1) 100%)',
+                clipPath: 'polygon(0 40%, 100% 35%, 100% 100%, 0% 100%)',
+              }}
+              animate={{
+                y: [0, -10, 0],
+                scale: [1, 1.02, 1],
+              }}
+              transition={{
+                duration: 30,
+                repeat: Infinity,
+                ease: 'easeInOut',
+                delay: 0.3,
+              }}
+            />
+          </>
+        )}
       </div>
 
       <div className="relative z-10 max-w-6xl mx-auto">
@@ -55,7 +63,9 @@ export default function Footer() {
             <h3 className="font-display text-3xl font-bold text-gradient mb-4">
               Duna
             </h3>
-            <p className="text-dune-sand-dark text-sm leading-relaxed">
+            <p className={`text-sm leading-relaxed ${
+              theme === 'gray' ? 'text-gray-mid' : 'text-dune-sand-dark'
+            }`}>
               The intelligent browser reimagined. Created by Duneworks Studios.
             </p>
           </motion.div>
@@ -68,22 +78,38 @@ export default function Footer() {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="flex flex-col space-y-3"
           >
-            <h4 className="text-dune-gold font-semibold mb-2">Legal</h4>
+            <h4 className={`font-semibold mb-2 ${
+              theme === 'gray' ? 'text-gray-light' : 'text-dune-gold'
+            }`}>
+              Legal
+            </h4>
             <Link
               href="/terms"
-              className="text-dune-sand-dark hover:text-dune-gold transition-colors duration-300"
+              className={`transition-colors duration-300 ${
+                theme === 'gray'
+                  ? 'text-gray-mid hover:text-gray-light'
+                  : 'text-dune-sand-dark hover:text-dune-gold'
+              }`}
             >
               Terms of Service
             </Link>
             <Link
               href="/privacy"
-              className="text-dune-sand-dark hover:text-dune-gold transition-colors duration-300"
+              className={`transition-colors duration-300 ${
+                theme === 'gray'
+                  ? 'text-gray-mid hover:text-gray-light'
+                  : 'text-dune-sand-dark hover:text-dune-gold'
+              }`}
             >
               Privacy Policy
             </Link>
             <Link
               href="/contact"
-              className="text-dune-sand-dark hover:text-dune-gold transition-colors duration-300"
+              className={`transition-colors duration-300 ${
+                theme === 'gray'
+                  ? 'text-gray-mid hover:text-gray-light'
+                  : 'text-dune-sand-dark hover:text-dune-gold'
+              }`}
             >
               Contact
             </Link>
@@ -96,19 +122,33 @@ export default function Footer() {
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <h4 className="text-dune-gold font-semibold mb-2">Duneworks Studios</h4>
-            <p className="text-dune-sand-dark text-sm mb-4">
+            <h4 className={`font-semibold mb-2 ${
+              theme === 'gray' ? 'text-gray-light' : 'text-dune-gold'
+            }`}>
+              Duneworks Studios
+            </h4>
+            <p className={`text-sm mb-4 ${
+              theme === 'gray' ? 'text-gray-mid' : 'text-dune-sand-dark'
+            }`}>
               Engineering the future of intelligent browsing.
             </p>
             <motion.a
               href="https://discord.gg/Duneworks"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-dune-sand-light hover:text-dune-gold transition-colors duration-300 group"
+              className={`inline-flex items-center gap-2 transition-colors duration-300 group ${
+                theme === 'gray'
+                  ? 'text-gray-light hover:text-gray-white-gray'
+                  : 'text-dune-sand-light hover:text-dune-gold'
+              }`}
               whileHover={{ scale: 1.05 }}
             >
               <svg
-                className="w-5 h-5 group-hover:drop-shadow-[0_0_8px_rgba(201,169,97,0.6)] transition-all duration-300"
+                className={`w-5 h-5 transition-all duration-300 ${
+                  theme === 'gray'
+                    ? 'group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.6)]'
+                    : 'group-hover:drop-shadow-[0_0_8px_rgba(201,169,97,0.6)]'
+                }`}
                 fill="currentColor"
                 viewBox="0 0 24 24"
               >
@@ -121,13 +161,17 @@ export default function Footer() {
 
         {/* Copyright */}
         <motion.div
-          className="border-t border-dune-bronze/20 pt-8 text-center"
+          className={`border-t pt-8 text-center ${
+            theme === 'gray' ? 'border-gray-mid/20' : 'border-dune-bronze/20'
+          }`}
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.3 }}
         >
-          <p className="text-dune-sand-dark text-sm">
+          <p className={`text-sm ${
+            theme === 'gray' ? 'text-gray-mid' : 'text-dune-sand-dark'
+          }`}>
             © {currentYear} Duneworks Studios. All Rights Reserved.
           </p>
         </motion.div>
@@ -135,4 +179,3 @@ export default function Footer() {
     </footer>
   )
 }
-

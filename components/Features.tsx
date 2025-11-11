@@ -1,35 +1,30 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { useTheme } from '@/contexts/ThemeContext'
 
 const features = [
   {
-    icon: '🧠',
     title: 'AI Assistant',
     description: 'Smart, adaptive, and context-aware. Your intelligent companion for every browsing session.',
-    glow: 'from-dune-gold/30 to-dune-sand/30',
   },
   {
-    icon: '⚡',
     title: 'Performance',
     description: 'Lightweight, fast, and secure. Experience blazing speeds without compromising on security.',
-    glow: 'from-dune-sand/30 to-dune-bronze/30',
   },
   {
-    icon: '🌐',
     title: 'Cloud Sync',
     description: 'Private data sync across all your devices. Seamless continuity, wherever you go.',
-    glow: 'from-dune-bronze/30 to-dune-gold/30',
   },
   {
-    icon: '🛡️',
     title: 'Privacy First',
     description: 'Zero tracking. 100% encrypted sessions. Your data belongs to you, always.',
-    glow: 'from-dune-gold/30 to-dune-bronze/30',
   },
 ]
 
 export default function Features() {
+  const { theme } = useTheme()
+
   return (
     <section id="features" className="relative py-32 px-6">
       <div className="max-w-7xl mx-auto">
@@ -43,7 +38,9 @@ export default function Features() {
           <h2 className="font-display text-5xl md:text-6xl lg:text-7xl font-bold mb-6 text-gradient">
             Powerful Features
           </h2>
-          <p className="text-xl text-dune-sand-dark max-w-2xl mx-auto">
+          <p className={`text-xl max-w-2xl mx-auto ${
+            theme === 'gray' ? 'text-gray-mid' : 'text-dune-sand-dark'
+          }`}>
             Everything you need for intelligent, efficient browsing
           </p>
         </motion.div>
@@ -59,17 +56,24 @@ export default function Features() {
               transition={{ duration: 0.6, delay: index * 0.1 }}
               whileHover={{ y: -10 }}
             >
-              {/* Glow effect on hover */}
+              {/* Glow effect on hover - Theme aware */}
               <motion.div
-                className={`absolute inset-0 bg-gradient-to-br ${feature.glow} opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-500`}
+                className={`absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-500 ${
+                  theme === 'gray'
+                    ? 'from-gray-light/30 to-gray-mid/30'
+                    : 'from-dune-gold/30 to-dune-sand/30'
+                }`}
               />
               
               <div className="relative z-10">
-                <div className="text-5xl mb-4">{feature.icon}</div>
-                <h3 className="text-2xl font-semibold text-dune-gold mb-3 font-display">
+                <h3 className={`text-2xl font-semibold mb-3 font-display ${
+                  theme === 'gray' ? 'text-gray-white-gray' : 'text-dune-gold'
+                }`}>
                   {feature.title}
                 </h3>
-                <p className="text-dune-sand-light leading-relaxed">
+                <p className={`leading-relaxed ${
+                  theme === 'gray' ? 'text-gray-light' : 'text-dune-sand-light'
+                }`}>
                   {feature.description}
                 </p>
               </div>
@@ -85,4 +89,3 @@ export default function Features() {
     </section>
   )
 }
-
