@@ -12,7 +12,6 @@ export default function SignUpPage() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState(false)
   const router = useRouter()
   const supabase = createSupabaseClient()
 
@@ -36,13 +35,6 @@ export default function SignUpPage() {
     const { data, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
-        // Auto-confirm the user (works when email confirmation is disabled in Supabase)
-        data: {
-          email_confirm: true,
-        },
-      },
     })
 
     if (signUpError) {
@@ -51,57 +43,46 @@ export default function SignUpPage() {
       return
     }
 
-    // Wait a moment for session to be established
-    await new Promise(resolve => setTimeout(resolve, 300))
+    if (!data.user) {
+      setError('Failed to create account. Please try again.')
+      setLoading(false)
+      return
+    }
 
-    // Check if we have a session (email confirmation disabled)
-    if (data.user) {
-      // Try to get the session
-      const { data: { session } } = await supabase.auth.getSession()
-      
-      if (session) {
-        // Session exists - user is logged in
+    // Wait a moment for session to be established
+    await new Promise(resolve => setTimeout(resolve, 500))
+
+    // Check if we have a session
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+    
+    if (session) {
+      // Session exists - user is logged in, redirect to chat
+      setLoading(false)
+      router.push('/chat')
+    } else {
+      // No session - try to sign in with the same credentials as fallback
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+
+      if (signInError) {
+        setError('Account created but could not sign you in. Please try logging in.')
+        setLoading(false)
+        setTimeout(() => {
+          router.push('/auth/login')
+        }, 2000)
+      } else if (signInData.session) {
+        // Successfully signed in
         setLoading(false)
         router.push('/chat')
-      } else if (data.user && !data.session) {
-        // No session but user exists - email confirmation might be required
-        // Try to sign in with the same credentials
-        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        })
-
-        if (signInError) {
-          // Email confirmation is required
-          setError(null)
-          setLoading(false)
-          setSuccess(true)
-          setTimeout(() => {
-            router.push('/auth/login')
-          }, 3000)
-        } else if (signInData.session) {
-          // Successfully signed in
-          setLoading(false)
-          router.push('/chat')
-        } else {
-          setLoading(false)
-          setError('Account created. Please check your email to verify your account.')
-          setTimeout(() => {
-            router.push('/auth/login')
-          }, 2000)
-        }
       } else {
-        // Fallback: redirect to login
+        setError('Account created but could not sign you in. Please try logging in.')
         setLoading(false)
-        setError('Account created. Please sign in to continue.')
         setTimeout(() => {
           router.push('/auth/login')
         }, 2000)
       }
-    } else {
-      // No user data - something went wrong
-      setLoading(false)
-      setError('Failed to create account. Please try again.')
     }
   }
 
@@ -136,12 +117,6 @@ export default function SignUpPage() {
       >
         <h1 className="font-display text-3xl font-bold text-[#EEEEEE] mb-2">Join Duna</h1>
         <p className="text-[#888888] mb-8 text-sm">Create your account to start your AI journey</p>
-
-        {success && (
-          <div className="mb-6 p-4 bg-green-500 bg-opacity-10 border border-green-500 border-opacity-30 rounded-lg text-green-400 text-sm">
-            Account created successfully! Please check your email to verify your account, then you can sign in.
-          </div>
-        )}
 
         {error && (
           <div className="mb-6 p-4 bg-red-500 bg-opacity-10 border border-red-500 border-opacity-30 rounded-lg text-red-400 text-sm">
