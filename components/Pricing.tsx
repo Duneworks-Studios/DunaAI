@@ -167,7 +167,7 @@ export default function Pricing() {
                   </motion.a>
                 ) : (
                   <Link
-                    href={plan.href}
+                    href={plan.href || '/auth/signup'}
                     className={`block w-full text-center py-4 rounded-lg font-semibold transition-all duration-300 premium-border ${
                       theme === 'gray'
                         ? 'text-gray-white-gray hover:border-gray-light/50'
