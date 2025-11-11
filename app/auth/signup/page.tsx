@@ -12,6 +12,7 @@ export default function SignUpPage() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
   const router = useRouter()
   const supabase = createSupabaseClient()
 
@@ -46,8 +47,41 @@ export default function SignUpPage() {
       return
     }
 
-    if (data.user) {
-      router.push('/chat')
+    // Check if email confirmation is required
+    if (data.user && !data.session) {
+      // Email confirmation required - show success message
+      setError(null)
+      setLoading(false)
+      setSuccess(true)
+      // Don't redirect immediately - let user see the success message
+      setTimeout(() => {
+        router.push('/auth/login')
+      }, 3000)
+      return
+    }
+
+    // User is automatically logged in (email confirmation disabled)
+    if (data.user && data.session) {
+      setLoading(false)
+      // Wait for session to be fully established
+      await new Promise(resolve => setTimeout(resolve, 500))
+      // Verify session exists before redirecting
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session) {
+        router.push('/chat')
+        // Force reload to ensure session is recognized
+        window.location.href = '/chat'
+      } else {
+        setError('Session not established. Please try logging in.')
+        setLoading(false)
+      }
+    } else {
+      // Fallback: redirect to login
+      setLoading(false)
+      setError('Account created, but could not establish session. Please try logging in.')
+      setTimeout(() => {
+        router.push('/auth/login')
+      }, 2000)
     }
   }
 
@@ -82,6 +116,12 @@ export default function SignUpPage() {
       >
         <h1 className="font-display text-3xl font-bold text-[#EEEEEE] mb-2">Join Duna</h1>
         <p className="text-[#888888] mb-8 text-sm">Create your account to start your AI journey</p>
+
+        {success && (
+          <div className="mb-6 p-4 bg-green-500 bg-opacity-10 border border-green-500 border-opacity-30 rounded-lg text-green-400 text-sm">
+            Account created successfully! Please check your email to verify your account, then you can sign in.
+          </div>
+        )}
 
         {error && (
           <div className="mb-6 p-4 bg-red-500 bg-opacity-10 border border-red-500 border-opacity-30 rounded-lg text-red-400 text-sm">

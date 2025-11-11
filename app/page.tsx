@@ -15,10 +15,18 @@ export default function Home() {
   useEffect(() => {
     const getSession = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession()
+        const { data: { session }, error } = await supabase.auth.getSession()
+        if (error) {
+          console.error('Error getting session:', error)
+          setLoading(false)
+          return
+        }
         setUser(session?.user ?? null)
         if (session?.user) {
-          router.push('/chat')
+          // Small delay to ensure session is fully established
+          setTimeout(() => {
+            router.push('/chat')
+          }, 100)
         }
       } catch (error) {
         console.error('Error getting session:', error)
@@ -31,14 +39,18 @@ export default function Home() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log('Auth state changed on home page:', _event, !!session?.user)
       setUser(session?.user ?? null)
       if (session?.user) {
-        router.push('/chat')
+        // Don't redirect immediately - let the session establish
+        setTimeout(() => {
+          router.push('/chat')
+        }, 100)
       }
     })
 
     return () => subscription.unsubscribe()
-  }, [router])
+  }, [router, supabase])
 
   if (loading) {
     return (
