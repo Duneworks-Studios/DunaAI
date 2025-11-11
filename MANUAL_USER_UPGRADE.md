@@ -34,12 +34,12 @@ BEGIN
 
     -- Update user metadata
     UPDATE auth.users
-    SET user_metadata = jsonb_build_object(
+    SET raw_user_meta_data = jsonb_build_object(
         'plan', 'pro',
         'plan_type', 'pro_lifetime',
         'subscription_status', 'active',
         'upgraded_at', NOW()::text
-    ) || COALESCE(user_metadata, '{}'::jsonb)
+    ) || COALESCE(raw_user_meta_data, '{}'::jsonb)
     WHERE id = user_uuid;
 
     -- Update user_plans table
@@ -64,7 +64,7 @@ Run this to check the upgrade worked:
 ```sql
 SELECT 
     u.email,
-    u.user_metadata->>'plan_type' as plan_type,
+    u.raw_user_meta_data->>'plan_type' as plan_type,
     up.plan_type as db_plan_type,
     up.subscription_status as status
 FROM auth.users u
