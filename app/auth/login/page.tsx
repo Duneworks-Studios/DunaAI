@@ -63,11 +63,11 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-6 py-20 pt-[80px] bg-[#1a1a1a]">
+    <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 py-12 sm:py-20 pt-[80px] bg-[#1a1a1a]">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md bg-[#2a2a2a] border border-[#444] rounded-lg p-8"
+        className="w-full max-w-md bg-[#2a2a2a] border border-[#444] rounded-lg p-6 sm:p-8"
       >
         <h1 className="font-display text-3xl font-bold text-[#EEEEEE] mb-2">Welcome Back</h1>
         <p className="text-[#888888] mb-8 text-sm">Sign in to continue your journey with Duna</p>

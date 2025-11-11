@@ -38,6 +38,10 @@ export default function SignUpPage() {
       password,
       options: {
         emailRedirectTo: `${window.location.origin}/auth/callback`,
+        // Auto-confirm the user (works when email confirmation is disabled in Supabase)
+        data: {
+          email_confirm: true,
+        },
       },
     })
 
@@ -47,33 +51,55 @@ export default function SignUpPage() {
       return
     }
 
-    // Check if email confirmation is required
-    if (data.user && !data.session) {
-      // Email confirmation required - show success message
-      setError(null)
-      setLoading(false)
-      setSuccess(true)
-      // Don't redirect immediately - let user see the success message
-      setTimeout(() => {
-        router.push('/auth/login')
-      }, 3000)
-      return
-    }
+    // Wait a moment for session to be established
+    await new Promise(resolve => setTimeout(resolve, 300))
 
-    // User is automatically logged in (email confirmation disabled)
-    if (data.user && data.session) {
-      setLoading(false)
-      // Session is established, redirect to chat
-      router.push('/chat')
-    } else if (data.user) {
-      // User created but no session (should have been handled above, but just in case)
-      setLoading(false)
-      setError('Account created, but session not established. Please try logging in.')
-      setTimeout(() => {
-        router.push('/auth/login')
-      }, 2000)
+    // Check if we have a session (email confirmation disabled)
+    if (data.user) {
+      // Try to get the session
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      if (session) {
+        // Session exists - user is logged in
+        setLoading(false)
+        router.push('/chat')
+      } else if (data.user && !data.session) {
+        // No session but user exists - email confirmation might be required
+        // Try to sign in with the same credentials
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        })
+
+        if (signInError) {
+          // Email confirmation is required
+          setError(null)
+          setLoading(false)
+          setSuccess(true)
+          setTimeout(() => {
+            router.push('/auth/login')
+          }, 3000)
+        } else if (signInData.session) {
+          // Successfully signed in
+          setLoading(false)
+          router.push('/chat')
+        } else {
+          setLoading(false)
+          setError('Account created. Please check your email to verify your account.')
+          setTimeout(() => {
+            router.push('/auth/login')
+          }, 2000)
+        }
+      } else {
+        // Fallback: redirect to login
+        setLoading(false)
+        setError('Account created. Please sign in to continue.')
+        setTimeout(() => {
+          router.push('/auth/login')
+        }, 2000)
+      }
     } else {
-      // Fallback: something went wrong
+      // No user data - something went wrong
       setLoading(false)
       setError('Failed to create account. Please try again.')
     }
@@ -102,11 +128,11 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-6 py-20 pt-[80px] bg-[#1a1a1a]">
+    <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 py-12 sm:py-20 pt-[80px] bg-[#1a1a1a]">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md bg-[#2a2a2a] border border-[#444] rounded-lg p-8"
+        className="w-full max-w-md bg-[#2a2a2a] border border-[#444] rounded-lg p-6 sm:p-8"
       >
         <h1 className="font-display text-3xl font-bold text-[#EEEEEE] mb-2">Join Duna</h1>
         <p className="text-[#888888] mb-8 text-sm">Create your account to start your AI journey</p>

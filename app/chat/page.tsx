@@ -300,17 +300,32 @@ export default function ChatPage() {
   const activeSession = sessions.find(s => s.id === activeSessionId)
 
   return (
-    <div className="flex h-screen pt-[60px] bg-[#333]">
+    <div className="flex h-screen pt-[60px] bg-[#333] overflow-hidden">
       {/* Mobile Sidebar Toggle */}
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="md:hidden fixed top-[70px] left-4 z-50 px-3 py-2 bg-[#2a2a2a] border border-[#333] text-[#BBBBBB] rounded text-sm"
+        className="md:hidden fixed top-[70px] left-3 z-50 p-2 bg-[#2a2a2a] border border-[#444] text-[#BBBBBB] rounded-lg shadow-lg"
+        aria-label="Toggle sidebar"
       >
-        {sidebarOpen ? 'Close' : 'Chats'}
+        <svg
+          className="w-5 h-5"
+          fill="none"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          {sidebarOpen ? (
+            <path d="M6 18L18 6M6 6l12 12" />
+          ) : (
+            <path d="M4 6h16M4 12h16M4 18h16" />
+          )}
+        </svg>
       </button>
 
       {/* Sidebar */}
-      <div className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 fixed md:static inset-y-0 left-0 top-[60px] z-40 transition-transform duration-300`}>
+      <div className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 fixed md:static inset-y-0 left-0 top-[60px] z-40 transition-transform duration-300 ease-in-out w-full max-w-[280px] md:w-60 h-full`}>
         <ChatSidebar
           sessions={sessions}
           activeSessionId={activeSessionId}
@@ -325,24 +340,26 @@ export default function ChatPage() {
       {/* Overlay for mobile */}
       {sidebarOpen && (
         <div
-          className="md:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
+          className="md:hidden fixed inset-0 bg-black bg-opacity-60 z-30"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
       {/* Main Chat Window */}
-      <ChatWindow
-        user={user}
-        messages={messages}
-        loading={loading}
-        input={input}
-        onInputChange={setInput}
-        onSend={handleSend}
-        userPlan={userPlan}
-        showUpgrade={showUpgrade}
-        onDismissUpgrade={() => setShowUpgrade(false)}
-        activeSessionTitle={activeSession?.title}
-      />
+      <div className="flex-1 flex flex-col min-w-0 h-full">
+        <ChatWindow
+          user={user}
+          messages={messages}
+          loading={loading}
+          input={input}
+          onInputChange={setInput}
+          onSend={handleSend}
+          userPlan={userPlan}
+          showUpgrade={showUpgrade}
+          onDismissUpgrade={() => setShowUpgrade(false)}
+          activeSessionTitle={activeSession?.title}
+        />
+      </div>
 
       {/* Premium Modal */}
       <PremiumModal

@@ -11,6 +11,7 @@ export default function Navbar() {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [showProfileMenu, setShowProfileMenu] = useState(false)
+  const [showMobileMenu, setShowMobileMenu] = useState(false)
   const supabase = createSupabaseClient()
 
   useEffect(() => {
@@ -76,10 +77,14 @@ export default function Navbar() {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 h-[60px] bg-[#222] bg-opacity-95 backdrop-blur-sm border-b border-[#333]">
-      <div className="max-w-7xl mx-auto h-full px-6 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto h-full px-4 sm:px-6 flex items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="flex items-center hover:opacity-80 transition-opacity">
-          <div className="relative h-10 w-10 flex items-center">
+        <Link 
+          href="/" 
+          className="flex items-center hover:opacity-80 transition-opacity"
+          onClick={() => setShowMobileMenu(false)}
+        >
+          <div className="relative h-8 w-8 sm:h-10 sm:w-10 flex items-center">
             <Image 
               src="https://media.discordapp.net/attachments/1049403383603273758/1437875664316399809/a4ea2ab422827bd939a023a7ff248ce5.webp?ex=6914d590&is=69138410&hm=4b163a993bcdbd87924ab3d6689abeae0f0a26e4ad260eb1f33a8875826cc361&=&format=webp&width=1022&height=1022" 
               alt="Duna Logo" 
@@ -92,8 +97,8 @@ export default function Navbar() {
           </div>
         </Link>
 
-        {/* Navigation Links */}
-        <div className="hidden md:flex items-center gap-8">
+        {/* Desktop Navigation Links */}
+        <div className="hidden md:flex items-center gap-6 lg:gap-8">
           <Link
             href="/"
             className="text-[#BBBBBB] hover:text-[#d4c4a0] transition-colors text-sm font-medium relative group"
@@ -119,10 +124,10 @@ export default function Navbar() {
           </a>
         </div>
 
-        {/* Auth Section */}
-        <div className="flex items-center gap-4">
+        {/* Desktop Auth Section */}
+        <div className="hidden md:flex items-center gap-3 lg:gap-4">
           {loading ? (
-            <div className="w-6 h-6 border-2 border-[#888] border-t-[#d4c4a0] rounded-full animate-spin" />
+            <div className="w-5 h-5 border-2 border-[#888] border-t-[#d4c4a0] rounded-full animate-spin" />
           ) : user ? (
             <div className="relative">
               <button
@@ -132,7 +137,7 @@ export default function Navbar() {
                 <div className="w-8 h-8 rounded-full bg-[#d4c4a0] bg-opacity-20 flex items-center justify-center text-[#d4c4a0] font-semibold text-sm">
                   {user.email?.charAt(0).toUpperCase() || 'U'}
                 </div>
-                <span className="hidden sm:inline text-sm">{user.email?.split('@')[0] || 'User'}</span>
+                <span className="hidden lg:inline text-sm truncate max-w-[120px]">{user.email?.split('@')[0] || 'User'}</span>
               </button>
 
               {/* Profile Dropdown */}
@@ -140,15 +145,18 @@ export default function Navbar() {
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="absolute right-0 top-full mt-2 w-48 bg-[#2a2a2a] border border-[#333] rounded-lg overflow-hidden"
+                  className="absolute right-0 top-full mt-2 w-48 bg-[#2a2a2a] border border-[#333] rounded-lg overflow-hidden shadow-lg z-50"
                 >
                   <div className="p-2">
-                    <div className="px-3 py-2 text-sm text-[#BBBBBB] border-b border-[#333]">
+                    <div className="px-3 py-2 text-xs sm:text-sm text-[#BBBBBB] border-b border-[#333] truncate">
                       {user.email}
                     </div>
                     <Link
                       href="/chat"
-                      onClick={() => setShowProfileMenu(false)}
+                      onClick={() => {
+                        setShowProfileMenu(false)
+                        setShowMobileMenu(false)
+                      }}
                       className="block px-3 py-2 text-sm text-[#BBBBBB] hover:text-[#d4c4a0] hover:bg-[#333] transition-colors"
                     >
                       Chat
@@ -167,26 +175,130 @@ export default function Navbar() {
             <>
               <Link
                 href="/auth/login"
-                className="text-[#BBBBBB] hover:text-[#d4c4a0] transition-colors text-sm font-medium"
+                className="text-[#BBBBBB] hover:text-[#d4c4a0] transition-colors text-sm font-medium px-2"
               >
                 Login
               </Link>
               <Link
                 href="/auth/signup"
-                className="px-4 py-2 bg-[#d4c4a0] bg-opacity-20 text-[#d4c4a0] rounded-lg text-sm font-medium hover:bg-opacity-30 transition-all"
+                className="px-3 py-1.5 sm:px-4 sm:py-2 bg-[#d4c4a0] bg-opacity-20 text-[#d4c4a0] rounded-lg text-sm font-medium hover:bg-opacity-30 transition-all"
               >
                 Sign Up
               </Link>
             </>
           )}
         </div>
+
+        {/* Mobile Menu Button */}
+        <button
+          onClick={() => setShowMobileMenu(!showMobileMenu)}
+          className="md:hidden p-2 text-[#BBBBBB] hover:text-[#d4c4a0] transition-colors"
+          aria-label="Toggle menu"
+        >
+          <svg
+            className="w-6 h-6"
+            fill="none"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            {showMobileMenu ? (
+              <path d="M6 18L18 6M6 6l12 12" />
+            ) : (
+              <path d="M4 6h16M4 12h16M4 18h16" />
+            )}
+          </svg>
+        </button>
       </div>
 
-      {/* Click outside to close dropdown */}
-      {showProfileMenu && (
+      {/* Mobile Menu */}
+      {showMobileMenu && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          className="md:hidden absolute top-full left-0 right-0 bg-[#222] border-b border-[#333] shadow-lg"
+        >
+          <div className="px-4 py-4 space-y-3">
+            <Link
+              href="/"
+              onClick={() => setShowMobileMenu(false)}
+              className="block py-2 text-[#BBBBBB] hover:text-[#d4c4a0] transition-colors text-sm font-medium"
+            >
+              Home
+            </Link>
+            <Link
+              href="/pricing"
+              onClick={() => setShowMobileMenu(false)}
+              className="block py-2 text-[#BBBBBB] hover:text-[#d4c4a0] transition-colors text-sm font-medium"
+            >
+              Pricing
+            </Link>
+            <a
+              href="https://discord.gg/Duneworks"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setShowMobileMenu(false)}
+              className="block py-2 text-[#BBBBBB] hover:text-[#d4c4a0] transition-colors text-sm font-medium"
+            >
+              Discord
+            </a>
+            {user ? (
+              <>
+                <Link
+                  href="/chat"
+                  onClick={() => setShowMobileMenu(false)}
+                  className="block py-2 text-[#BBBBBB] hover:text-[#d4c4a0] transition-colors text-sm font-medium"
+                >
+                  Chat
+                </Link>
+                <div className="pt-2 border-t border-[#333]">
+                  <div className="px-2 py-2 text-xs text-[#888888] truncate mb-2">
+                    {user.email}
+                  </div>
+                  <button
+                    onClick={() => {
+                      setShowMobileMenu(false)
+                      handleSignOut()
+                    }}
+                    className="w-full text-left py-2 px-2 text-sm text-[#BBBBBB] hover:text-[#d4c4a0] transition-colors"
+                  >
+                    Logout
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/auth/login"
+                  onClick={() => setShowMobileMenu(false)}
+                  className="block py-2 text-[#BBBBBB] hover:text-[#d4c4a0] transition-colors text-sm font-medium"
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/auth/signup"
+                  onClick={() => setShowMobileMenu(false)}
+                  className="block w-full text-center py-2 bg-[#d4c4a0] bg-opacity-20 text-[#d4c4a0] rounded-lg text-sm font-medium hover:bg-opacity-30 transition-all"
+                >
+                  Sign Up
+                </Link>
+              </>
+            )}
+          </div>
+        </motion.div>
+      )}
+
+      {/* Click outside to close dropdowns */}
+      {(showProfileMenu || showMobileMenu) && (
         <div
           className="fixed inset-0 z-40"
-          onClick={() => setShowProfileMenu(false)}
+          onClick={() => {
+            setShowProfileMenu(false)
+            setShowMobileMenu(false)
+          }}
         />
       )}
     </nav>

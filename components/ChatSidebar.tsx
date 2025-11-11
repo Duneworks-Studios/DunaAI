@@ -43,9 +43,9 @@ export default function ChatSidebar({
   }
 
   return (
-    <aside className="w-60 h-full bg-[#2a2a2a] border-r border-[#333] flex flex-col">
+    <aside className="w-full h-full bg-[#2a2a2a] border-r border-[#333] flex flex-col overflow-hidden">
       {/* AI Agents Section */}
-      <div className="p-4 border-b border-[#333]">
+      <div className="p-3 sm:p-4 border-b border-[#333] flex-shrink-0">
         <div className="text-xs uppercase tracking-wider text-[#888888] mb-3 font-medium">
           AI Agents
         </div>
@@ -83,20 +83,20 @@ export default function ChatSidebar({
       </div>
 
       {/* New Chat Button */}
-      <div className="p-4 border-b border-[#333]">
+      <div className="p-3 sm:p-4 border-b border-[#333] flex-shrink-0">
         <button
           onClick={() => {
             onCreateNewChat()
             onClose?.()
           }}
-          className="w-full px-4 py-2.5 bg-[#d4c4a0] bg-opacity-10 text-[#d4c4a0] rounded-lg font-medium hover:bg-opacity-20 transition-all duration-200 text-sm"
+          className="w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-[#d4c4a0] bg-opacity-10 text-[#d4c4a0] rounded-lg font-medium hover:bg-opacity-20 transition-all duration-200 text-xs sm:text-sm"
         >
           New Chat
         </button>
       </div>
 
       {/* Chat History */}
-      <div className="flex-1 overflow-y-auto p-2">
+      <div className="flex-1 overflow-y-auto p-2 min-h-0">
         <div className="text-xs uppercase tracking-wider text-[#888888] mb-2 px-2 font-medium">
           Conversations
         </div>
@@ -111,16 +111,16 @@ export default function ChatSidebar({
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className={`w-full text-left px-3 py-2.5 rounded-lg mb-1 transition-all duration-200 ${
+              className={`w-full text-left px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg mb-1 transition-all duration-200 ${
                 activeSessionId === session.id
                   ? 'bg-[#333] border-l-2 border-[#d4c4a0]'
                   : 'hover:bg-[#333] hover:bg-opacity-50'
               }`}
             >
-              <div className="text-sm font-medium text-[#EEEEEE] truncate">
+              <div className="text-xs sm:text-sm font-medium text-[#EEEEEE] truncate">
                 {session.title}
               </div>
-              <div className="text-xs mt-1 text-[#888888]">
+              <div className="text-[10px] sm:text-xs mt-1 text-[#888888]">
                 {session.lastMessage.toLocaleDateString()}
               </div>
             </motion.button>
