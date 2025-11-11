@@ -55,8 +55,8 @@ SELECT
     u.email,
     u.email_confirmed_at,
     u.created_at,
-    u.user_metadata->>'plan_type' as plan_type,
-    u.user_metadata->>'subscription_status' as subscription_status,
+    u.raw_user_meta_data->>'plan_type' as plan_type,
+    u.raw_user_meta_data->>'subscription_status' as subscription_status,
     up.plan_type as db_plan_type,
     up.subscription_status as db_status
 FROM auth.users u

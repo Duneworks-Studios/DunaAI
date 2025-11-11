@@ -21,12 +21,12 @@ BEGIN
     -- Step 2: Update user metadata to premium lifetime
     UPDATE auth.users
     SET 
-        user_metadata = jsonb_build_object(
+        raw_user_meta_data = jsonb_build_object(
             'plan', 'pro',
             'plan_type', 'pro_lifetime',
             'subscription_status', 'active',
             'upgraded_at', NOW()::text
-        ) || COALESCE(user_metadata, '{}'::jsonb)
+        ) || COALESCE(raw_user_meta_data, '{}'::jsonb)
     WHERE id = user_uuid;
 
     RAISE NOTICE 'Updated user metadata';
@@ -60,9 +60,9 @@ END $$;
 -- Verify the upgrade
 SELECT 
     u.email,
-    u.user_metadata->>'plan' as plan,
-    u.user_metadata->>'plan_type' as plan_type,
-    u.user_metadata->>'subscription_status' as subscription_status,
+    u.raw_user_meta_data->>'plan' as plan,
+    u.raw_user_meta_data->>'plan_type' as plan_type,
+    u.raw_user_meta_data->>'subscription_status' as subscription_status,
     up.plan_type as db_plan_type,
     up.subscription_status as db_status
 FROM auth.users u

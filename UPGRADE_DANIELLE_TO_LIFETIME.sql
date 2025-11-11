@@ -22,14 +22,14 @@ BEGIN
     RAISE NOTICE '✅ Found user: %', user_uuid;
     RAISE NOTICE '📧 Email: %', target_email;
 
-    -- Update user_metadata in auth.users table
+    -- Update raw_user_meta_data in auth.users table
     UPDATE auth.users
-    SET user_metadata = jsonb_build_object(
+    SET raw_user_meta_data = jsonb_build_object(
         'plan', 'pro',
         'plan_type', 'pro_lifetime',
         'subscription_status', 'active',
         'upgraded_at', NOW()::text
-    ) || COALESCE(user_metadata, '{}'::jsonb) -- Merge with existing metadata
+    ) || COALESCE(raw_user_meta_data, '{}'::jsonb) -- Merge with existing metadata
     WHERE id = user_uuid;
 
     RAISE NOTICE '✅ Updated user metadata';
@@ -61,9 +61,9 @@ SELECT
     u.email,
     u.email_confirmed_at,
     u.created_at,
-    u.user_metadata->>'plan' as plan,
-    u.user_metadata->>'plan_type' as plan_type,
-    u.user_metadata->>'subscription_status' as subscription_status,
+    u.raw_user_meta_data->>'plan' as plan,
+    u.raw_user_meta_data->>'plan_type' as plan_type,
+    u.raw_user_meta_data->>'subscription_status' as subscription_status,
     up.plan_type as db_plan_type,
     up.subscription_status as db_status,
     up.updated_at as plan_updated_at
