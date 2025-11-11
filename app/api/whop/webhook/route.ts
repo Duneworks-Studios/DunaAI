@@ -94,11 +94,14 @@ export async function POST(request: NextRequest) {
       const user = users.users.find(u => u.email?.toLowerCase() === customerEmail.toLowerCase())
 
       if (!user) {
-        console.warn(`User not found for email: ${customerEmail}`)
-        return NextResponse.json(
-          { error: 'User not found', email: customerEmail },
-          { status: 404 }
-        )
+        console.warn(`User not found for email: ${customerEmail}. They may need to sign up first.`)
+        // Don't fail - return success so Whop doesn't retry
+        // The user can sync manually after signing up, or we can create a pending upgrade record
+        return NextResponse.json({ 
+          received: true,
+          warning: `User not found for email: ${customerEmail}. They need to sign up first, then premium will be synced.`,
+          email: customerEmail
+        })
       }
 
       // Determine plan type based on plan_id
@@ -198,7 +201,20 @@ export async function POST(request: NextRequest) {
         }
       }
 
+      // Final verification
+      const { data: verifyUser } = await supabase.auth.admin.getUserById(user.id)
+      const { data: verifyPlan } = await supabase
+        .from('user_plans')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle()
+
       console.log(`✅ User ${user.email} upgraded to ${planType} plan`)
+      console.log('Verification:', {
+        metadata: verifyUser?.user?.user_metadata?.plan_type,
+        database: verifyPlan?.plan_type,
+        bothUpdated: verifyUser?.user?.user_metadata?.plan_type === planType && verifyPlan?.plan_type === planType
+      })
     } else if (event.type === 'subscription.cancelled' || event.type === 'subscription.expired' || event.type === 'subscription.deactivated') {
       const customerEmail = event.data?.customer?.email || event.data?.customer_email || event.data?.email
 
@@ -233,7 +249,11 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({ received: true })
+    return NextResponse.json({ 
+      received: true,
+      message: 'Webhook processed successfully',
+      event_type: event.type
+    })
   } catch (error) {
     console.error('Webhook error:', error)
     return NextResponse.json(
