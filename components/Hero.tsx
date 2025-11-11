@@ -1,21 +1,8 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { useEffect, useState } from 'react'
 
 export default function Hero() {
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({
-        x: (e.clientX / window.innerWidth - 0.5) * 20,
-        y: (e.clientY / window.innerHeight - 0.5) * 20,
-      })
-    }
-    window.addEventListener('mousemove', handleMouseMove)
-    return () => window.removeEventListener('mousemove', handleMouseMove)
-  }, [])
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
@@ -54,28 +41,49 @@ export default function Hero() {
           }}
         />
         
-        {/* Floating particles */}
-        {[...Array(20)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-1 h-1 bg-dune-gold rounded-full opacity-40"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-            }}
-            animate={{
-              y: [0, -30, 0],
-              x: [0, Math.random() * 40 - 20, 0],
-              opacity: [0.2, 0.6, 0.2],
-            }}
-            transition={{
-              duration: 10 + Math.random() * 10,
-              repeat: Infinity,
-              ease: 'easeInOut',
-              delay: Math.random() * 5,
-            }}
-          />
-        ))}
+        {/* Flickering stars */}
+        {[...Array(30)].map((_, i) => {
+          const baseDelay = Math.random() * 2
+          const flickerSpeed = 0.5 + Math.random() * 1.5
+          const baseOpacity = 0.2 + Math.random() * 0.4
+          
+          return (
+            <motion.div
+              key={i}
+              className="absolute w-1 h-1 bg-dune-gold rounded-full"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                boxShadow: `0 0 ${2 + Math.random() * 4}px rgba(201, 169, 97, 0.8)`,
+              }}
+              animate={{
+                opacity: [
+                  baseOpacity * 0.3,
+                  baseOpacity,
+                  baseOpacity * 0.5,
+                  baseOpacity * 0.8,
+                  baseOpacity * 0.2,
+                  baseOpacity,
+                ],
+                scale: [
+                  0.8,
+                  1.2,
+                  0.9,
+                  1.1,
+                  0.85,
+                  1,
+                ],
+              }}
+              transition={{
+                duration: flickerSpeed,
+                repeat: Infinity,
+                ease: 'easeInOut',
+                delay: baseDelay,
+                times: [0, 0.2, 0.4, 0.6, 0.8, 1],
+              }}
+            />
+          )
+        })}
       </div>
 
       {/* Content */}
@@ -84,9 +92,6 @@ export default function Hero() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          style={{
-            transform: `translate(${mousePosition.x * 0.02}px, ${mousePosition.y * 0.02}px)`,
-          }}
         >
           <motion.h1
             className="font-display text-6xl md:text-8xl lg:text-9xl font-bold mb-6"
