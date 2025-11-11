@@ -63,25 +63,19 @@ export default function SignUpPage() {
     // User is automatically logged in (email confirmation disabled)
     if (data.user && data.session) {
       setLoading(false)
-      // Wait for session to be fully established
-      await new Promise(resolve => setTimeout(resolve, 500))
-      // Verify session exists before redirecting
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session) {
-        router.push('/chat')
-        // Force reload to ensure session is recognized
-        window.location.href = '/chat'
-      } else {
-        setError('Session not established. Please try logging in.')
-        setLoading(false)
-      }
-    } else {
-      // Fallback: redirect to login
+      // Session is established, redirect to chat
+      router.push('/chat')
+    } else if (data.user) {
+      // User created but no session (should have been handled above, but just in case)
       setLoading(false)
-      setError('Account created, but could not establish session. Please try logging in.')
+      setError('Account created, but session not established. Please try logging in.')
       setTimeout(() => {
         router.push('/auth/login')
       }, 2000)
+    } else {
+      // Fallback: something went wrong
+      setLoading(false)
+      setError('Failed to create account. Please try again.')
     }
   }
 

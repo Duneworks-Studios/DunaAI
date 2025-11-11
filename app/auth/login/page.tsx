@@ -31,12 +31,9 @@ export default function LoginPage() {
     }
 
     if (data.user && data.session) {
-      // Wait a moment for session to be established, then redirect
-      setTimeout(() => {
-        router.push('/chat')
-        // Force a page reload to ensure session is recognized
-        window.location.href = '/chat'
-      }, 100)
+      setLoading(false)
+      // Session is established, redirect to chat
+      router.push('/chat')
     } else {
       setError('Failed to create session. Please try again.')
       setLoading(false)
