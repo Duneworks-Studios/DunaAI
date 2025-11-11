@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
 
     // Update user_plans table
     try {
-      const { error: upsertError } = await supabaseAdmin
+      const { data: upsertData, error: upsertError } = await supabaseAdmin
         .from('user_plans')
         .upsert({
           user_id: user.id,
@@ -85,13 +85,28 @@ export async function POST(request: NextRequest) {
         }, {
           onConflict: 'user_id',
         })
+        .select()
 
       if (upsertError) {
-        console.warn('Error updating user_plans table:', upsertError)
-        // Don't fail if this errors, the metadata update is more important
+        console.error('❌ Error updating user_plans table:', upsertError)
+        // Don't fail if this errors, but log it
+        return NextResponse.json({
+          success: false,
+          error: `Metadata updated but user_plans table update failed: ${upsertError.message}`,
+          metadata_updated: true,
+          user_plans_updated: false,
+        }, { status: 500 })
+      } else {
+        console.log('✅ Updated user_plans table:', upsertData)
       }
     } catch (error) {
-      console.warn('user_plans table may not exist:', error)
+      console.error('❌ user_plans table error:', error)
+      return NextResponse.json({
+        success: false,
+        error: `Metadata updated but user_plans table error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        metadata_updated: true,
+        user_plans_updated: false,
+      }, { status: 500 })
     }
 
     return NextResponse.json({
