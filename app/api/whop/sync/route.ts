@@ -184,7 +184,7 @@ export async function POST(request: NextRequest) {
     // No need for direct SQL as the admin API handles this
 
     // Verify the update worked by checking both
-    const { data: verifyPlan, error: verifyError } = await supabaseAdmin
+    const { data: verifyPlanData, error: verifyError } = await supabaseAdmin
       .from('user_plans')
       .select('*')
       .eq('user_id', user.id)
@@ -194,7 +194,7 @@ export async function POST(request: NextRequest) {
       console.warn('⚠️ Could not verify user_plans update:', verifyError)
     }
 
-    if (!userPlansUpdated && !verifyPlan) {
+    if (!userPlansUpdated && !verifyPlanData) {
       return NextResponse.json({
         success: false,
         error: 'Failed to update user_plans table. Metadata was updated but database sync failed.',
@@ -212,7 +212,7 @@ export async function POST(request: NextRequest) {
 
     // Get final verification of both metadata and database
     const finalUser = await supabaseAdmin.auth.admin.getUserById(user.id)
-    const finalPlan = await supabaseAdmin
+    const { data: finalPlanData } = await supabaseAdmin
       .from('user_plans')
       .select('*')
       .eq('user_id', user.id)
@@ -223,7 +223,7 @@ export async function POST(request: NextRequest) {
       message: `User ${email} synced to ${planType} plan`,
       whop_subscription_found: !!whopSubscription,
       metadata_updated: true,
-      user_plans_updated: userPlansUpdated || !!finalPlan,
+      user_plans_updated: userPlansUpdated || !!finalPlanData,
       user: {
         id: finalUser.data?.user?.id || updatedUser.user.id,
         email: finalUser.data?.user?.email || updatedUser.user.email,
@@ -236,9 +236,9 @@ export async function POST(request: NextRequest) {
           plan_type: finalUser.data?.user?.user_metadata?.plan_type,
           subscription_status: finalUser.data?.user?.user_metadata?.subscription_status,
         },
-        user_plans_table: finalPlan ? {
-          plan_type: finalPlan.plan_type,
-          subscription_status: finalPlan.subscription_status,
+        user_plans_table: finalPlanData ? {
+          plan_type: finalPlanData.plan_type,
+          subscription_status: finalPlanData.subscription_status,
         } : null,
       },
       note: 'User must log out and log back in for changes to take effect in the app.',
