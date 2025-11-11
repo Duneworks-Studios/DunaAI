@@ -131,13 +131,10 @@ export default function Hero() {
               Get Started Free
             </motion.a>
             
-            <motion.button
-              onClick={() => {
-                const checkoutUrl = process.env.NEXT_PUBLIC_WHOP_CHECKOUT_MONTHLY || 'https://whop.com/dunabrowser/checkout'
-                if (checkoutUrl && checkoutUrl !== '#') {
-                  window.open(checkoutUrl, '_blank', 'noopener,noreferrer')
-                }
-              }}
+            <motion.a
+              href="https://whop.com/checkout/plan_vhBLiFWs6AJNx?d2c=true"
+              target="_blank"
+              rel="noopener noreferrer"
               className="px-8 py-4 premium-border text-dune-gold font-semibold rounded-lg glow-gold-hover transition-all duration-300 hover:scale-105 relative overflow-hidden group cursor-pointer"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -149,7 +146,7 @@ export default function Hero() {
                 whileHover={{ x: '100%' }}
                 transition={{ duration: 0.5 }}
               />
-            </motion.button>
+            </motion.a>
           </motion.div>
         </motion.div>
       </div>

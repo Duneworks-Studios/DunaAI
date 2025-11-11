@@ -2,7 +2,6 @@
 
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { useState } from 'react'
 
 const plans = [
   {
@@ -34,29 +33,14 @@ const plans = [
       'Early access to updates',
     ],
     cta: 'Upgrade to Pro',
-    href: process.env.NEXT_PUBLIC_WHOP_CHECKOUT_MONTHLY,
-    lifetimeHref: process.env.NEXT_PUBLIC_WHOP_CHECKOUT_LIFETIME,
+    monthlyUrl: 'https://whop.com/checkout/plan_vhBLiFWs6AJNx?d2c=true',
+    lifetimeUrl: 'https://whop.com/checkout/plan_nAv9o4mMRgV37?d2c=true',
     highlight: true,
     badge: 'Recommended',
   },
 ]
 
 export default function Pricing() {
-  const [isRedirecting, setIsRedirecting] = useState(false)
-
-  const handleCheckoutClick = (url: string | undefined, e?: React.MouseEvent) => {
-    e?.preventDefault()
-    const checkoutUrl = url || process.env.NEXT_PUBLIC_WHOP_CHECKOUT_MONTHLY || 'https://whop.com/dunabrowser/checkout'
-    
-    if (checkoutUrl && checkoutUrl !== '#' && checkoutUrl !== '#pricing') {
-      setIsRedirecting(true)
-      // Small delay for smooth transition effect
-      setTimeout(() => {
-        window.open(checkoutUrl, '_blank', 'noopener,noreferrer')
-        setIsRedirecting(false)
-      }, 150)
-    }
-  }
 
   return (
     <section id="pricing" className="relative py-32 px-6 overflow-hidden">
@@ -134,24 +118,20 @@ export default function Pricing() {
 
               <div className="space-y-3">
                 {plan.highlight ? (
-                  <button
-                    onClick={(e) => handleCheckoutClick(plan.href, e)}
-                    disabled={isRedirecting}
+                  <motion.a
+                    href={plan.monthlyUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className={`block w-full text-center py-4 rounded-lg font-semibold transition-all duration-300 cursor-pointer relative overflow-hidden ${
                       plan.highlight
                         ? 'bg-dune-gold text-dune-black hover:bg-dune-gold-light glow-gold-hover'
                         : 'premium-border text-dune-gold hover:border-dune-gold/50'
-                    } ${isRedirecting ? 'opacity-75' : ''}`}
+                    }`}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                   >
-                    {isRedirecting ? (
-                      <span className="flex items-center justify-center gap-2">
-                        <span className="w-4 h-4 border-2 border-dune-black border-t-transparent rounded-full animate-spin"></span>
-                        Redirecting...
-                      </span>
-                    ) : (
-                      plan.cta
-                    )}
-                  </button>
+                    {plan.cta}
+                  </motion.a>
                 ) : (
                   <Link
                     href={plan.href}
@@ -164,14 +144,17 @@ export default function Pricing() {
                     {plan.cta}
                   </Link>
                 )}
-                {plan.lifetimeHref && (
-                  <button
-                    onClick={(e) => handleCheckoutClick(plan.lifetimeHref, e)}
-                    disabled={isRedirecting}
-                    className="block w-full text-center py-4 premium-border text-dune-sand rounded-lg font-semibold hover:border-dune-gold/50 transition-all duration-300 cursor-pointer disabled:opacity-75"
+                {plan.lifetimeUrl && (
+                  <motion.a
+                    href={plan.lifetimeUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block w-full text-center py-4 premium-border text-dune-sand rounded-lg font-semibold hover:border-dune-gold/50 transition-all duration-300 cursor-pointer"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                   >
-                    {isRedirecting ? 'Redirecting...' : 'Get Lifetime Access'}
-                  </button>
+                    Get Lifetime Access
+                  </motion.a>
                 )}
               </div>
             </motion.div>
