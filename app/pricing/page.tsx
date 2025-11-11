@@ -33,8 +33,8 @@ const plans = [
       'Early access to updates',
     ],
     cta: 'Upgrade to Pro',
-    monthlyUrl: 'https://whop.com/checkout/plan_vhBLiFWs6AJNx?d2c=true',
-    lifetimeUrl: 'https://whop.com/checkout/plan_nAv9o4mMRgV37?d2c=true',
+    monthlyUrl: process.env.NEXT_PUBLIC_WHOP_CHECKOUT_MONTHLY || 'https://whop.com/checkout/plan_vhBLiFWs6AJNx?d2c=true',
+    lifetimeUrl: process.env.NEXT_PUBLIC_WHOP_CHECKOUT_LIFETIME || 'https://whop.com/checkout/plan_nAv9o4mMRgV37?d2c=true',
     highlight: true,
     badge: 'Most Popular',
   },
@@ -140,7 +140,7 @@ export default function PricingPage() {
                     </>
                   ) : (
                     <Link
-                      href={plan.href}
+                      href={plan.href || '/auth/signup'}
                       className="block w-full text-center py-3 border border-[#444] text-[#BBBBBB] rounded-lg font-semibold hover:border-[#888] hover:text-[#EEEEEE] transition-all duration-300"
                     >
                       {plan.cta}
