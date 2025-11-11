@@ -1,13 +1,10 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { useTheme } from '@/contexts/ThemeContext'
 
 export default function Integration() {
-  const { theme } = useTheme()
-
   return (
-    <section className="relative py-32 px-6">
+    <section className="relative py-24 sm:py-32 px-6">
       <div className="max-w-4xl mx-auto text-center">
         <motion.div
           initial={{ opacity: 0, y: 50 }}
@@ -16,7 +13,7 @@ export default function Integration() {
           transition={{ duration: 0.8 }}
         >
           <motion.h2
-            className="font-display text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-gradient"
+            className="font-display text-4xl sm:text-5xl md:text-6xl font-bold mb-6 text-gradient"
             initial={{ opacity: 0, scale: 0.9 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
@@ -26,9 +23,7 @@ export default function Integration() {
           </motion.h2>
           
           <motion.p
-            className={`text-lg md:text-xl leading-relaxed mb-8 max-w-2xl mx-auto ${
-              theme === 'gray' ? 'text-gray-light' : 'text-dune-sand-light'
-            }`}
+            className="text-lg sm:text-xl leading-relaxed mb-8 max-w-2xl mx-auto text-[var(--text-primary)]"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -45,18 +40,30 @@ export default function Integration() {
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.6 }}
           >
-            <h3 className={`text-2xl font-semibold mb-3 font-display ${
-              theme === 'gray' ? 'text-gray-white-gray' : 'text-dune-gold'
-            }`}>
-              Secure Payment Processing
+            <h3 className="text-2xl font-semibold mb-3 font-display text-[var(--text-primary)]">
+              Why Whop?
             </h3>
-            <p className={theme === 'gray' ? 'text-gray-light' : 'text-dune-sand-light'}>
-              All transactions are processed securely through Whop's encrypted payment system. 
-              Your financial information is never stored on our servers.
-            </p>
-            <p className={`text-sm mt-4 italic ${
-              theme === 'gray' ? 'text-gray-mid' : 'text-dune-sand-dark'
-            }`}>
+            <ul className="text-left space-y-3 text-[var(--text-secondary)]">
+              <li className="flex items-start">
+                <svg className="w-5 h-5 mr-3 text-[var(--accent-primary)] flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <span>All transactions are processed securely through Whop's encrypted payment system.</span>
+              </li>
+              <li className="flex items-start">
+                <svg className="w-5 h-5 mr-3 text-[var(--accent-primary)] flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <span>Your payment information is never stored on our servers.</span>
+              </li>
+              <li className="flex items-start">
+                <svg className="w-5 h-5 mr-3 text-[var(--accent-primary)] flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <span>Instant access to premium features after purchase.</span>
+              </li>
+            </ul>
+            <p className="mt-6 text-sm text-[var(--text-tertiary)] italic">
               Note: Whop integration tokens are configured in the environment variables.
             </p>
           </motion.div>

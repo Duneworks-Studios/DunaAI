@@ -46,28 +46,26 @@ export default function ChatWindow({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    console.log('ChatWindow handleSubmit called, input:', input.trim(), 'loading:', loading)
     if (input.trim() && !loading) {
-      console.log('Calling onSend()')
       onSend()
-    } else {
-      console.log('Not sending - input empty or loading')
     }
   }
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#333] min-w-0 overflow-hidden">
+    <div className="flex-1 flex flex-col h-full bg-[var(--bg-primary)] min-w-0 overflow-hidden">
       {/* Header */}
-      <div className="h-14 sm:h-16 border-b border-[#444] px-3 sm:px-6 flex items-center flex-shrink-0">
-        <h1 className="text-base sm:text-lg font-semibold text-[#EEEEEE] truncate flex-1 min-w-0">
+      <div className="h-16 border-b border-[var(--border-primary)] px-4 sm:px-6 flex items-center flex-shrink-0 glass">
+        <h1 className="text-lg font-semibold text-[var(--text-primary)] truncate flex-1 min-w-0">
           {activeSessionTitle || 'New Chat'}
         </h1>
         {userPlan && (
-          <div className="ml-2 sm:ml-auto text-xs sm:text-sm text-[#888888] flex-shrink-0 hidden sm:block">
+          <div className="ml-4 text-sm text-[var(--text-secondary)] flex-shrink-0 hidden sm:flex items-center gap-2">
             {userPlan.isUnlimited ? (
-              <span className="text-[#d4c4a0]">Pro • Unlimited</span>
+              <span className="px-3 py-1 rounded-full bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)] text-white text-xs font-semibold">
+                Pro • Unlimited
+              </span>
             ) : (
-              <span>
+              <span className="px-3 py-1 rounded-full bg-[var(--bg-elevated)] border border-[var(--border-primary)] text-[var(--text-primary)] text-xs">
                 {userPlan.messagesUsed}/{userPlan.messagesLimit} today
               </span>
             )}
@@ -82,19 +80,19 @@ export default function ChatWindow({
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="border-b border-[#d4c4a0] border-opacity-30 bg-[#d4c4a0] bg-opacity-5 px-3 sm:px-6 py-2 sm:py-3 flex-shrink-0"
+            className="border-b border-[var(--accent-primary)]/30 bg-[var(--accent-primary)]/5 px-4 sm:px-6 py-3 flex-shrink-0"
           >
             <div className="max-w-4xl mx-auto w-full">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3">
-                <p className="text-xs sm:text-sm text-[#BBBBBB] flex-1">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <p className="text-sm text-[var(--text-primary)] flex-1">
                   Daily limit reached. Upgrade to Duna Pro for unlimited access.
                 </p>
-                <div className="flex gap-2 sm:gap-3 w-full sm:w-auto">
+                <div className="flex gap-2 w-full sm:w-auto">
                   <a
                     href={process.env.NEXT_PUBLIC_WHOP_CHECKOUT_MONTHLY || '#'}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex-1 sm:flex-none px-3 sm:px-4 py-1.5 bg-[#d4c4a0] bg-opacity-20 text-[#d4c4a0] rounded text-xs sm:text-sm font-medium hover:bg-opacity-30 transition-all text-center"
+                    className="flex-1 sm:flex-none px-4 py-2 btn-primary text-sm text-center"
                   >
                     Monthly
                   </a>
@@ -102,13 +100,13 @@ export default function ChatWindow({
                     href={process.env.NEXT_PUBLIC_WHOP_CHECKOUT_LIFETIME || '#'}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex-1 sm:flex-none px-3 sm:px-4 py-1.5 border border-[#d4c4a0] border-opacity-30 text-[#d4c4a0] rounded text-xs sm:text-sm font-medium hover:border-opacity-50 transition-all text-center"
+                    className="flex-1 sm:flex-none px-4 py-2 btn-secondary text-sm text-center"
                   >
                     Lifetime
                   </a>
                   <button
                     onClick={onDismissUpgrade}
-                    className="px-2 sm:px-4 py-1.5 text-[#888888] hover:text-[#BBBBBB] transition-colors flex-shrink-0"
+                    className="px-4 py-2 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors flex-shrink-0"
                     aria-label="Dismiss"
                   >
                     ×
@@ -121,18 +119,18 @@ export default function ChatWindow({
       </AnimatePresence>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8 min-h-0">
-        <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
+      <div className="flex-1 overflow-y-auto px-4 sm:px-6 md:px-8 py-6 md:py-8 min-h-0">
+        <div className="max-w-4xl mx-auto space-y-6">
           {messages.length === 0 && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="text-center py-12 sm:py-20"
+              className="text-center py-20"
             >
-              <h2 className="text-xl sm:text-2xl font-semibold mb-2 text-[#EEEEEE]">
+              <h2 className="text-2xl font-semibold mb-2 text-[var(--text-primary)]">
                 Welcome to Duna
               </h2>
-              <p className="text-sm sm:text-base text-[#888888] px-4">
+              <p className="text-base text-[var(--text-secondary)]">
                 Start a conversation with your AI assistant
               </p>
             </motion.div>
@@ -148,14 +146,16 @@ export default function ChatWindow({
                 className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`max-w-[85%] sm:max-w-[75%] md:max-w-[70%] rounded-lg px-3 sm:px-4 py-2 sm:py-3 ${
+                  className={`max-w-[85%] sm:max-w-[75%] md:max-w-[70%] rounded-xl px-4 py-3 premium-card ${
                     message.role === 'user'
-                      ? 'bg-[#444] text-[#EEEEEE]'
-                      : 'bg-[#2a2a2a] border border-[#d4c4a0] border-opacity-20 text-[#EEEEEE]'
+                      ? 'bg-[var(--accent-primary)]/10 border border-[var(--accent-primary)]/20'
+                      : 'bg-[var(--bg-elevated)] border border-[var(--border-primary)]'
                   }`}
                 >
-                  <p className="whitespace-pre-wrap leading-relaxed text-xs sm:text-sm break-words">{message.content}</p>
-                  <p className="text-[10px] sm:text-xs mt-1.5 sm:mt-2 text-[#888888]">
+                  <p className="whitespace-pre-wrap leading-relaxed text-sm break-words text-[var(--text-primary)]">
+                    {message.content}
+                  </p>
+                  <p className="text-xs mt-2 text-[var(--text-tertiary)]">
                     {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </p>
                 </div>
@@ -169,10 +169,10 @@ export default function ChatWindow({
               animate={{ opacity: 1 }}
               className="flex justify-start"
             >
-              <div className="bg-[#2a2a2a] border border-[#333] rounded-lg px-4 py-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-[#888] border-t-[#d4c4a0] rounded-full animate-spin"></div>
-                  <span className="text-sm text-[#888888]">Duna is thinking...</span>
+              <div className="premium-card px-4 py-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-5 h-5 border-2 border-[var(--border-secondary)] border-t-[var(--accent-primary)] rounded-full animate-spin"></div>
+                  <span className="text-sm text-[var(--text-secondary)]">Duna is thinking...</span>
                 </div>
               </div>
             </motion.div>
@@ -183,15 +183,15 @@ export default function ChatWindow({
       </div>
 
       {/* Input */}
-      <div className="border-t border-[#444] px-3 sm:px-4 md:px-6 py-3 sm:py-4 bg-[#2a2a2a] flex-shrink-0">
+      <div className="border-t border-[var(--border-primary)] px-4 md:px-6 py-4 glass flex-shrink-0">
         <form onSubmit={handleSubmit} className="max-w-4xl mx-auto">
-          <div className="flex gap-2 sm:gap-3 md:gap-4">
+          <div className="flex gap-3">
             <input
               type="text"
               value={input}
               onChange={(e) => onInputChange(e.target.value)}
               placeholder="Type your message..."
-              className="flex-1 px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 bg-[#333] border border-[#444] rounded-lg focus:outline-none focus:border-[#d4c4a0] focus:border-opacity-50 transition-colors text-[#EEEEEE] placeholder:text-[#888888] text-xs sm:text-sm"
+              className="flex-1 px-4 py-3 bg-[var(--bg-elevated)] border border-[var(--border-primary)] rounded-xl focus:outline-none focus:border-[var(--accent-primary)] focus:ring-2 focus:ring-[var(--accent-primary)]/20 transition-all text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] text-sm"
               disabled={loading}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
@@ -203,13 +203,18 @@ export default function ChatWindow({
             <button
               type="submit"
               disabled={loading || !input.trim()}
-              className="px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 md:py-3 bg-[#d4c4a0] bg-opacity-20 text-[#d4c4a0] rounded-lg font-medium hover:bg-opacity-30 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm flex-shrink-0"
+              className="px-6 py-3 btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
             >
-              Send
+              <span className="flex items-center gap-2">
+                <span>Send</span>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                </svg>
+              </span>
             </button>
           </div>
           {userPlan && !userPlan.isUnlimited && (
-            <p className="text-[10px] sm:text-xs text-[#888888] text-center mt-2">
+            <p className="text-xs text-[var(--text-tertiary)] text-center mt-2">
               {userPlan.messagesUsed} / {userPlan.messagesLimit} messages today
             </p>
           )}
@@ -218,4 +223,3 @@ export default function ChatWindow({
     </div>
   )
 }
-

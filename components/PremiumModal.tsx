@@ -21,13 +21,13 @@ export default function PremiumModal({
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         {/* Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="absolute inset-0 bg-black bg-opacity-70"
+          className="absolute inset-0 bg-black/70 backdrop-blur-sm"
           onClick={onClose}
         />
 
@@ -36,46 +36,48 @@ export default function PremiumModal({
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
-          className="relative bg-[#2a2a2a] border border-[#444] rounded-lg p-4 sm:p-6 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto"
+          transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+          className="relative premium-card glass-strong max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto"
           onClick={(e) => e.stopPropagation()}
         >
-          <h2 className="text-lg sm:text-xl font-semibold text-[#EEEEEE] mb-2 sm:mb-3">{title}</h2>
-          <p className="text-[#BBBBBB] mb-4 sm:mb-6 text-xs sm:text-sm leading-relaxed">{message}</p>
+          <div className="p-6">
+            <h2 className="text-xl font-bold text-[var(--text-primary)] mb-3">{title}</h2>
+            <p className="text-[var(--text-secondary)] mb-6 text-sm leading-relaxed">{message}</p>
 
-          {showUpgradeButtons && (
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-              <motion.a
-                href={process.env.NEXT_PUBLIC_WHOP_CHECKOUT_MONTHLY || '#'}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 px-3 sm:px-4 py-2 sm:py-2.5 bg-[#d4c4a0] bg-opacity-20 text-[#d4c4a0] rounded-lg font-medium hover:bg-opacity-30 transition-all text-center text-xs sm:text-sm"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                Upgrade Monthly
-              </motion.a>
-              <motion.a
-                href={process.env.NEXT_PUBLIC_WHOP_CHECKOUT_LIFETIME || '#'}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 px-3 sm:px-4 py-2 sm:py-2.5 border border-[#d4c4a0] border-opacity-30 text-[#d4c4a0] rounded-lg font-medium hover:border-opacity-50 transition-all text-center text-xs sm:text-sm"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                Lifetime Access
-              </motion.a>
-            </div>
-          )}
+            {showUpgradeButtons && (
+              <div className="flex flex-col sm:flex-row gap-3">
+                <motion.a
+                  href={process.env.NEXT_PUBLIC_WHOP_CHECKOUT_MONTHLY || '#'}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 btn-primary text-center text-sm"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  Upgrade Monthly
+                </motion.a>
+                <motion.a
+                  href={process.env.NEXT_PUBLIC_WHOP_CHECKOUT_LIFETIME || '#'}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 btn-secondary text-center text-sm"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  Get Lifetime
+                </motion.a>
+              </div>
+            )}
 
-          <button
-            onClick={onClose}
-            className="mt-3 sm:mt-4 w-full px-4 py-2 text-[#888888] hover:text-[#BBBBBB] transition-colors text-xs sm:text-sm"
-          >
-            Later
-          </button>
+            <button
+              onClick={onClose}
+              className="mt-4 w-full px-4 py-2 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors text-sm"
+            >
+              Close
+            </button>
+          </div>
         </motion.div>
       </div>
     </AnimatePresence>
   )
 }
-

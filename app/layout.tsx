@@ -39,7 +39,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className="scroll-smooth" data-theme="gray">
+    <html lang="en" className="scroll-smooth">
       <body className={`${manrope.variable} ${inter.variable} font-sans antialiased`}>
         <ThemeProvider>
           <AgentProvider>

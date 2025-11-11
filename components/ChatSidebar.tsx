@@ -35,7 +35,7 @@ export default function ChatSidebar({
 
   const handleAgentClick = (agent: 'chat' | 'coding') => {
     if (agent === 'coding' && !isPro) {
-      onAgentSelect('coding') // This will trigger the premium modal
+      onAgentSelect('coding')
       return
     }
     onAgentSelect(agent)
@@ -43,91 +43,101 @@ export default function ChatSidebar({
   }
 
   return (
-    <aside className="w-full h-full bg-[#2a2a2a] border-r border-[#333] flex flex-col overflow-hidden">
+    <aside className="w-full h-full bg-[var(--bg-secondary)] border-r border-[var(--border-primary)] flex flex-col overflow-hidden">
       {/* AI Agents Section */}
-      <div className="p-3 sm:p-4 border-b border-[#333] flex-shrink-0">
-        <div className="text-xs uppercase tracking-wider text-[#888888] mb-3 font-medium">
+      <div className="p-4 border-b border-[var(--border-primary)] flex-shrink-0">
+        <div className="text-xs uppercase tracking-wider text-[var(--text-tertiary)] mb-3 font-semibold">
           AI Agents
         </div>
         <div className="space-y-2">
           <button
             onClick={() => handleAgentClick('chat')}
-            className={`w-full px-3 py-2 rounded-xl text-left transition-all duration-200 text-sm ${
+            className={`w-full px-4 py-3 rounded-xl text-left transition-all duration-200 text-sm premium-card ${
               currentAgent === 'chat'
-                ? 'bg-[#333] border border-[#d4c4a0] border-opacity-40 text-[#d4c4a0]'
-                : 'hover:bg-[#222222] text-[#BBBBBB]'
+                ? 'bg-[var(--accent-primary)]/10 border border-[var(--accent-primary)]/30 text-[var(--accent-primary)]'
+                : 'hover:bg-[var(--bg-elevated)] text-[var(--text-primary)]'
             }`}
           >
-            <div className="font-medium">Chat Agent</div>
-            <div className="text-xs text-[#888888] mt-0.5">General assistant</div>
+            <div className="font-semibold">Chat Agent</div>
+            <div className="text-xs text-[var(--text-tertiary)] mt-1">General assistant</div>
           </button>
           <button
             onClick={() => handleAgentClick('coding')}
-            className={`w-full px-3 py-2 rounded-xl text-left transition-all duration-200 text-sm relative ${
+            className={`w-full px-4 py-3 rounded-xl text-left transition-all duration-200 text-sm premium-card relative ${
               currentAgent === 'coding'
-                ? 'bg-[#333] border border-[#d4c4a0] border-opacity-40 text-[#d4c4a0]'
-                : 'hover:bg-[#222222] text-[#BBBBBB]'
-            } ${!isPro ? 'opacity-60' : ''}`}
+                ? 'bg-[var(--accent-primary)]/10 border border-[var(--accent-primary)]/30 text-[var(--accent-primary)]'
+                : 'hover:bg-[var(--bg-elevated)] text-[var(--text-primary)]'
+            } ${!isPro ? 'opacity-70' : ''}`}
           >
-            <div className="font-medium flex items-center justify-between">
+            <div className="font-semibold flex items-center justify-between">
               <span>Coding Agent</span>
               {!isPro && (
-                <span className="text-xs px-1.5 py-0.5 bg-[#d4c4a0] bg-opacity-10 text-[#d4c4a0] rounded text-[10px]">
+                <span className="text-xs px-2 py-1 bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)] text-white rounded-full font-semibold">
                   Pro
                 </span>
               )}
             </div>
-            <div className="text-xs text-[#888888] mt-0.5">Code-focused assistant</div>
+            <div className="text-xs text-[var(--text-tertiary)] mt-1">Code-focused assistant</div>
           </button>
         </div>
       </div>
 
       {/* New Chat Button */}
-      <div className="p-3 sm:p-4 border-b border-[#333] flex-shrink-0">
+      <div className="p-4 border-b border-[var(--border-primary)] flex-shrink-0">
         <button
           onClick={() => {
             onCreateNewChat()
             onClose?.()
           }}
-          className="w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-[#d4c4a0] bg-opacity-10 text-[#d4c4a0] rounded-lg font-medium hover:bg-opacity-20 transition-all duration-200 text-xs sm:text-sm"
+          className="w-full btn-primary text-sm"
         >
-          New Chat
+          <span className="flex items-center justify-center gap-2">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            New Chat
+          </span>
         </button>
       </div>
 
       {/* Chat History */}
-      <div className="flex-1 overflow-y-auto p-2 min-h-0">
-        <div className="text-xs uppercase tracking-wider text-[#888888] mb-2 px-2 font-medium">
+      <div className="flex-1 overflow-y-auto p-3 min-h-0">
+        <div className="text-xs uppercase tracking-wider text-[var(--text-tertiary)] mb-3 px-2 font-semibold">
           Conversations
         </div>
         <AnimatePresence>
-          {sessions.map((session) => (
-            <motion.button
-              key={session.id}
-              onClick={() => {
-                onSelectSession(session.id)
-                onClose?.()
-              }}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className={`w-full text-left px-2 sm:px-3 py-2 sm:py-2.5 rounded-lg mb-1 transition-all duration-200 ${
-                activeSessionId === session.id
-                  ? 'bg-[#333] border-l-2 border-[#d4c4a0]'
-                  : 'hover:bg-[#333] hover:bg-opacity-50'
-              }`}
-            >
-              <div className="text-xs sm:text-sm font-medium text-[#EEEEEE] truncate">
-                {session.title}
-              </div>
-              <div className="text-[10px] sm:text-xs mt-1 text-[#888888]">
-                {session.lastMessage.toLocaleDateString()}
-              </div>
-            </motion.button>
-          ))}
+          {sessions.length === 0 ? (
+            <div className="text-center py-8 text-[var(--text-tertiary)] text-sm">
+              No conversations yet
+            </div>
+          ) : (
+            sessions.map((session) => (
+              <motion.button
+                key={session.id}
+                onClick={() => {
+                  onSelectSession(session.id)
+                  onClose?.()
+                }}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className={`w-full text-left px-3 py-2.5 rounded-lg mb-2 transition-all duration-200 ${
+                  activeSessionId === session.id
+                    ? 'bg-[var(--accent-primary)]/10 border-l-2 border-[var(--accent-primary)] text-[var(--accent-primary)]'
+                    : 'hover:bg-[var(--bg-elevated)] text-[var(--text-primary)]'
+                }`}
+              >
+                <div className="text-sm font-medium truncate">
+                  {session.title}
+                </div>
+                <div className="text-xs mt-1 text-[var(--text-tertiary)]">
+                  {session.lastMessage.toLocaleDateString()}
+                </div>
+              </motion.button>
+            ))
+          )}
         </AnimatePresence>
       </div>
     </aside>
   )
 }
-
