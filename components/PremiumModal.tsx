@@ -36,19 +36,19 @@ export default function PremiumModal({
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
-          className="relative bg-[#2a2a2a] border border-[#444] rounded-lg p-6 max-w-md w-full mx-4"
+          className="relative bg-[#2a2a2a] border border-[#444] rounded-lg p-4 sm:p-6 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto"
           onClick={(e) => e.stopPropagation()}
         >
-          <h2 className="text-xl font-semibold text-[#EEEEEE] mb-3">{title}</h2>
-          <p className="text-[#BBBBBB] mb-6 text-sm leading-relaxed">{message}</p>
+          <h2 className="text-lg sm:text-xl font-semibold text-[#EEEEEE] mb-2 sm:mb-3">{title}</h2>
+          <p className="text-[#BBBBBB] mb-4 sm:mb-6 text-xs sm:text-sm leading-relaxed">{message}</p>
 
           {showUpgradeButtons && (
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
               <motion.a
                 href={process.env.NEXT_PUBLIC_WHOP_CHECKOUT_MONTHLY || '#'}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex-1 px-4 py-2.5 bg-[#d4c4a0] bg-opacity-20 text-[#d4c4a0] rounded-lg font-medium hover:bg-opacity-30 transition-all text-center text-sm"
+                className="flex-1 px-3 sm:px-4 py-2 sm:py-2.5 bg-[#d4c4a0] bg-opacity-20 text-[#d4c4a0] rounded-lg font-medium hover:bg-opacity-30 transition-all text-center text-xs sm:text-sm"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
@@ -58,7 +58,7 @@ export default function PremiumModal({
                 href={process.env.NEXT_PUBLIC_WHOP_CHECKOUT_LIFETIME || '#'}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex-1 px-4 py-2.5 border border-[#d4c4a0] border-opacity-30 text-[#d4c4a0] rounded-lg font-medium hover:border-opacity-50 transition-all text-center text-sm"
+                className="flex-1 px-3 sm:px-4 py-2 sm:py-2.5 border border-[#d4c4a0] border-opacity-30 text-[#d4c4a0] rounded-lg font-medium hover:border-opacity-50 transition-all text-center text-xs sm:text-sm"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
@@ -69,7 +69,7 @@ export default function PremiumModal({
 
           <button
             onClick={onClose}
-            className="mt-4 w-full px-4 py-2 text-[#888888] hover:text-[#BBBBBB] transition-colors text-sm"
+            className="mt-3 sm:mt-4 w-full px-4 py-2 text-[#888888] hover:text-[#BBBBBB] transition-colors text-xs sm:text-sm"
           >
             Later
           </button>
