@@ -41,10 +41,102 @@ export default function Hero() {
           }}
         />
         
-        {/* Flickering stars */}
+        {/* Planets in background */}
+        {/* Mars */}
+        <motion.div
+          className="absolute rounded-full"
+          style={{
+            width: '120px',
+            height: '120px',
+            left: '15%',
+            top: '20%',
+            background: 'radial-gradient(circle at 30% 30%, rgba(193, 68, 14, 0.8), rgba(139, 69, 19, 0.6), rgba(101, 50, 14, 0.4))',
+            boxShadow: '0 0 40px rgba(193, 68, 14, 0.3), inset -20px -20px 40px rgba(0, 0, 0, 0.3)',
+          }}
+          animate={{
+            y: [0, -15, 0],
+            opacity: [0.4, 0.6, 0.4],
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          }}
+        />
+        
+        {/* Distant Planet 1 */}
+        <motion.div
+          className="absolute rounded-full"
+          style={{
+            width: '80px',
+            height: '80px',
+            right: '20%',
+            top: '60%',
+            background: 'radial-gradient(circle at 40% 40%, rgba(139, 111, 71, 0.6), rgba(107, 86, 53, 0.4))',
+            boxShadow: '0 0 30px rgba(139, 111, 71, 0.2)',
+          }}
+          animate={{
+            y: [0, -10, 0],
+            opacity: [0.3, 0.5, 0.3],
+          }}
+          transition={{
+            duration: 12,
+            repeat: Infinity,
+            ease: 'easeInOut',
+            delay: 1,
+          }}
+        />
+        
+        {/* Distant Planet 2 */}
+        <motion.div
+          className="absolute rounded-full"
+          style={{
+            width: '60px',
+            height: '60px',
+            left: '70%',
+            top: '15%',
+            background: 'radial-gradient(circle at 35% 35%, rgba(201, 169, 97, 0.5), rgba(139, 111, 71, 0.3))',
+            boxShadow: '0 0 25px rgba(201, 169, 97, 0.2)',
+          }}
+          animate={{
+            y: [0, -8, 0],
+            opacity: [0.25, 0.4, 0.25],
+          }}
+          transition={{
+            duration: 10,
+            repeat: Infinity,
+            ease: 'easeInOut',
+            delay: 2,
+          }}
+        />
+        
+        {/* Small Planet 3 */}
+        <motion.div
+          className="absolute rounded-full"
+          style={{
+            width: '45px',
+            height: '45px',
+            right: '10%',
+            top: '80%',
+            background: 'radial-gradient(circle at 30% 30%, rgba(212, 165, 116, 0.5), rgba(139, 111, 71, 0.3))',
+            boxShadow: '0 0 20px rgba(212, 165, 116, 0.2)',
+          }}
+          animate={{
+            y: [0, -5, 0],
+            opacity: [0.2, 0.35, 0.2],
+          }}
+          transition={{
+            duration: 14,
+            repeat: Infinity,
+            ease: 'easeInOut',
+            delay: 0.5,
+          }}
+        />
+
+        {/* Slowly flickering stars */}
         {[...Array(30)].map((_, i) => {
-          const baseDelay = Math.random() * 2
-          const flickerSpeed = 0.5 + Math.random() * 1.5
+          const baseDelay = Math.random() * 3
+          const flickerSpeed = 3 + Math.random() * 4 // Slower: 3-7 seconds instead of 0.5-2
           const baseOpacity = 0.2 + Math.random() * 0.4
           
           return (
@@ -58,20 +150,22 @@ export default function Hero() {
               }}
               animate={{
                 opacity: [
-                  baseOpacity * 0.3,
-                  baseOpacity,
-                  baseOpacity * 0.5,
-                  baseOpacity * 0.8,
                   baseOpacity * 0.2,
-                  baseOpacity,
+                  baseOpacity * 0.9,
+                  baseOpacity * 0.4,
+                  baseOpacity * 0.8,
+                  baseOpacity * 0.3,
+                  baseOpacity * 0.7,
+                  baseOpacity * 0.2,
                 ],
                 scale: [
-                  0.8,
-                  1.2,
-                  0.9,
+                  0.7,
                   1.1,
                   0.85,
+                  1.05,
+                  0.8,
                   1,
+                  0.75,
                 ],
               }}
               transition={{
@@ -79,7 +173,7 @@ export default function Hero() {
                 repeat: Infinity,
                 ease: 'easeInOut',
                 delay: baseDelay,
-                times: [0, 0.2, 0.4, 0.6, 0.8, 1],
+                times: [0, 0.15, 0.3, 0.45, 0.6, 0.75, 1],
               }}
             />
           )
