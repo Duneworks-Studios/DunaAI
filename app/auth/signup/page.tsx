@@ -55,10 +55,15 @@ export default function SignUpPage() {
     setLoading(true)
     setError(null)
 
+    // Get the correct redirect URL (use environment variable in production, localhost in dev)
+    const redirectUrl = process.env.NEXT_PUBLIC_SITE_URL || 
+                       process.env.NEXTAUTH_URL || 
+                       window.location.origin
+
     const { error: signUpError } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${redirectUrl}/auth/callback`,
       },
     })
 
