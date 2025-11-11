@@ -12,7 +12,7 @@ export default function Header() {
   const [loading, setLoading] = useState(true)
   const [isExpanded, setIsExpanded] = useState(false)
   const [showProfileMenu, setShowProfileMenu] = useState(false)
-  const { theme, toggleTheme } = useTheme()
+  const { theme, toggleTheme, isDark } = useTheme()
   const supabase = createSupabaseClient()
 
   useEffect(() => {
@@ -65,20 +65,18 @@ export default function Header() {
           {/* Main Circle */}
           <motion.button
             onClick={() => setIsExpanded(!isExpanded)}
-            className={`w-16 h-16 rounded-full premium-border flex items-center justify-center backdrop-blur-md transition-all duration-300 ${
-              theme === 'gray' 
-                ? 'bg-gray-dark/90 border-gray-mid/40 hover:border-gray-light/60' 
-                : 'bg-dune-black-soft/90 border-dune-gold/30 hover:border-dune-gold/50'
-            } ${isExpanded ? 'scale-110' : ''}`}
+            className={`w-16 h-16 rounded-full premium-card glass flex items-center justify-center transition-all duration-300 ${
+              isExpanded ? 'scale-110' : ''
+            }`}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
           >
             {user ? (
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-mid to-gray-dark flex items-center justify-center text-gray-white-gray font-semibold text-sm">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-secondary)] flex items-center justify-center text-white font-semibold text-sm">
                 {user.email?.charAt(0).toUpperCase() || 'U'}
               </div>
             ) : (
-              <span className="text-xl">☰</span>
+              <span className="text-xl text-[var(--text-primary)]">☰</span>
             )}
           </motion.button>
 
@@ -104,20 +102,12 @@ export default function Header() {
                     <Link
                       href={item.href}
                       onClick={() => setIsExpanded(false)}
-                      className={`w-14 h-14 rounded-full premium-border flex items-center justify-center backdrop-blur-md transition-all duration-300 ${
-                        theme === 'gray'
-                          ? 'bg-gray-dark/90 border-gray-mid/40 hover:border-gray-light/60 hover:bg-gray-dark'
-                          : 'bg-dune-black-soft/90 border-dune-gold/30 hover:border-dune-gold/50 hover:bg-dune-black-soft'
-                      }`}
+                      className="w-14 h-14 rounded-full premium-card glass flex items-center justify-center transition-all duration-300 hover:scale-110"
                     >
                       <span className="text-lg">{item.icon}</span>
                     </Link>
                     {/* Tooltip */}
-                    <div className={`absolute right-full mr-3 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none ${
-                      theme === 'gray'
-                        ? 'bg-gray-dark/95 text-gray-white-gray border border-gray-mid/30'
-                        : 'bg-dune-black-soft/95 text-dune-sand-light border border-dune-gold/30'
-                    }`}>
+                    <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none premium-card glass">
                       {item.label}
                     </div>
                   </motion.div>
@@ -132,20 +122,12 @@ export default function Header() {
                 >
                   <button
                     onClick={toggleTheme}
-                    className={`w-14 h-14 rounded-full premium-border flex items-center justify-center backdrop-blur-md transition-all duration-300 ${
-                      theme === 'gray'
-                        ? 'bg-gray-dark/90 border-gray-mid/40 hover:border-gray-light/60 hover:bg-gray-dark'
-                        : 'bg-dune-black-soft/90 border-dune-gold/30 hover:border-dune-gold/50 hover:bg-dune-black-soft'
-                    }`}
+                    className="w-14 h-14 rounded-full premium-card glass flex items-center justify-center transition-all duration-300 hover:scale-110"
                   >
-                    <span className="text-lg">{theme === 'gray' ? '☀️' : '🌑'}</span>
+                    <span className="text-lg">{isDark ? '☀️' : '🌙'}</span>
                   </button>
-                  <div className={`absolute right-full mr-3 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none ${
-                    theme === 'gray'
-                      ? 'bg-gray-dark/95 text-gray-white-gray border border-gray-mid/30'
-                      : 'bg-dune-black-soft/95 text-dune-sand-light border border-dune-gold/30'
-                  }`}>
-                    {theme === 'gray' ? 'Dune Theme' : 'Gray Theme'}
+                  <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none premium-card glass">
+                    {isDark ? 'Light Mode' : 'Dark Mode'}
                   </div>
                 </motion.div>
 
@@ -159,17 +141,9 @@ export default function Header() {
                   >
                     <button
                       onClick={() => setShowProfileMenu(!showProfileMenu)}
-                      className={`w-14 h-14 rounded-full premium-border flex items-center justify-center backdrop-blur-md transition-all duration-300 ${
-                        theme === 'gray'
-                          ? 'bg-gray-dark/90 border-gray-mid/40 hover:border-gray-light/60'
-                          : 'bg-dune-black-soft/90 border-dune-gold/30 hover:border-dune-gold/50'
-                      }`}
+                      className="w-14 h-14 rounded-full premium-card glass flex items-center justify-center transition-all duration-300 hover:scale-110"
                     >
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold ${
-                        theme === 'gray'
-                          ? 'bg-gray-mid text-gray-dark'
-                          : 'bg-dune-gold/30 text-dune-gold'
-                      }`}>
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-secondary)] flex items-center justify-center text-white text-xs font-semibold">
                         {user.email?.charAt(0).toUpperCase() || 'U'}
                       </div>
                     </button>
@@ -181,47 +155,29 @@ export default function Header() {
                           initial={{ opacity: 0, y: -10 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -10 }}
-                          className={`absolute right-0 top-full mt-2 w-48 rounded-lg backdrop-blur-md ${
-                            theme === 'gray'
-                              ? 'bg-gray-dark/95 border border-gray-mid/30'
-                              : 'bg-dune-black-soft/95 border border-dune-gold/30'
-                          }`}
+                          className="absolute right-0 top-full mt-2 w-48 premium-card glass-strong rounded-lg overflow-hidden"
                         >
                           <div className="p-2">
-                            <div className={`px-3 py-2 text-sm ${
-                              theme === 'gray' ? 'text-gray-light' : 'text-dune-sand-light'
-                            }`}>
+                            <div className="px-3 py-2 text-sm text-[var(--text-secondary)] border-b border-[var(--border-primary)]">
                               {user.email}
                             </div>
                             <Link
                               href="/profile"
                               onClick={() => setShowProfileMenu(false)}
-                              className={`block px-3 py-2 text-sm rounded hover:bg-opacity-50 transition-colors ${
-                                theme === 'gray'
-                                  ? 'text-gray-white-gray hover:bg-gray-mid/20'
-                                  : 'text-dune-sand-light hover:bg-dune-gold/10'
-                              }`}
+                              className="block px-3 py-2 text-sm text-[var(--text-primary)] hover:text-[var(--accent-primary)] hover:bg-[var(--bg-elevated)] rounded transition-colors"
                             >
                               Profile
                             </Link>
                             <Link
                               href="/settings"
                               onClick={() => setShowProfileMenu(false)}
-                              className={`block px-3 py-2 text-sm rounded hover:bg-opacity-50 transition-colors ${
-                                theme === 'gray'
-                                  ? 'text-gray-white-gray hover:bg-gray-mid/20'
-                                  : 'text-dune-sand-light hover:bg-dune-gold/10'
-                              }`}
+                              className="block px-3 py-2 text-sm text-[var(--text-primary)] hover:text-[var(--accent-primary)] hover:bg-[var(--bg-elevated)] rounded transition-colors"
                             >
                               Settings
                             </Link>
                             <button
                               onClick={handleSignOut}
-                              className={`w-full text-left px-3 py-2 text-sm rounded hover:bg-opacity-50 transition-colors ${
-                                theme === 'gray'
-                                  ? 'text-gray-white-gray hover:bg-gray-mid/20'
-                                  : 'text-dune-sand-light hover:bg-dune-gold/10'
-                              }`}
+                              className="w-full text-left px-3 py-2 text-sm text-red-500 hover:bg-red-500/10 rounded transition-colors"
                             >
                               Logout
                             </button>
@@ -234,26 +190,20 @@ export default function Header() {
 
                 {/* Auth Buttons (if not logged in) */}
                 {!user && !loading && (
-                  <>
-                    <motion.div
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: (navItems.length + 1) * 0.05 }}
-                      className="relative group"
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: (navItems.length + 1) * 0.05 }}
+                    className="relative group"
+                  >
+                    <Link
+                      href="/auth/login"
+                      onClick={() => setIsExpanded(false)}
+                      className="w-14 h-14 rounded-full premium-card glass flex items-center justify-center transition-all duration-300 hover:scale-110"
                     >
-                      <Link
-                        href="/auth/login"
-                        onClick={() => setIsExpanded(false)}
-                        className={`w-14 h-14 rounded-full premium-border flex items-center justify-center backdrop-blur-md transition-all duration-300 ${
-                          theme === 'gray'
-                            ? 'bg-gray-dark/90 border-gray-mid/40 hover:border-gray-light/60'
-                            : 'bg-dune-black-soft/90 border-dune-gold/30 hover:border-dune-gold/50'
-                        }`}
-                      >
-                        <span className="text-sm font-semibold">Login</span>
-                      </Link>
-                    </motion.div>
-                  </>
+                      <span className="text-sm font-semibold text-[var(--text-primary)]">Login</span>
+                    </Link>
+                  </motion.div>
                 )}
               </motion.div>
             )}
