@@ -23,12 +23,12 @@ BEGIN
 
         -- Update to premium
         UPDATE auth.users
-        SET user_metadata = jsonb_build_object(
+        SET raw_user_meta_data = jsonb_build_object(
             'plan', 'pro',
             'plan_type', 'pro_lifetime',
             'subscription_status', 'active',
             'upgraded_at', NOW()::text
-        ) || COALESCE(user_metadata, '{}'::jsonb)
+        ) || COALESCE(raw_user_meta_data, '{}'::jsonb)
         WHERE id = user_uuid;
 
         -- Update user_plans table
