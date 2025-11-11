@@ -441,7 +441,7 @@ export default function Chat() {
                 </p>
                 <div className="flex gap-3">
                   <a
-                    href="https://whop.com/checkout/plan_vhBLiFWs6AJNx?d2c=true"
+                    href={process.env.NEXT_PUBLIC_WHOP_CHECKOUT_MONTHLY || '#'}
                     target="_blank"
                     rel="noopener noreferrer"
                     className={`px-4 py-2 rounded-lg font-semibold transition-all duration-300 text-sm ${
@@ -453,7 +453,7 @@ export default function Chat() {
                     Monthly
                   </a>
                   <a
-                    href="https://whop.com/checkout/plan_nAv9o4mMRgV37?d2c=true"
+                    href={process.env.NEXT_PUBLIC_WHOP_CHECKOUT_LIFETIME || '#'}
                     target="_blank"
                     rel="noopener noreferrer"
                     className={`px-4 py-2 premium-border rounded-lg transition-all duration-300 text-sm ${

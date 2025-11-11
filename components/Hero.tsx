@@ -254,7 +254,7 @@ export default function Hero() {
             </motion.a>
             
             <motion.a
-              href="https://whop.com/checkout/plan_vhBLiFWs6AJNx?d2c=true"
+              href={process.env.NEXT_PUBLIC_WHOP_CHECKOUT_MONTHLY || '#'}
               target="_blank"
               rel="noopener noreferrer"
               className={`px-8 py-4 premium-border font-semibold rounded-lg transition-all duration-300 hover:scale-105 relative overflow-hidden group cursor-pointer ${

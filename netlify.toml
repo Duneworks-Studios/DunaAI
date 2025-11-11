@@ -7,3 +7,7 @@
 
 [build.environment]
   NODE_VERSION = "20"
+  # Configure secret scanning - allow public API endpoints (not actual secrets)
+  SECRETS_SCAN_OMIT_KEYS = "AI_ENDPOINT,NEXTAUTH_URL"
+  # Allow build output directories (env vars need to be in build for app to work)
+  SECRETS_SCAN_OMIT_PATHS = ".netlify/**,.next/**,**/node_modules/**"

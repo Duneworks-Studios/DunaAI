@@ -90,7 +90,7 @@ export default function ChatWindow({
               </p>
               <div className="flex gap-3">
                 <a
-                  href="https://whop.com/checkout/plan_vhBLiFWs6AJNx?d2c=true"
+                  href={process.env.NEXT_PUBLIC_WHOP_CHECKOUT_MONTHLY || '#'}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-4 py-1.5 bg-[#d4c4a0] bg-opacity-20 text-[#d4c4a0] rounded text-sm font-medium hover:bg-opacity-30 transition-all"
@@ -98,7 +98,7 @@ export default function ChatWindow({
                   Monthly
                 </a>
                 <a
-                  href="https://whop.com/checkout/plan_nAv9o4mMRgV37?d2c=true"
+                  href={process.env.NEXT_PUBLIC_WHOP_CHECKOUT_LIFETIME || '#'}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-4 py-1.5 border border-[#d4c4a0] border-opacity-30 text-[#d4c4a0] rounded text-sm font-medium hover:border-opacity-50 transition-all"
