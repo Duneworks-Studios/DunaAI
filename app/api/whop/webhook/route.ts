@@ -131,26 +131,71 @@ export async function POST(request: NextRequest) {
         )
       }
 
-      // Also update user_plans table if it exists
+      // Also update user_plans table - use robust update with fallback
+      let userPlansUpdated = false
       try {
-        const { error: upsertError } = await supabase.from('user_plans').upsert({
-          user_id: user.id,
-          plan_type: planType, // Use the planType variable (pro or pro_lifetime)
-          subscription_status: 'active',
-          subscription_id: subscriptionId,
-          whop_plan_id: planId,
-          updated_at: new Date().toISOString(),
-        }, {
-          onConflict: 'user_id'
-        })
+        const { data: upsertData, error: upsertError } = await supabase
+          .from('user_plans')
+          .upsert({
+            user_id: user.id,
+            plan_type: planType,
+            subscription_status: 'active',
+            subscription_id: subscriptionId,
+            whop_plan_id: planId,
+            updated_at: new Date().toISOString(),
+          }, {
+            onConflict: 'user_id'
+          })
+          .select()
         
         if (upsertError) {
           console.warn('Error upserting user_plans:', upsertError)
+          // Try delete and insert as fallback
+          try {
+            await supabase.from('user_plans').delete().eq('user_id', user.id)
+            const { data: insertData, error: insertError } = await supabase
+              .from('user_plans')
+              .insert({
+                user_id: user.id,
+                plan_type: planType,
+                subscription_status: 'active',
+                subscription_id: subscriptionId,
+                whop_plan_id: planId,
+                updated_at: new Date().toISOString(),
+              })
+              .select()
+            
+            if (insertError) {
+              console.error('❌ Error inserting into user_plans:', insertError)
+            } else {
+              console.log('✅ Inserted into user_plans table:', insertData)
+              userPlansUpdated = true
+            }
+          } catch (deleteError) {
+            console.error('❌ Error with delete/insert approach:', deleteError)
+          }
         } else {
-          console.log(`✅ Updated user_plans table with plan_type: ${planType}`)
+          console.log(`✅ Updated user_plans table with plan_type: ${planType}`, upsertData)
+          userPlansUpdated = true
         }
       } catch (error) {
-        console.warn('user_plans table may not exist:', error)
+        console.error('❌ user_plans table error:', error)
+      }
+      
+      // Verify the update
+      if (!userPlansUpdated) {
+        const { data: verifyPlan } = await supabase
+          .from('user_plans')
+          .select('*')
+          .eq('user_id', user.id)
+          .maybeSingle()
+        
+        if (verifyPlan) {
+          userPlansUpdated = true
+          console.log('✅ Verified user_plans table update:', verifyPlan)
+        } else {
+          console.warn('⚠️ Could not verify user_plans table update')
+        }
       }
 
       console.log(`✅ User ${user.email} upgraded to ${planType} plan`)

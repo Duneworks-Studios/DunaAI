@@ -127,8 +127,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Update user_plans table
+    // Update user_plans table - Use RPC or direct SQL for more reliable updates
+    let userPlansUpdated = false
     try {
+      // First try the standard upsert
       const { data: upsertData, error: upsertError } = await supabaseAdmin
         .from('user_plans')
         .upsert({
@@ -145,26 +147,57 @@ export async function POST(request: NextRequest) {
 
       if (upsertError) {
         console.error('❌ Error updating user_plans table:', upsertError)
-        return NextResponse.json({
-          success: true,
-          warning: `Metadata updated but user_plans table update failed: ${upsertError.message}`,
-          metadata_updated: true,
-          user_plans_updated: false,
-          user: {
-            id: updatedUser.user.id,
-            email: updatedUser.user.email,
-            plan_type: updatedUser.user.user_metadata?.plan_type,
-            subscription_status: updatedUser.user.user_metadata?.subscription_status,
-          },
-        })
+        
+        // Try alternative: Delete and insert
+        try {
+          await supabaseAdmin.from('user_plans').delete().eq('user_id', user.id)
+          const { data: insertData, error: insertError } = await supabaseAdmin
+            .from('user_plans')
+            .insert({
+              user_id: user.id,
+              plan_type: planType,
+              subscription_status: 'active',
+              subscription_id: subscriptionId || user.user_metadata?.subscription_id,
+              whop_plan_id: planId || user.user_metadata?.whop_plan_id,
+              updated_at: new Date().toISOString(),
+            })
+            .select()
+          
+          if (insertError) {
+            console.error('❌ Error inserting into user_plans:', insertError)
+          } else {
+            console.log('✅ Inserted into user_plans table:', insertData)
+            userPlansUpdated = true
+          }
+        } catch (deleteError) {
+          console.error('❌ Error with delete/insert approach:', deleteError)
+        }
       } else {
         console.log('✅ Updated user_plans table:', upsertData)
+        userPlansUpdated = true
       }
     } catch (error) {
       console.error('❌ user_plans table error:', error)
+    }
+
+    // The admin API update should be sufficient - it updates raw_user_meta_data in auth.users
+    // No need for direct SQL as the admin API handles this
+
+    // Verify the update worked by checking both
+    const { data: verifyPlan, error: verifyError } = await supabaseAdmin
+      .from('user_plans')
+      .select('*')
+      .eq('user_id', user.id)
+      .maybeSingle()
+
+    if (verifyError && verifyError.code !== 'PGRST116') {
+      console.warn('⚠️ Could not verify user_plans update:', verifyError)
+    }
+
+    if (!userPlansUpdated && !verifyPlan) {
       return NextResponse.json({
-        success: true,
-        warning: `Metadata updated but user_plans table error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        success: false,
+        error: 'Failed to update user_plans table. Metadata was updated but database sync failed.',
         metadata_updated: true,
         user_plans_updated: false,
         user: {
@@ -173,18 +206,40 @@ export async function POST(request: NextRequest) {
           plan_type: updatedUser.user.user_metadata?.plan_type,
           subscription_status: updatedUser.user.user_metadata?.subscription_status,
         },
-      })
+        troubleshooting: 'Check if user_plans table exists and RLS policies are correct.',
+      }, { status: 500 })
     }
+
+    // Get final verification of both metadata and database
+    const finalUser = await supabaseAdmin.auth.admin.getUserById(user.id)
+    const finalPlan = await supabaseAdmin
+      .from('user_plans')
+      .select('*')
+      .eq('user_id', user.id)
+      .maybeSingle()
 
     return NextResponse.json({
       success: true,
       message: `User ${email} synced to ${planType} plan`,
       whop_subscription_found: !!whopSubscription,
+      metadata_updated: true,
+      user_plans_updated: userPlansUpdated || !!finalPlan,
       user: {
-        id: updatedUser.user.id,
-        email: updatedUser.user.email,
-        plan_type: updatedUser.user.user_metadata?.plan_type,
-        subscription_status: updatedUser.user.user_metadata?.subscription_status,
+        id: finalUser.data?.user?.id || updatedUser.user.id,
+        email: finalUser.data?.user?.email || updatedUser.user.email,
+        plan_type: finalUser.data?.user?.user_metadata?.plan_type || updatedUser.user.user_metadata?.plan_type,
+        subscription_status: finalUser.data?.user?.user_metadata?.subscription_status || updatedUser.user.user_metadata?.subscription_status,
+      },
+      database_verification: {
+        user_metadata: {
+          plan: finalUser.data?.user?.user_metadata?.plan,
+          plan_type: finalUser.data?.user?.user_metadata?.plan_type,
+          subscription_status: finalUser.data?.user?.user_metadata?.subscription_status,
+        },
+        user_plans_table: finalPlan ? {
+          plan_type: finalPlan.plan_type,
+          subscription_status: finalPlan.subscription_status,
+        } : null,
       },
       note: 'User must log out and log back in for changes to take effect in the app.',
     })
