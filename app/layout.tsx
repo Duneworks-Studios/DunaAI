@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Manrope, Orbitron } from 'next/font/google'
 import './globals.css'
+import Header from '@/components/Header'
 
 const manrope = Manrope({
   subsets: ['latin'],
@@ -33,6 +34,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <body className={`${manrope.variable} ${orbitron.variable} font-sans antialiased`}>
+        <Header />
         {children}
       </body>
     </html>
