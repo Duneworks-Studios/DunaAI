@@ -45,11 +45,19 @@ export async function getUserPlan(user: User | null): Promise<UserPlan> {
       .single()
 
     if (!planError && planData) {
-      isPro = planData.plan_type === 'pro' && 
-              (planData.subscription_status === 'active' || planData.subscription_status === 'active')
+      // Check for pro or pro_lifetime plan types
+      isPro = (planData.plan_type === 'pro' || planData.plan_type === 'pro_lifetime') && 
+              planData.subscription_status === 'active'
+      
+      if (isPro) {
+        console.log('✅ Premium plan detected from user_plans table:', planData)
+      }
+    } else if (planError) {
+      console.warn('Error checking user_plans:', planError)
     }
   } catch (error) {
     // Table might not exist, continue to check metadata
+    console.warn('Error accessing user_plans table:', error)
   }
 
   // Fallback to user metadata
@@ -59,6 +67,13 @@ export async function getUserPlan(user: User | null): Promise<UserPlan> {
             userMetadata?.subscription_status === 'active' ||
             userMetadata?.plan_type === 'pro' ||
             userMetadata?.plan_type === 'pro_lifetime'
+    
+    if (isPro) {
+      console.log('✅ Premium plan detected from user_metadata:', userMetadata)
+    } else {
+      console.log('ℹ️ User metadata:', userMetadata)
+      console.log('ℹ️ Checking plan_type:', userMetadata?.plan_type)
+    }
   }
 
   // Get today's message count
