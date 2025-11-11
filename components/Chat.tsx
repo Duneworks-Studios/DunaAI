@@ -26,12 +26,18 @@ export default function Chat() {
 
   useEffect(() => {
     // Get user session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        console.error('Error getting session:', error)
+        return
+      }
       setUser(session?.user ?? null)
       if (session?.user) {
         loadUserPlan(session.user)
         loadMessages(session.user.id)
       }
+    }).catch((error) => {
+      console.error('Error in getSession:', error)
     })
 
     const {
@@ -48,7 +54,7 @@ export default function Chat() {
     })
 
     return () => subscription.unsubscribe()
-  }, [supabase])
+  }, [])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
