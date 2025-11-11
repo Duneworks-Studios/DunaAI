@@ -10,18 +10,20 @@ This error means the redirect URI in Google Cloud Console doesn't match what Sup
 
 Your Supabase project callback URL is:
 ```
-https://jjfjzpcnclccmjwdglgh.supabase.co/auth/v1/callback
+https://YOUR_PROJECT_ID.supabase.co/auth/v1/callback
 ```
+
+Replace `YOUR_PROJECT_ID` with your actual Supabase project ID (found in your `.env.local` as `NEXT_PUBLIC_SUPABASE_URL`).
 
 ### Step 2: Add to Google Cloud Console
 
 1. Go to: https://console.cloud.google.com/apis/credentials
-2. Find your OAuth 2.0 Client ID: `364636168371-rjivlli0lefrd5punkhi5j4stj2bud2e.apps.googleusercontent.com`
+2. Find your OAuth 2.0 Client ID (from your `.env.local` file: `GOOGLE_CLIENT_ID`)
 3. Click on it to edit
 4. Under **Authorized redirect URIs**, click **+ ADD URI**
-5. Add this exact URL:
+5. Add this exact URL (replace with your Supabase project ID):
    ```
-   https://jjfjzpcnclccmjwdglgh.supabase.co/auth/v1/callback
+   https://YOUR_PROJECT_ID.supabase.co/auth/v1/callback
    ```
 6. Click **SAVE**
 
@@ -50,7 +52,7 @@ Try signing in with Google again. It should work now!
 
 ## Current Configuration
 
-- **Supabase Project**: `jjfjzpcnclccmjwdglgh`
-- **Required Redirect URI**: `https://jjfjzpcnclccmjwdglgh.supabase.co/auth/v1/callback`
+- **Supabase Project**: Check your `NEXT_PUBLIC_SUPABASE_URL` in `.env.local`
+- **Required Redirect URI**: `https://YOUR_PROJECT_ID.supabase.co/auth/v1/callback`
 - **Your App Callback**: `http://localhost:3000/auth/callback` (handled by your app after Supabase)
 
