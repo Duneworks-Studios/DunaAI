@@ -67,18 +67,38 @@ export default function Navbar() {
           className="flex items-center gap-3 group"
           onClick={() => setShowMobileMenu(false)}
         >
-          <div className="relative h-12 w-12 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-            <div className="absolute inset-0 bg-gradient-to-br from-[#ffd700] to-[#d4af37] rounded-lg blur-md opacity-50 group-hover:opacity-75 transition-opacity animate-glow"></div>
+          <motion.div 
+            className="relative h-14 w-14 flex items-center justify-center group-hover:scale-110 transition-transform duration-300"
+            whileHover={{ scale: 1.15, rotate: 5 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            {/* Enhanced Gold Glow Effect */}
+            <div className="absolute inset-0 bg-gradient-to-br from-[#ffd700] via-[#ffed4e] to-[#d4af37] rounded-xl blur-xl opacity-60 group-hover:opacity-80 transition-opacity animate-glow"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-[#ffd700] to-[#d4af37] rounded-lg blur-md opacity-40 group-hover:opacity-60 transition-opacity"></div>
+            
+            {/* Logo Image - Update this src with your new logo URL or path */}
             <Image 
-              src="https://media.discordapp.net/attachments/1049403383603273758/1437875664316399809/a4ea2ab422827bd939a023a7ff248ce5.webp?ex=6914d590&is=69138410&hm=4b163a993bcdbd87924ab3d6689abeae0f0a26e4ad260eb1f33a8875826cc361&=&format=webp&width=1022&height=1022" 
+              src="/duna-logo.png" 
               alt="Duna Logo" 
-              width={48}
-              height={48}
-              className="object-contain relative z-10 filter drop-shadow-[0_0_15px_rgba(255,215,0,0.6)]"
+              width={56}
+              height={56}
+              className="object-contain relative z-10 filter drop-shadow-[0_0_20px_rgba(255,215,0,0.8)] drop-shadow-[0_0_40px_rgba(212,175,55,0.5)]"
               priority
               unoptimized
+              onError={(e) => {
+                // Fallback to Discord URL if local file doesn't exist
+                e.currentTarget.src = "https://media.discordapp.net/attachments/1049403383603273758/1437875664316399809/a4ea2ab422827bd939a023a7ff248ce5.webp?ex=6914d590&is=69138410&hm=4b163a993bcdbd87924ab3d6689abeae0f0a26e4ad260eb1f33a8875826cc361&=&format=webp&width=1022&height=1022"
+              }}
             />
-          </div>
+            
+            {/* Rotating Gold Ring Effect */}
+            <motion.div
+              className="absolute inset-0 border-2 border-[rgba(255,215,0,0.4)] rounded-xl"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+              style={{ borderRadius: '0.75rem' }}
+            />
+          </motion.div>
           <span className="text-xl font-bold text-gradient hidden sm:block glow-hover">Duna</span>
         </Link>
 
