@@ -37,4 +37,11 @@ yarn-error.log*
 # Environment variables
 .env
 .env.local
+.env*.local
+
+# Next.js
+.next/
+out/
+build/
+dist/
 

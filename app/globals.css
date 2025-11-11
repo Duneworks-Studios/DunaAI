@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-dune-bronze-dark/20;
+  }
+  
+  body {
+    @apply bg-dune-black text-dune-sand-light;
+    background-image: 
+      radial-gradient(circle at 20% 50%, rgba(201, 169, 97, 0.05) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(212, 165, 116, 0.03) 0%, transparent 50%);
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-gradient-to-r from-dune-gold via-dune-sand to-dune-gold-light bg-clip-text text-transparent;
+  }
+  
+  .glow-gold {
+    box-shadow: 0 0 20px rgba(201, 169, 97, 0.3),
+                0 0 40px rgba(201, 169, 97, 0.2),
+                0 0 60px rgba(201, 169, 97, 0.1);
+  }
+  
+  .glow-gold-hover:hover {
+    box-shadow: 0 0 30px rgba(201, 169, 97, 0.5),
+                0 0 60px rgba(201, 169, 97, 0.3),
+                0 0 90px rgba(201, 169, 97, 0.2);
+    transition: box-shadow 0.3s ease;
+  }
+  
+  .dune-gradient {
+    background: linear-gradient(135deg, 
+      rgba(212, 165, 116, 0.1) 0%,
+      rgba(201, 169, 97, 0.05) 50%,
+      rgba(139, 111, 71, 0.1) 100%);
+  }
+  
+  .premium-border {
+    @apply border border-dune-gold/20 bg-dune-black-soft/50 backdrop-blur-sm;
+  }
+  
+  .premium-card {
+    @apply premium-border rounded-2xl p-8 transition-all duration-300;
+    @apply hover:border-dune-gold/40 hover:bg-dune-black-soft/70;
+  }
+}
+
+/* Smooth scroll behavior */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-dune-black;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-dune-bronze rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-dune-gold;
+}
+
