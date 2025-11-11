@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import Link from 'next/link'
+import { useState } from 'react'
 
 const plans = [
   {
@@ -33,14 +34,30 @@ const plans = [
       'Early access to updates',
     ],
     cta: 'Upgrade to Pro',
-    href: process.env.NEXT_PUBLIC_WHOP_CHECKOUT_MONTHLY || '#',
-    lifetimeHref: process.env.NEXT_PUBLIC_WHOP_CHECKOUT_LIFETIME || '#',
+    href: process.env.NEXT_PUBLIC_WHOP_CHECKOUT_MONTHLY,
+    lifetimeHref: process.env.NEXT_PUBLIC_WHOP_CHECKOUT_LIFETIME,
     highlight: true,
     badge: 'Recommended',
   },
 ]
 
 export default function Pricing() {
+  const [isRedirecting, setIsRedirecting] = useState(false)
+
+  const handleCheckoutClick = (url: string | undefined, e?: React.MouseEvent) => {
+    e?.preventDefault()
+    const checkoutUrl = url || process.env.NEXT_PUBLIC_WHOP_CHECKOUT_MONTHLY || 'https://whop.com/dunabrowser/checkout'
+    
+    if (checkoutUrl && checkoutUrl !== '#' && checkoutUrl !== '#pricing') {
+      setIsRedirecting(true)
+      // Small delay for smooth transition effect
+      setTimeout(() => {
+        window.open(checkoutUrl, '_blank', 'noopener,noreferrer')
+        setIsRedirecting(false)
+      }, 150)
+    }
+  }
+
   return (
     <section id="pricing" className="relative py-32 px-6 overflow-hidden">
       {/* Background */}
@@ -116,23 +133,45 @@ export default function Pricing() {
               </ul>
 
               <div className="space-y-3">
-                <Link
-                  href={plan.href}
-                  className={`block w-full text-center py-4 rounded-lg font-semibold transition-all duration-300 ${
-                    plan.highlight
-                      ? 'bg-dune-gold text-dune-black hover:bg-dune-gold-light glow-gold-hover'
-                      : 'premium-border text-dune-gold hover:border-dune-gold/50'
-                  }`}
-                >
-                  {plan.cta}
-                </Link>
-                {plan.lifetimeHref && (
-                  <Link
-                    href={plan.lifetimeHref}
-                    className="block w-full text-center py-4 premium-border text-dune-sand rounded-lg font-semibold hover:border-dune-gold/50 transition-all duration-300"
+                {plan.highlight ? (
+                  <button
+                    onClick={(e) => handleCheckoutClick(plan.href, e)}
+                    disabled={isRedirecting}
+                    className={`block w-full text-center py-4 rounded-lg font-semibold transition-all duration-300 cursor-pointer relative overflow-hidden ${
+                      plan.highlight
+                        ? 'bg-dune-gold text-dune-black hover:bg-dune-gold-light glow-gold-hover'
+                        : 'premium-border text-dune-gold hover:border-dune-gold/50'
+                    } ${isRedirecting ? 'opacity-75' : ''}`}
                   >
-                    Get Lifetime Access
+                    {isRedirecting ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <span className="w-4 h-4 border-2 border-dune-black border-t-transparent rounded-full animate-spin"></span>
+                        Redirecting...
+                      </span>
+                    ) : (
+                      plan.cta
+                    )}
+                  </button>
+                ) : (
+                  <Link
+                    href={plan.href}
+                    className={`block w-full text-center py-4 rounded-lg font-semibold transition-all duration-300 ${
+                      plan.highlight
+                        ? 'bg-dune-gold text-dune-black hover:bg-dune-gold-light glow-gold-hover'
+                        : 'premium-border text-dune-gold hover:border-dune-gold/50'
+                    }`}
+                  >
+                    {plan.cta}
                   </Link>
+                )}
+                {plan.lifetimeHref && (
+                  <button
+                    onClick={(e) => handleCheckoutClick(plan.lifetimeHref, e)}
+                    disabled={isRedirecting}
+                    className="block w-full text-center py-4 premium-border text-dune-sand rounded-lg font-semibold hover:border-dune-gold/50 transition-all duration-300 cursor-pointer disabled:opacity-75"
+                  >
+                    {isRedirecting ? 'Redirecting...' : 'Get Lifetime Access'}
+                  </button>
                 )}
               </div>
             </motion.div>
