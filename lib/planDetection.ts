@@ -42,38 +42,65 @@ export async function getUserPlan(user: User | null): Promise<UserPlan> {
       .from('user_plans')
       .select('plan_type, subscription_status')
       .eq('user_id', user.id)
-      .single()
+      .maybeSingle() // Use maybeSingle() instead of single() to handle no rows gracefully
 
     if (!planError && planData) {
       // Check for pro or pro_lifetime plan types
-      isPro = (planData.plan_type === 'pro' || planData.plan_type === 'pro_lifetime') && 
-              planData.subscription_status === 'active'
+      const planType = planData.plan_type
+      const status = planData.subscription_status
+      
+      isPro = (planType === 'pro' || planType === 'pro_lifetime') && 
+              status === 'active'
+      
+      console.log('📊 User plans table check:', { planType, status, isPro, planData })
       
       if (isPro) {
         console.log('✅ Premium plan detected from user_plans table:', planData)
+      } else {
+        console.log('ℹ️ User plans table shows:', planData, 'but not premium')
       }
     } else if (planError) {
-      console.warn('Error checking user_plans:', planError)
+      // Check if it's a "not found" error (which is OK) vs a real error
+      if (planError.code !== 'PGRST116' && planError.message !== 'JSON object requested, multiple (or no) rows returned') {
+        console.warn('⚠️ Error checking user_plans:', planError)
+      } else {
+        console.log('ℹ️ No plan found in user_plans table (user might be on free plan)')
+      }
     }
   } catch (error) {
     // Table might not exist, continue to check metadata
-    console.warn('Error accessing user_plans table:', error)
+    console.warn('⚠️ Error accessing user_plans table:', error)
   }
 
-  // Fallback to user metadata
+  // Fallback to user metadata (raw_user_meta_data in database)
   if (!isPro) {
-    const userMetadata = user.user_metadata
-    isPro = userMetadata?.plan === 'pro' || 
-            userMetadata?.subscription_status === 'active' ||
-            userMetadata?.plan_type === 'pro' ||
-            userMetadata?.plan_type === 'pro_lifetime'
+    const userMetadata = user.user_metadata || {}
+    const plan = userMetadata.plan
+    const planType = userMetadata.plan_type
+    const status = userMetadata.subscription_status
+    
+    isPro = plan === 'pro' || 
+            status === 'active' ||
+            planType === 'pro' ||
+            planType === 'pro_lifetime'
+    
+    console.log('📊 User metadata check:', { plan, planType, status, isPro, fullMetadata: userMetadata })
     
     if (isPro) {
       console.log('✅ Premium plan detected from user_metadata:', userMetadata)
     } else {
-      console.log('ℹ️ User metadata:', userMetadata)
-      console.log('ℹ️ Checking plan_type:', userMetadata?.plan_type)
+      console.log('ℹ️ User metadata does not show premium:', userMetadata)
+      console.log('ℹ️ Plan:', plan, 'Plan Type:', planType, 'Status:', status)
     }
+  }
+  
+  // Final check - if still not pro, log for debugging
+  if (!isPro) {
+    console.log('❌ User is NOT detected as premium')
+    console.log('User ID:', user.id)
+    console.log('User Email:', user.email)
+  } else {
+    console.log('✅ User IS detected as premium')
   }
 
   // Get today's message count
