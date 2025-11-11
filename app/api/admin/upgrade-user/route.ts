@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const user = users.users.find(u => u.email === email)
+    const user = users.users.find(u => u.email?.toLowerCase() === email.toLowerCase())
 
     if (!user) {
       return NextResponse.json(
