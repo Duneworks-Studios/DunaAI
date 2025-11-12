@@ -4,10 +4,17 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useAgent } from '@/contexts/AgentContext'
 import type { UserPlan } from '@/lib/planDetection'
 
+interface Message {
+  id: string
+  role: 'user' | 'assistant'
+  content: string
+  timestamp: Date
+}
+
 interface ChatSession {
   id: string
   title: string
-  messages: any[]
+  messages: Message[]
   lastMessage: Date
 }
 

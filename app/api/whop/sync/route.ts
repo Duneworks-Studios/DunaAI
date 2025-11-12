@@ -68,7 +68,14 @@ export async function POST(request: NextRequest) {
         if (whopResponse.ok) {
           const whopData = await whopResponse.json()
           // Find membership for this email
-          whopSubscription = whopData.data?.find((m: any) => 
+          whopSubscription = whopData.data?.find((m: {
+            user?: { email?: string }
+            customer?: { email?: string }
+            plan?: { id?: string }
+            plan_id?: string
+            id?: string
+            subscription_id?: string
+          }) => 
             m.user?.email?.toLowerCase() === email.toLowerCase() ||
             m.customer?.email?.toLowerCase() === email.toLowerCase()
           )

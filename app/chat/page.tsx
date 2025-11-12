@@ -98,9 +98,14 @@ export default function ChatPage() {
     if (stored) {
       try {
         const parsed = JSON.parse(stored)
-        const sessionsWithDates = parsed.map((s: any) => ({
+        const sessionsWithDates = parsed.map((s: {
+          id: string
+          title: string
+          messages: Array<{ id: string; role: string; content: string; timestamp: string }>
+          lastMessage: string
+        }) => ({
           ...s,
-          messages: s.messages.map((m: any) => ({ ...m, timestamp: new Date(m.timestamp) })),
+          messages: s.messages.map((m) => ({ ...m, timestamp: new Date(m.timestamp) })),
           lastMessage: new Date(s.lastMessage),
         }))
         setSessions(sessionsWithDates)
