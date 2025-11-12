@@ -219,10 +219,18 @@ export default function ChatPage() {
         }
       } catch (error) {
         console.error('❌ Error activating pro code:', error)
+        let errorText = 'Unknown error'
+        if (error instanceof Error) {
+          errorText = error.message
+          // Make error message more user-friendly
+          if (errorText.includes('Supabase credentials not configured')) {
+            errorText = '⚠️ Server configuration needed: The SUPABASE_SERVICE_ROLE_KEY environment variable must be added to Netlify. See QUICK_FIX_NETLIFY.md for instructions.'
+          }
+        }
         const errorMessage: Message = {
           id: Date.now().toString(),
           role: 'assistant',
-          content: `❌ Error activating code: ${error instanceof Error ? error.message : 'Unknown error'}. Check console for details.`,
+          content: `❌ ${errorText}`,
           timestamp: new Date(),
         }
         setMessages([...messages, errorMessage])
@@ -283,10 +291,18 @@ export default function ChatPage() {
         }
       } catch (error) {
         console.error('Error resetting message limit:', error)
+        let errorText = 'Unknown error'
+        if (error instanceof Error) {
+          errorText = error.message
+          // Make error message more user-friendly
+          if (errorText.includes('Supabase credentials not configured')) {
+            errorText = '⚠️ Server configuration needed: The SUPABASE_SERVICE_ROLE_KEY environment variable must be added to Netlify. See QUICK_FIX_NETLIFY.md for instructions.'
+          }
+        }
         const errorMessage: Message = {
           id: Date.now().toString(),
           role: 'assistant',
-          content: `❌ Error resetting message limit: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          content: `❌ Error resetting message limit: ${errorText}`,
           timestamp: new Date(),
         }
         setMessages([...messages, errorMessage])
