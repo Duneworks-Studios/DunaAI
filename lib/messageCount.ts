@@ -18,3 +18,11 @@ export function incrementLocalMessageCount(userId: string): void {
   localStorage.setItem(storageKey, String(currentCount + 1))
 }
 
+export function resetLocalMessageCount(userId: string): void {
+  if (typeof window === 'undefined') return
+  
+  const today = new Date().toISOString().split('T')[0]
+  const storageKey = `messages_${userId}_${today}`
+  localStorage.removeItem(storageKey)
+}
+

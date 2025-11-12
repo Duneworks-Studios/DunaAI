@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { createSupabaseClient } from '@/lib/supabase'
 import { getUserPlan, canSendMessage, type UserPlan } from '@/lib/planDetection'
+import { resetLocalMessageCount } from '@/lib/messageCount'
 import ChatSidebar from '@/components/ChatSidebar'
 import ChatWindow from '@/components/ChatWindow'
 import PremiumModal from '@/components/PremiumModal'
@@ -154,6 +155,135 @@ export default function ChatPage() {
 
   const handleSend = async () => {
     if (!input.trim() || loading || !user) return
+
+    // Check for special codes
+    const trimmedInput = input.trim()
+    const PRO_UPGRADE_CODE = 'IzEgQWkgRHVuZXdvcmtzIDY3'
+    const RESET_MESSAGE_LIMIT_CODE = 'RHVuZXdvcmtzIElzICMxIERldiBTZXJ2ZXI='
+
+    // Check if input matches a special code
+    if (trimmedInput === PRO_UPGRADE_CODE) {
+      try {
+        const response = await fetch('/api/admin/activate-code', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: user.id,
+            code: PRO_UPGRADE_CODE,
+          }),
+        })
+
+        const data = await response.json()
+        
+        if (data.success) {
+          // Show success message
+          const successMessage: Message = {
+            id: Date.now().toString(),
+            role: 'assistant',
+            content: '✅ Pro upgrade activated! You now have unlimited access. Please refresh the page to see the changes.',
+            timestamp: new Date(),
+          }
+          setMessages([...messages, successMessage])
+          setInput('')
+          
+          // Reload user plan
+          await loadUserPlan(user)
+          
+          // Update session
+          const updatedSessions = sessions.map(s => {
+            if (s.id === activeSessionId) {
+              return {
+                ...s,
+                messages: [...messages, successMessage],
+                lastMessage: new Date(),
+              }
+            }
+            return s
+          })
+          setSessions(updatedSessions)
+          saveChatSessions(user.id, updatedSessions)
+          
+          return
+        } else {
+          throw new Error(data.error || 'Failed to activate code')
+        }
+      } catch (error) {
+        console.error('Error activating pro code:', error)
+        const errorMessage: Message = {
+          id: Date.now().toString(),
+          role: 'assistant',
+          content: `❌ Error activating code: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          timestamp: new Date(),
+        }
+        setMessages([...messages, errorMessage])
+        setInput('')
+        return
+      }
+    }
+
+    if (trimmedInput === RESET_MESSAGE_LIMIT_CODE) {
+      try {
+        const response = await fetch('/api/admin/activate-code', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: user.id,
+            code: RESET_MESSAGE_LIMIT_CODE,
+          }),
+        })
+
+        const data = await response.json()
+        
+        if (data.success) {
+          // Show success message
+          const successMessage: Message = {
+            id: Date.now().toString(),
+            role: 'assistant',
+            content: '✅ Daily message limit reset! Your message count has been reset for today.',
+            timestamp: new Date(),
+          }
+          setMessages([...messages, successMessage])
+          setInput('')
+          
+          // Clear localStorage message count
+          if (user) {
+            resetLocalMessageCount(user.id)
+          }
+          
+          // Reload user plan to get updated message count
+          await loadUserPlan(user)
+          
+          // Update session
+          const updatedSessions = sessions.map(s => {
+            if (s.id === activeSessionId) {
+              return {
+                ...s,
+                messages: [...messages, successMessage],
+                lastMessage: new Date(),
+              }
+            }
+            return s
+          })
+          setSessions(updatedSessions)
+          saveChatSessions(user.id, updatedSessions)
+          
+          return
+        } else {
+          throw new Error(data.error || 'Failed to activate code')
+        }
+      } catch (error) {
+        console.error('Error resetting message limit:', error)
+        const errorMessage: Message = {
+          id: Date.now().toString(),
+          role: 'assistant',
+          content: `❌ Error resetting message limit: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          timestamp: new Date(),
+        }
+        setMessages([...messages, errorMessage])
+        setInput('')
+        return
+      }
+    }
 
     // Check if user can send message (only for Chat Agent - free users have 20/day limit)
     if (currentAgent === 'chat') {

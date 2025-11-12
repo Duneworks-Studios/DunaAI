@@ -49,29 +49,49 @@ Make sure `user_plans` table exists (see `SUPABASE_SETUP.md`)
 
 ## How It Works for Each User
 
-**When ANY user purchases premium:**
+**When ANY user purchases premium (Monthly or Lifetime):**
 
-1. Whop sends webhook → `/api/whop/webhook`
-2. Webhook extracts customer email from purchase
-3. Finds user in Supabase by email (case-insensitive)
-4. Updates:
-   - User metadata (`plan`, `plan_type`, `subscription_status`)
-   - `user_plans` table (database record)
-5. User automatically gets premium access
+1. **User clicks checkout** on your site (while logged in)
+2. **User completes purchase** on Whop checkout page
+3. **Whop sends webhook** → `/api/whop/webhook` with purchase details
+4. **Webhook automatically**:
+   - Extracts customer email from purchase (handles multiple event structures)
+   - Extracts plan ID to determine Monthly vs Lifetime
+   - Finds user in Supabase by email (case-insensitive, efficient lookup)
+   - Determines plan type: `pro` (Monthly) or `pro_lifetime` (Lifetime)
+   - Updates user metadata (`plan`, `plan_type`, `subscription_status`, `whop_plan_id`)
+   - Updates `user_plans` table (database record)
+   - Verifies the update was successful
+5. **User automatically gets premium access** - no manual steps needed!
 
 **No manual intervention needed!** It works for everyone automatically.
+
+### Plan Detection
+
+The webhook automatically detects:
+- **Monthly Plan** (`plan_vhBLiFWs6AJNx`) → Sets `plan_type: 'pro'`
+- **Lifetime Plan** (`plan_nAv9o4mMRgV37`) → Sets `plan_type: 'pro_lifetime'`
+
+Detection works by:
+- Matching plan IDs
+- Checking plan names for "lifetime" keyword
+- Handling various Whop event data structures
 
 ## Testing
 
 ### Test the Webhook
 
-1. Make a test purchase on Whop
-2. Check Netlify logs (Site → Functions → View logs)
-3. You should see:
+1. Make a test purchase on Whop (Monthly or Lifetime)
+2. Check Netlify logs (Site → Functions → View logs) or server logs
+3. You should see detailed logs like:
    ```
-   Processing upgrade for: user@example.com Plan: plan_xxx
+   🔔 Whop Webhook Event: { type: 'checkout.completed', customerEmail: '...', planId: '...' }
+   📦 Processing upgrade for: user@example.com Plan ID: plan_xxx
+   ✅ Found user by email: user@example.com
+   📋 Plan Type Detected: pro_lifetime (Plan ID: plan_nAv9o4mMRgV37, Is Lifetime: true)
    ✅ Updated user_plans table with plan_type: pro_lifetime
    ✅ User user@example.com upgraded to pro_lifetime plan
+   📊 Verification: { metadataPlanType: 'pro_lifetime', databasePlanType: 'pro_lifetime', ... }
    ```
 
 ### Verify User Got Premium
@@ -122,9 +142,33 @@ fetch('https://your-site.netlify.app/api/whop/sync', {
 
 - ✅ **Works automatically** for ALL users who purchase
 - ✅ **No manual steps** needed for each user
-- ✅ **Updates both** metadata and database
-- ✅ **Handles** monthly and lifetime plans
-- ✅ **Handles** cancellations automatically
+- ✅ **Updates both** metadata and database table
+- ✅ **Automatically detects** Monthly vs Lifetime plans
+- ✅ **Handles** cancellations and expirations automatically
+- ✅ **Robust email matching** - handles various Whop event structures
+- ✅ **Efficient user lookup** - uses direct email lookup when possible
+- ✅ **Comprehensive logging** - easy to debug issues
+- ✅ **Verification** - confirms updates were successful
 
 The webhook is the primary method - it automatically handles every purchase!
+
+## Technical Details
+
+### Event Types Handled
+
+- `checkout.completed` - When user completes purchase
+- `subscription.created` - When subscription is created
+- `subscription.activated` - When subscription activates
+- `subscription.cancelled` - When subscription is cancelled
+- `subscription.expired` - When subscription expires
+- `subscription.deactivated` - When subscription is deactivated
+
+### Data Extraction
+
+The webhook extracts data from multiple possible locations in the Whop event:
+- Customer email: `customer.email`, `customer_email`, `email`, `user.email`, `membership.user.email`
+- Plan ID: `plan.id`, `plan_id`, `membership.plan.id`, `subscription.plan.id`
+- Subscription ID: `subscription.id`, `subscription_id`, `id`, `membership.id`
+
+This ensures compatibility with different Whop API versions and event structures.
 

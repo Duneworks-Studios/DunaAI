@@ -25,6 +25,7 @@ export const metadata: Metadata = {
     width: 'device-width',
     initialScale: 1,
     maximumScale: 5,
+    userScalable: true,
   },
   openGraph: {
     title: 'Duna – Premium AI Browser by Duneworks',
@@ -39,8 +40,11 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className="scroll-smooth">
-      <body className={`${manrope.variable} ${inter.variable} font-sans antialiased`}>
+    <html lang="en" className="scroll-smooth overflow-x-hidden">
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+      </head>
+      <body className={`${manrope.variable} ${inter.variable} font-sans antialiased overflow-x-hidden`}>
         <ThemeProvider>
           <AgentProvider>
             <Navbar />
