@@ -5,9 +5,13 @@ import { createClient } from '@supabase/supabase-js'
 // Handles both pro upgrade and message limit reset
 export async function POST(request: NextRequest) {
   try {
-    const { userId, code } = await request.json()
+    const body = await request.json()
+    const { userId, code } = body
+
+    console.log('🔑 Code activation request:', { userId, code, codeLength: code?.length })
 
     if (!userId || !code) {
+      console.error('❌ Missing userId or code:', { userId: !!userId, code: !!code })
       return NextResponse.json(
         { error: 'User ID and code are required' },
         { status: 400 }
@@ -18,13 +22,31 @@ export async function POST(request: NextRequest) {
     const PRO_UPGRADE_CODE = 'IzEgQWkgRHVuZXdvcmtzIDY3'
     const RESET_MESSAGE_LIMIT_CODE = 'RHVuZXdvcmtzIElzICMxIERldiBTZXJ2ZXI='
 
+    console.log('🔍 Code comparison:', {
+      received: code,
+      proCode: PRO_UPGRADE_CODE,
+      resetCode: RESET_MESSAGE_LIMIT_CODE,
+      matchesPro: code === PRO_UPGRADE_CODE,
+      matchesReset: code === RESET_MESSAGE_LIMIT_CODE,
+    })
+
     // Get service role key from environment
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
     if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('❌ Supabase credentials not configured', {
+        hasUrl: !!supabaseUrl,
+        hasServiceKey: !!supabaseServiceKey,
+      })
       return NextResponse.json(
-        { error: 'Supabase credentials not configured' },
+        { 
+          error: 'Supabase credentials not configured. Please add SUPABASE_SERVICE_ROLE_KEY to your Netlify environment variables.',
+          details: {
+            missingUrl: !supabaseUrl,
+            missingServiceKey: !supabaseServiceKey,
+          }
+        },
         { status: 500 }
       )
     }

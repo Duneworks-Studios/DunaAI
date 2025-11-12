@@ -164,6 +164,8 @@ export default function ChatPage() {
     // Check if input matches a special code
     if (trimmedInput === PRO_UPGRADE_CODE) {
       try {
+        console.log('🔑 Pro upgrade code detected, activating...', { userId: user.id, code: PRO_UPGRADE_CODE })
+        
         const response = await fetch('/api/admin/activate-code', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -173,7 +175,15 @@ export default function ChatPage() {
           }),
         })
 
+        console.log('📡 Response status:', response.status, response.statusText)
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ error: `HTTP ${response.status}: ${response.statusText}` }))
+          throw new Error(errorData.error || `Server error: ${response.status}`)
+        }
+
         const data = await response.json()
+        console.log('📦 Response data:', data)
         
         if (data.success) {
           // Show success message
@@ -208,11 +218,11 @@ export default function ChatPage() {
           throw new Error(data.error || 'Failed to activate code')
         }
       } catch (error) {
-        console.error('Error activating pro code:', error)
+        console.error('❌ Error activating pro code:', error)
         const errorMessage: Message = {
           id: Date.now().toString(),
           role: 'assistant',
-          content: `❌ Error activating code: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          content: `❌ Error activating code: ${error instanceof Error ? error.message : 'Unknown error'}. Check console for details.`,
           timestamp: new Date(),
         }
         setMessages([...messages, errorMessage])
