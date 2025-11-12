@@ -113,29 +113,23 @@ export async function POST(request: NextRequest) {
 
       console.log('📦 Processing upgrade for:', customerEmail, 'Plan ID:', planId)
 
-      // Find user by email - use more efficient query if possible
+      // Find user by email using listUsers
       let user = null
       try {
-        // Try to get user by email directly (more efficient)
-        const { data: userData, error: getUserError } = await supabase.auth.admin.getUserByEmail(customerEmail)
+        const { data: users, error: userError } = await supabase.auth.admin.listUsers()
         
-        if (!getUserError && userData?.user) {
-          user = userData.user
-          console.log('✅ Found user by email:', user.email, user.id)
-        } else {
-          // Fallback to listing all users (less efficient but more reliable)
-          console.log('⚠️ Direct email lookup failed, trying listUsers...')
-          const { data: users, error: userError } = await supabase.auth.admin.listUsers()
-          
-          if (userError) {
-            console.error('❌ Error fetching users:', userError)
-            return NextResponse.json(
-              { error: 'Failed to find user' },
-              { status: 500 }
-            )
-          }
+        if (userError) {
+          console.error('❌ Error fetching users:', userError)
+          return NextResponse.json(
+            { error: 'Failed to find user' },
+            { status: 500 }
+          )
+        }
 
-          user = users.users.find(u => u.email?.toLowerCase() === customerEmail.toLowerCase())
+        user = users.users.find(u => u.email?.toLowerCase() === customerEmail.toLowerCase())
+        
+        if (user) {
+          console.log('✅ Found user by email:', user.email, user.id)
         }
       } catch (error) {
         console.error('❌ Error finding user:', error)
