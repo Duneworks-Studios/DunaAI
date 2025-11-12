@@ -13,7 +13,6 @@ export default function Navbar() {
   const [loading, setLoading] = useState(true)
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const [showMobileMenu, setShowMobileMenu] = useState(false)
-  const [logoError, setLogoError] = useState(false)
   const { theme } = useTheme()
   const supabase = createSupabaseClient()
 
@@ -60,7 +59,7 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 h-20 glass border-b-2 border-[rgba(255,215,0,0.3)]">
+    <nav className="fixed top-0 left-0 right-0 z-50 h-16 glass border-b-2 border-[rgba(255,215,0,0.3)]">
       <div className="max-w-7xl mx-auto h-full px-6 sm:px-8 lg:px-12 flex items-center justify-between">
         {/* Logo - Modern Design */}
         <Link 
@@ -69,42 +68,30 @@ export default function Navbar() {
           onClick={() => setShowMobileMenu(false)}
         >
           <motion.div 
-            className="relative h-16 w-16 flex items-center justify-center"
+            className="relative h-12 w-12 flex items-center justify-center"
             whileHover={{ scale: 1.1, rotate: 5 }}
             whileTap={{ scale: 0.95 }}
           >
             {/* Multi-layer Gold Glow */}
-            <div className="absolute inset-0 bg-gradient-to-br from-[#ffd700] via-[#ffed4e] to-[#d4af37] rounded-2xl blur-2xl opacity-70 group-hover:opacity-90 transition-opacity animate-glow"></div>
-            <div className="absolute inset-0 bg-gradient-to-br from-[#ffd700] to-[#d4af37] rounded-xl blur-lg opacity-50 group-hover:opacity-70 transition-opacity"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-[#ffd700] via-[#ffed4e] to-[#d4af37] rounded-xl blur-xl opacity-60 group-hover:opacity-80 transition-opacity animate-glow"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-[#ffd700] to-[#d4af37] rounded-lg blur-md opacity-40 group-hover:opacity-60 transition-opacity"></div>
             
-            {/* Logo Image */}
+            {/* Logo Image - 3D Gold Logo */}
             <div className="relative z-10 w-full h-full flex items-center justify-center">
-              {!logoError ? (
-                <Image 
-                  src="/duna-logo.png" 
-                  alt="Duna Logo" 
-                  width={64}
-                  height={64}
-                  className="object-contain w-full h-full filter drop-shadow-[0_0_25px_rgba(255,215,0,0.9)] drop-shadow-[0_0_50px_rgba(212,175,55,0.6)]"
-                  priority
-                  unoptimized
-                  onError={() => setLogoError(true)}
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <div className="relative w-full h-full">
-                    <div className="absolute inset-0 bg-gradient-to-br from-[#ffd700] via-[#ffed4e] to-[#d4af37] rounded-xl"></div>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-3xl font-black text-black">D</span>
-                    </div>
-                  </div>
-                </div>
-              )}
+              <Image 
+                src="/duneailogo.png" 
+                alt="Duna Logo" 
+                width={48}
+                height={48}
+                className="object-contain w-full h-full filter drop-shadow-[0_0_20px_rgba(255,215,0,0.8)] drop-shadow-[0_0_40px_rgba(212,175,55,0.5)]"
+                priority
+                unoptimized
+              />
             </div>
             
             {/* Rotating Gold Ring */}
             <motion.div
-              className="absolute inset-0 border-2 border-[rgba(255,215,0,0.5)] rounded-xl"
+              className="absolute inset-0 border-2 border-[rgba(255,215,0,0.4)] rounded-xl"
               animate={{ rotate: 360 }}
               transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
             />

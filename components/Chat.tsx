@@ -279,7 +279,7 @@ export default function Chat() {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-6 pt-20">
+      <div className="min-h-screen flex items-center justify-center px-6 pt-16">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -305,17 +305,17 @@ export default function Chat() {
   const activeSession = sessions.find(s => s.id === activeSessionId)
 
   return (
-    <div className="min-h-screen flex pt-20">
+    <div className="min-h-screen flex pt-16">
       {/* Mobile Sidebar Toggle */}
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="md:hidden fixed top-24 left-4 z-50 px-4 py-2 rounded-lg premium-card glass"
+        className="md:hidden fixed top-20 left-4 z-50 px-4 py-2 rounded-lg premium-card glass"
       >
         {sidebarOpen ? 'Close' : 'Chats'}
       </button>
 
       {/* Left Sidebar - Chat History */}
-      <aside className={`w-64 fixed left-0 top-20 bottom-0 border-r glass transition-transform duration-300 z-40 border-[var(--border-primary)] ${
+      <aside className={`w-64 fixed left-0 top-16 bottom-0 border-r glass transition-transform duration-300 z-40 border-[var(--border-primary)] ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full'
       } md:translate-x-0`}>
         <div className="h-full flex flex-col">

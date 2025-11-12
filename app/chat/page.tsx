@@ -296,7 +296,7 @@ export default function ChatPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center pt-20">
+      <div className="min-h-screen flex items-center justify-center pt-16">
         <div className="w-8 h-8 border-2 border-[#888] border-t-[#d4c4a0] rounded-full animate-spin" />
       </div>
     )
