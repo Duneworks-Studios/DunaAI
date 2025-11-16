@@ -246,7 +246,15 @@ export default function ChatWindow({
                   {/* Promo Codes Display */}
                   {message.promoCodes && message.promoCodes.length > 0 && (
                     <div className="mt-4 border border-[var(--border-primary)] rounded-lg overflow-hidden bg-[var(--bg-primary)]">
-                      <div className="max-h-[400px] overflow-y-auto p-4">
+                      <div 
+                        className="max-h-[400px] overflow-y-scroll p-4 promo-codes-scroll"
+                        style={{ 
+                          scrollbarWidth: 'thin',
+                          scrollbarColor: 'rgba(255, 215, 0, 0.5) rgba(0, 0, 0, 0.1)',
+                          WebkitOverflowScrolling: 'touch',
+                          overscrollBehavior: 'contain'
+                        }}
+                      >
                         <div className="space-y-2">
                           {message.promoCodes.map((codeItem, idx) => (
                             <div

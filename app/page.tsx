@@ -47,8 +47,17 @@ export default function Home() {
         data: { subscription: authSubscription },
       } = supabase.auth.onAuthStateChange((_event, session) => {
         if (!mounted) return
-        setUser(session?.user ?? null)
-        setLoading(false)
+        // Use functional update to avoid dependency on user state
+        setUser(prevUser => {
+          if (session?.user?.id !== prevUser?.id) {
+            return session?.user ?? null
+          }
+          return prevUser
+        })
+        setLoading(prevLoading => {
+          if (prevLoading) return false
+          return prevLoading
+        })
       })
       subscription = authSubscription
     } catch (error) {
@@ -62,7 +71,7 @@ export default function Home() {
         subscription.unsubscribe()
       }
     }
-  }, [router, supabase])
+  }, [supabase]) // Only depend on supabase client
 
   if (loading) {
     return (

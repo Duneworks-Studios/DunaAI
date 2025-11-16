@@ -9,6 +9,7 @@ export default function Hero() {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
 
   useEffect(() => {
+    // Only check once on mount to prevent re-renders
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768)
     }
@@ -18,41 +19,53 @@ export default function Hero() {
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
     setPrefersReducedMotion(mediaQuery.matches)
     
-    const handleReducedMotion = (e: MediaQueryListEvent) => {
-      setPrefersReducedMotion(e.matches)
+    // Debounce resize to prevent constant re-renders
+    let resizeTimeout: NodeJS.Timeout
+    const handleResize = () => {
+      clearTimeout(resizeTimeout)
+      resizeTimeout = setTimeout(() => {
+        checkMobile()
+      }, 150)
     }
     
-    mediaQuery.addEventListener('change', handleReducedMotion)
-    window.addEventListener('resize', checkMobile)
+    window.addEventListener('resize', handleResize, { passive: true })
     
     return () => {
-      window.removeEventListener('resize', checkMobile)
-      mediaQuery.removeEventListener('change', handleReducedMotion)
+      clearTimeout(resizeTimeout)
+      window.removeEventListener('resize', handleResize)
     }
   }, [])
 
-  // Memoize particle data to prevent re-renders
+  // Memoize particle data to prevent re-renders - stable values
   const particles = useMemo(() => {
     if (isMobile || prefersReducedMotion) return []
-    return Array.from({ length: 8 }, (_, i) => ({
-      id: i,
-      width: 2 + Math.random() * 2,
-      height: 2 + Math.random() * 2,
-      left: Math.random() * 100,
-      top: Math.random() * 100,
-      background: `radial-gradient(circle, rgba(255, 215, ${Math.random() * 50 + 200}, 1), transparent)`,
-      boxShadow: `0 0 ${4 + Math.random() * 4}px rgba(255, 215, 0, ${0.4 + Math.random() * 0.2})`,
-      duration: 5 + Math.random() * 2,
-      delay: Math.random() * 2,
-      x: Math.random() * 30 - 15,
-    }))
-  }, [isMobile, prefersReducedMotion])
+    // Use fixed seed values for consistent animations
+    const seed = 12345
+    return Array.from({ length: 8 }, (_, i) => {
+      const rng = (seed: number, i: number) => {
+        const x = Math.sin(seed * (i + 1)) * 10000
+        return x - Math.floor(x)
+      }
+      return {
+        id: i,
+        width: 2 + rng(seed, i * 2) * 2,
+        height: 2 + rng(seed, i * 2 + 1) * 2,
+        left: rng(seed, i * 3) * 100,
+        top: rng(seed, i * 3 + 1) * 100,
+        background: `radial-gradient(circle, rgba(255, 215, ${200 + rng(seed, i * 4) * 50}, 1), transparent)`,
+        boxShadow: `0 0 ${4 + rng(seed, i * 5) * 4}px rgba(255, 215, 0, ${0.4 + rng(seed, i * 6) * 0.2})`,
+        duration: 5 + rng(seed, i * 7) * 2,
+        delay: rng(seed, i * 8) * 2,
+        x: (rng(seed, i * 9) - 0.5) * 30,
+      }
+    })
+  }, []) // Empty deps - only calculate once
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
       {/* Optimized Background - Reduced on Mobile */}
       <div className="absolute inset-0 z-0 overflow-hidden">
-        {/* Optimized Gold Gradient Orbs - Reduced blur and simpler animations */}
+        {/* Animated Gold Gradient Orbs - Stable animations */}
         <motion.div
           className="absolute top-1/4 left-1/4 w-[300px] h-[300px] sm:w-[400px] sm:h-[400px] md:w-[500px] md:h-[500px] rounded-full blur-[60px] sm:blur-[80px] md:blur-[100px] will-change-transform"
           style={{
@@ -68,6 +81,7 @@ export default function Hero() {
             duration: 25,
             repeat: Infinity,
             ease: 'easeInOut',
+            repeatType: 'loop',
           }}
         />
         <motion.div
@@ -86,6 +100,7 @@ export default function Hero() {
             repeat: Infinity,
             ease: 'easeInOut',
             delay: 0.5,
+            repeatType: 'loop',
           }}
         />
 
@@ -103,7 +118,7 @@ export default function Hero() {
           />
         )}
 
-        {/* Optimized Particles - Reduced count and memoized */}
+        {/* Animated Particles - Stable animations */}
         {particles.map((particle) => (
           <motion.div
             key={particle.id}
@@ -127,6 +142,7 @@ export default function Hero() {
               repeat: Infinity,
               ease: 'easeInOut',
               delay: particle.delay,
+              repeatType: 'loop',
             }}
           />
         ))}
@@ -160,6 +176,7 @@ export default function Hero() {
                 duration: 2.5,
                 repeat: Infinity,
                 ease: 'easeInOut',
+                repeatType: 'loop',
               }}
             />
             <span className="text-xs sm:text-sm font-bold text-[var(--text-secondary)] tracking-wider uppercase">
@@ -187,6 +204,7 @@ export default function Hero() {
                 duration: 5,
                 repeat: Infinity,
                 ease: 'easeInOut',
+                repeatType: 'loop',
               }}
             >
               Duna
