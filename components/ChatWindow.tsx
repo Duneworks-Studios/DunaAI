@@ -12,6 +12,8 @@ interface Message {
   content: string
   images?: string[] // Base64 encoded images
   timestamp: Date
+  promoCodes?: Array<{ code: string; text: string; isUsed: boolean; usedAt?: string }> // For promo code display
+  codeStats?: { total: number; available: number; used: number } // For promo code stats
 }
 
 interface ChatWindowProps {
@@ -236,10 +238,75 @@ export default function ChatWindow({
                     </div>
                   )}
                   {message.content && (
-                    <p className="whitespace-pre-wrap leading-relaxed text-sm break-words text-[var(--text-primary)]">
+                    <p className="whitespace-pre-wrap leading-relaxed text-sm break-words text-[var(--text-primary)] mb-3">
                       {message.content}
                     </p>
                   )}
+                  
+                  {/* Promo Codes Display */}
+                  {message.promoCodes && message.promoCodes.length > 0 && (
+                    <div className="mt-4 border border-[var(--border-primary)] rounded-lg overflow-hidden bg-[var(--bg-primary)]">
+                      <div className="max-h-[400px] overflow-y-auto p-4">
+                        <div className="space-y-2">
+                          {message.promoCodes.map((codeItem, idx) => (
+                            <div
+                              key={idx}
+                              className={`p-3 rounded-lg border transition-all ${
+                                codeItem.isUsed
+                                  ? 'bg-red-500/10 border-red-500/30 opacity-75'
+                                  : 'bg-green-500/10 border-green-500/30'
+                              }`}
+                            >
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <span className={`text-sm font-medium ${
+                                      codeItem.isUsed ? 'text-red-400' : 'text-green-400'
+                                    }`}>
+                                      {codeItem.text}
+                                    </span>
+                                    <span className={`px-2 py-0.5 rounded text-xs font-semibold ${
+                                      codeItem.isUsed
+                                        ? 'bg-red-500/20 text-red-400'
+                                        : 'bg-green-500/20 text-green-400'
+                                    }`}>
+                                      {codeItem.isUsed ? 'USED' : 'VALID'}
+                                    </span>
+                                  </div>
+                                  <p className="text-xs text-[var(--text-tertiary)] font-mono break-all mt-1">
+                                    {codeItem.code}
+                                  </p>
+                                  {codeItem.isUsed && codeItem.usedAt && (
+                                    <p className="text-xs text-red-400/70 mt-1">
+                                      Used: {new Date(codeItem.usedAt).toLocaleDateString()}
+                                    </p>
+                                  )}
+                                </div>
+                                {!codeItem.isUsed && (
+                                  <button
+                                    onClick={(e) => {
+                                      navigator.clipboard.writeText(codeItem.code)
+                                      // Show a brief feedback
+                                      const btn = e.currentTarget
+                                      const originalText = btn.textContent
+                                      btn.textContent = 'Copied!'
+                                      setTimeout(() => {
+                                        btn.textContent = originalText
+                                      }, 2000)
+                                    }}
+                                    className="px-3 py-1.5 text-xs btn-secondary flex-shrink-0"
+                                  >
+                                    Copy
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
                   <p className="text-xs mt-2 text-[var(--text-tertiary)]">
                     {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </p>

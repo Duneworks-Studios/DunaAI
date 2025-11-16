@@ -126,7 +126,7 @@ export default function PromoCodeModal({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          className="relative premium-card glass-strong max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto z-[201]"
+          className="relative premium-card glass-strong max-w-2xl w-full mx-4 max-h-[85vh] overflow-y-auto z-[201]"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="p-6">
@@ -153,14 +153,17 @@ export default function PromoCodeModal({
                     type="text"
                     value={code}
                     onChange={(e) => setCode(e.target.value)}
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter' && !loading) {
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !loading && code.trim()) {
+                        e.preventDefault()
                         handleRedeem()
                       }
                     }}
                     placeholder="Paste your base64 code here..."
                     className="w-full px-4 py-3 bg-[var(--bg-elevated)] border border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] focus:border-opacity-50 transition-colors font-mono text-sm"
                     disabled={loading}
+                    autoFocus
+                    style={{ pointerEvents: 'auto', zIndex: 1 }}
                   />
                 </div>
 

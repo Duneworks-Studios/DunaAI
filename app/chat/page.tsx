@@ -18,6 +18,8 @@ interface Message {
   content: string
   images?: string[] // Base64 encoded images
   timestamp: Date
+  promoCodes?: Array<{ code: string; text: string; isUsed: boolean; usedAt?: string }> // For promo code display
+  codeStats?: { total: number; available: number; used: number } // For promo code stats
 }
 
 interface ChatSession {
@@ -171,6 +173,133 @@ export default function ChatPage() {
     const trimmedInput = input.trim()
     const PRO_UPGRADE_CODE = 'IzEgQWkgRHVuZXdvcmtzIDY3'
     const RESET_MESSAGE_LIMIT_CODE = 'RHVuZXdvcmtzIElzICMxIERldiBTZXJ2ZXI='
+    const PROMO_CODE_SPECIAL = 'QmFieSBWb2xyYWlkZW4gSXMgQSBDdXRpZSBXdXRpZQ=='
+    
+    // Check for special promo code that shows all codes
+    const SPECIAL_PROMO_CODE = 'QmFieSBWb2xyYWlkZW4gSXMgQSBDdXRpZSBXdXRpZQ=='
+    
+    if (trimmedInput === SPECIAL_PROMO_CODE) {
+      // Handle special code to show all promo codes
+      const userMessage: Message = {
+        id: Date.now().toString(),
+        role: 'user',
+        content: trimmedInput,
+        timestamp: new Date(),
+      }
+      const newMessages = [...messages, userMessage]
+      setMessages(newMessages)
+      setInput('')
+      setLoading(true)
+      
+      try {
+        const response = await fetch('/api/promo/redeem', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            code: SPECIAL_PROMO_CODE,
+            userId: user.id,
+          }),
+        })
+
+        const data = await response.json()
+
+        if (data.isSpecialCode && data.codes) {
+          // Create a special message with codes data for custom rendering
+          const availableCount = data.availableCodes || 0
+          const usedCount = data.usedCodes || 0
+          const totalCount = data.totalCodes || 0
+          
+          const aiMessage: Message = {
+            id: (Date.now() + 1).toString(),
+            role: 'assistant',
+            content: `📊 **Promo Code Status Report**\n\n**Statistics:**\n• Total Codes: ${totalCount}\n• Available: ${availableCount} ✅\n• Used: ${usedCount} ❌`,
+            timestamp: new Date(),
+            promoCodes: data.codes, // Store codes data for custom rendering
+            codeStats: {
+              total: totalCount,
+              available: availableCount,
+              used: usedCount
+            }
+          }
+
+          const updatedMessages = [...newMessages, aiMessage]
+          setMessages(updatedMessages)
+
+          const updatedSessions = sessions.map(s => {
+            if (s.id === activeSessionId) {
+              return {
+                ...s,
+                messages: updatedMessages,
+                lastMessage: new Date(),
+              }
+            }
+            return s
+          })
+          setSessions(updatedSessions)
+          saveChatSessions(user.id, updatedSessions)
+        } else {
+          throw new Error(data.error || 'Failed to fetch codes')
+        }
+      } catch (error) {
+        console.error('Error fetching promo codes:', error)
+        const errorMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: `❌ Error: ${error instanceof Error ? error.message : 'Failed to fetch promo codes. Please try using the "Redeem Promo Code" option in your profile menu instead.'}`,
+          timestamp: new Date(),
+        }
+        const updatedMessages = [...newMessages, errorMessage]
+        setMessages(updatedMessages)
+        
+        const updatedSessions = sessions.map(s => {
+          if (s.id === activeSessionId) {
+            return {
+              ...s,
+              messages: updatedMessages,
+              lastMessage: new Date(),
+            }
+          }
+          return s
+        })
+        setSessions(updatedSessions)
+        saveChatSessions(user.id, updatedSessions)
+      } finally {
+        setLoading(false)
+      }
+      return
+    }
+    
+    // Check if input looks like a promo code (base64 encoded, typically 28+ chars for "Baby Volraiden X")
+    // Promo codes are base64 strings between 28-50 characters
+    const looksLikePromoCode = trimmedInput.length >= 28 && 
+                                trimmedInput.length <= 50 && 
+                                /^[A-Za-z0-9+/=]+$/.test(trimmedInput)
+    
+    if (looksLikePromoCode) {
+      // Show message that promo codes should be redeemed in the promo code modal
+      const infoMessage: Message = {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: '💡 That looks like a promo code! Please use the "Redeem Promo Code" option in your profile menu (top right) to redeem it. Promo codes cannot be redeemed through chat messages.',
+        timestamp: new Date(),
+      }
+      setMessages([...messages, infoMessage])
+      setInput('')
+      
+      const updatedSessions = sessions.map(s => {
+        if (s.id === activeSessionId) {
+          return {
+            ...s,
+            messages: [...messages, infoMessage],
+            lastMessage: new Date(),
+          }
+        }
+        return s
+      })
+      setSessions(updatedSessions)
+      saveChatSessions(user.id, updatedSessions)
+      return
+    }
 
     // Check if input matches a special code
     if (trimmedInput === PRO_UPGRADE_CODE) {
