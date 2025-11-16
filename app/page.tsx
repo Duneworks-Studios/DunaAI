@@ -30,16 +30,7 @@ export default function Home() {
         }
         
         setUser(session?.user ?? null)
-        if (session?.user) {
-          // Small delay to ensure session is fully established
-          setTimeout(() => {
-            if (mounted) {
-              router.push('/chat')
-            }
-          }, 100)
-        } else {
-          setLoading(false)
-        }
+        setLoading(false)
       } catch (error) {
         console.error('Error getting session:', error)
         if (mounted) {
@@ -56,18 +47,8 @@ export default function Home() {
         data: { subscription: authSubscription },
       } = supabase.auth.onAuthStateChange((_event, session) => {
         if (!mounted) return
-        console.log('Auth state changed on home page:', _event, !!session?.user)
         setUser(session?.user ?? null)
-        if (session?.user) {
-          // Don't redirect immediately - let the session establish
-          setTimeout(() => {
-            if (mounted) {
-              router.push('/chat')
-            }
-          }, 100)
-        } else {
-          setLoading(false)
-        }
+        setLoading(false)
       })
       subscription = authSubscription
     } catch (error) {
@@ -105,10 +86,6 @@ export default function Home() {
         </div>
       </div>
     )
-  }
-
-  if (user) {
-    return null // Will redirect to /chat
   }
 
   return (

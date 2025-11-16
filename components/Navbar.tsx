@@ -3,17 +3,21 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createSupabaseClient } from '@/lib/supabase'
 import { useTheme } from '@/contexts/ThemeContext'
 import type { User } from '@supabase/supabase-js'
+import LoginModal from './LoginModal'
 
 export default function Navbar() {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const [showMobileMenu, setShowMobileMenu] = useState(false)
+  const [showLoginModal, setShowLoginModal] = useState(false)
   const { theme } = useTheme()
+  const router = useRouter()
   const supabase = createSupabaseClient()
 
   useEffect(() => {
@@ -120,6 +124,24 @@ export default function Navbar() {
               transition={{ duration: 0.3 }}
             />
           </Link>
+          <button
+            onClick={() => {
+              if (user) {
+                router.push('/chat')
+              } else {
+                setShowLoginModal(true)
+              }
+            }}
+            className="px-6 py-3 rounded-xl text-sm font-semibold text-[var(--text-secondary)] hover:text-[var(--accent-primary)] hover:bg-[rgba(255,215,0,0.1)] transition-all duration-300 relative group"
+          >
+            Chat
+            <motion.span 
+              className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)]"
+              initial={{ scaleX: 0 }}
+              whileHover={{ scaleX: 1 }}
+              transition={{ duration: 0.3 }}
+            />
+          </button>
           <Link
             href="/pricing"
             className="px-6 py-3 rounded-xl text-sm font-semibold text-[var(--text-secondary)] hover:text-[var(--accent-primary)] hover:bg-[rgba(255,215,0,0.1)] transition-all duration-300 relative group"
@@ -286,6 +308,19 @@ export default function Navbar() {
               >
                 Home
               </Link>
+              <button
+                onClick={() => {
+                  setShowMobileMenu(false)
+                  if (user) {
+                    router.push('/chat')
+                  } else {
+                    setShowLoginModal(true)
+                  }
+                }}
+                className="w-full text-left py-3 px-4 text-base font-semibold text-[var(--text-primary)] hover:text-[var(--accent-primary)] hover:bg-[rgba(255,215,0,0.1)] rounded-xl transition-all"
+              >
+                Chat
+              </button>
               <Link
                 href="/pricing"
                 onClick={() => setShowMobileMenu(false)}
@@ -357,6 +392,16 @@ export default function Navbar() {
           }}
         />
       )}
+
+      {/* Login Modal */}
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        onLoginSuccess={() => {
+          setShowLoginModal(false)
+          router.push('/chat')
+        }}
+      />
     </nav>
   )
 }

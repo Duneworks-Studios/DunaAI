@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server'
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url)
   const code = requestUrl.searchParams.get('code')
+  const redirect = requestUrl.searchParams.get('redirect') || '/chat'
   
   // Get the origin from environment or request
   const origin = process.env.NEXTAUTH_URL || 
@@ -19,7 +20,7 @@ export async function GET(request: Request) {
     await supabase.auth.exchangeCodeForSession(code)
   }
 
-  // Redirect to chat page
-  return NextResponse.redirect(new URL('/chat', origin))
+  // Redirect to the specified page or chat by default
+  return NextResponse.redirect(new URL(redirect, origin))
 }
 
