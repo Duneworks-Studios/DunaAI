@@ -36,12 +36,25 @@ export async function POST(request: NextRequest) {
 
     // Handle special code - show all codes with status
     if (code === SPECIAL_CODE) {
+      // Check if table exists first
       const { data: allCodes, error: codesError } = await supabaseAdmin
         .from('promo_codes')
         .select('code, code_text, is_used, used_at, used_by_user_id')
         .order('code_text', { ascending: true })
 
       if (codesError) {
+        // Check if it's a "table doesn't exist" error
+        if (codesError.message?.includes('Could not find the table') || 
+            codesError.message?.includes('relation') ||
+            codesError.code === '42P01') {
+          return NextResponse.json(
+            { 
+              error: 'The promo_codes table has not been created yet. Please run the CREATE_PROMO_CODES_TABLE.sql script in your Supabase SQL Editor first.',
+              needsSetup: true
+            },
+            { status: 404 }
+          )
+        }
         return NextResponse.json(
           { error: `Failed to fetch codes: ${codesError.message}` },
           { status: 500 }
@@ -76,6 +89,18 @@ export async function POST(request: NextRequest) {
       .maybeSingle()
 
     if (codeError) {
+      // Check if it's a "table doesn't exist" error
+      if (codeError.message?.includes('Could not find the table') || 
+          codeError.message?.includes('relation') ||
+          codeError.code === '42P01') {
+        return NextResponse.json(
+          { 
+            error: 'The promo_codes table has not been created yet. Please run the CREATE_PROMO_CODES_TABLE.sql script in your Supabase SQL Editor first.',
+            needsSetup: true
+          },
+          { status: 404 }
+        )
+      }
       return NextResponse.json(
         { error: `Failed to check code: ${codeError.message}` },
         { status: 500 }

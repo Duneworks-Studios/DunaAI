@@ -238,7 +238,11 @@ export default function ChatPage() {
           setSessions(updatedSessions)
           saveChatSessions(user.id, updatedSessions)
         } else {
-          throw new Error(data.error || 'Failed to fetch codes')
+          const errorMsg = data.error || 'Failed to fetch codes'
+          if (data.needsSetup) {
+            throw new Error(`${errorMsg}\n\n📝 To fix this:\n1. Go to your Supabase Dashboard\n2. Open the SQL Editor\n3. Run the CREATE_PROMO_CODES_TABLE.sql script\n4. Then run INSERT_PROMO_CODES.sql to add all codes`)
+          }
+          throw new Error(errorMsg)
         }
       } catch (error) {
         console.error('Error fetching promo codes:', error)

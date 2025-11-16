@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { createSupabaseClient } from '@/lib/supabase'
 import type { User } from '@supabase/supabase-js'
@@ -31,6 +31,17 @@ export default function PromoCodeModal({
     usedBy?: string
   }>>([])
   const [codeStats, setCodeStats] = useState({ total: 0, available: 0, used: 0 })
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  // Refocus input when modal opens
+  useEffect(() => {
+    if (isOpen && !showAllCodes && inputRef.current) {
+      // Small delay to ensure modal is fully rendered
+      setTimeout(() => {
+        inputRef.current?.focus()
+      }, 100)
+    }
+  }, [isOpen, showAllCodes])
 
   const handleRedeem = async () => {
     if (!user) {
@@ -110,7 +121,7 @@ export default function PromoCodeModal({
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+      <div className="fixed inset-0 z-[200] flex items-center justify-center p-4" style={{ minHeight: '100vh' }}>
         {/* Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -120,7 +131,7 @@ export default function PromoCodeModal({
           onClick={onClose}
         />
 
-        {/* Modal */}
+        {/* Modal - Centered */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -128,6 +139,7 @@ export default function PromoCodeModal({
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
           className="relative premium-card glass-strong max-w-2xl w-full mx-4 max-h-[85vh] overflow-y-auto z-[201]"
           onClick={(e) => e.stopPropagation()}
+          style={{ margin: 'auto' }}
         >
           <div className="p-6">
             <div className="flex items-center justify-between mb-6">
@@ -149,6 +161,7 @@ export default function PromoCodeModal({
                     Enter Promo Code
                   </label>
                   <input
+                    ref={inputRef}
                     id="promo-code"
                     type="text"
                     value={code}
@@ -159,11 +172,12 @@ export default function PromoCodeModal({
                         handleRedeem()
                       }
                     }}
+                    onFocus={(e) => e.target.select()}
                     placeholder="Paste your base64 code here..."
-                    className="w-full px-4 py-3 bg-[var(--bg-elevated)] border border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] focus:border-opacity-50 transition-colors font-mono text-sm"
+                    className="w-full px-4 py-3 bg-[var(--bg-elevated)] border border-[var(--border-primary)] rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] focus:ring-2 focus:ring-[var(--accent-primary)]/20 transition-colors font-mono text-sm"
                     disabled={loading}
-                    autoFocus
-                    style={{ pointerEvents: 'auto', zIndex: 1 }}
+                    autoFocus={isOpen && !showAllCodes}
+                    style={{ pointerEvents: 'auto', zIndex: 10 }}
                   />
                 </div>
 
