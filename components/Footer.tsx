@@ -88,7 +88,7 @@ export default function Footer() {
           </motion.div>
         </div>
 
-        {/* Copyright */}
+        {/* Attribution & Copyright */}
         <motion.div
           className="border-t border-[var(--border-primary)] pt-8 text-center"
           initial={{ opacity: 0 }}
@@ -96,6 +96,14 @@ export default function Footer() {
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.3 }}
         >
+          <div className="space-y-2 mb-6">
+            <p className="text-sm text-[var(--text-secondary)]">
+              Made By Daniel Lee Buckley - Chief Executive Officer | Duneworks Studios LLC
+            </p>
+            <p className="text-sm text-[var(--text-secondary)]">
+              Made By Vibez - Chief Administration Officer | Duneworks Studios LLC
+            </p>
+          </div>
           <p className="text-sm text-[var(--text-tertiary)]">
             © {currentYear} Duneworks Studios. All Rights Reserved.
           </p>

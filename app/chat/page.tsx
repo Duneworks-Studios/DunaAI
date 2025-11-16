@@ -16,6 +16,7 @@ interface Message {
   id: string
   role: 'user' | 'assistant'
   content: string
+  images?: string[] // Base64 encoded images
   timestamp: Date
 }
 
@@ -102,11 +103,15 @@ export default function ChatPage() {
         const sessionsWithDates = parsed.map((s: {
           id: string
           title: string
-          messages: Array<{ id: string; role: string; content: string; timestamp: string }>
+          messages: Array<{ id: string; role: string; content: string; images?: string[]; timestamp: string }>
           lastMessage: string
         }) => ({
           ...s,
-          messages: s.messages.map((m) => ({ ...m, timestamp: new Date(m.timestamp) })),
+          messages: s.messages.map((m) => ({ 
+            ...m, 
+            timestamp: new Date(m.timestamp),
+            images: m.images || undefined
+          })),
           lastMessage: new Date(s.lastMessage),
         }))
         setSessions(sessionsWithDates)
@@ -153,8 +158,14 @@ export default function ChatPage() {
     setPendingAgent(null)
   }, [userPlan, setCurrentAgent])
 
-  const handleSend = async () => {
-    if (!input.trim() || loading || !user) return
+  const handleSend = async (images?: string[]) => {
+    if ((!input.trim() && (!images || images.length === 0)) || loading || !user) return
+    
+    // Require text message if images are present
+    if (images && images.length > 0 && !input.trim()) {
+      alert('Please add a message with your images')
+      return
+    }
 
     // Check for special codes
     const trimmedInput = input.trim()
@@ -337,6 +348,7 @@ export default function ChatPage() {
       id: Date.now().toString(),
       role: 'user',
       content: input.trim(),
+      images: images && images.length > 0 ? images : undefined,
       timestamp: new Date(),
     }
 
@@ -364,7 +376,11 @@ export default function ChatPage() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              messages: newMessages.map(m => ({ role: m.role, content: m.content })),
+              messages: newMessages.map(m => ({ 
+                role: m.role, 
+                content: m.content,
+                images: m.images 
+              })),
               userId: user.id,
               agent: currentAgent, // Pass current agent to API
             }),

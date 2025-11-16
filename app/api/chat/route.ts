@@ -64,11 +64,59 @@ What would you like to know?`
       systemPrompt = 'You are Duna, an intelligent AI assistant created by Duneworks Studios. You are helpful, friendly, and provide clear, accurate responses to user questions.'
     }
 
-    // Prepare messages with system prompt
+    // Prepare messages with system prompt and handle images
+    const formatMessage = (msg: any) => {
+      if (msg.images && msg.images.length > 0) {
+        // Format for vision models (OpenAI/DeepSeek vision format)
+        const contentParts: any[] = [
+          { type: 'text', text: msg.content || 'What is in this image?' }
+        ]
+        
+        // Add images to content
+        msg.images.forEach((imgBase64: string) => {
+          // Use the original base64 string (already includes data:image/...;base64, prefix)
+          // If it doesn't have the prefix, add a default one
+          const imageUrl = imgBase64.includes('data:') 
+            ? imgBase64 
+            : `data:image/jpeg;base64,${imgBase64}`
+          
+          contentParts.push({
+            type: 'image_url',
+            image_url: {
+              url: imageUrl
+            }
+          })
+        })
+        
+        return {
+          role: msg.role,
+          content: contentParts
+        }
+      }
+      return {
+        role: msg.role,
+        content: msg.content
+      }
+    }
+
     const messagesWithSystem = [
       { role: 'system', content: systemPrompt },
-      ...messages
+      ...messages.map(formatMessage)
     ]
+
+    // Use vision model if images are present
+    let modelToUse = finalModel
+    const hasImages = messages.some((m: any) => m.images && m.images.length > 0)
+    
+    if (hasImages) {
+      // Use vision-capable models
+      if (isDeepSeek) {
+        modelToUse = 'deepseek-chat' // DeepSeek supports vision
+      } else {
+        // OpenAI vision models
+        modelToUse = 'gpt-4o' // or 'gpt-4-vision-preview'
+      }
+    }
 
     // Call AI API (DeepSeek or OpenAI)
     const aiResponse = await fetch(AI_ENDPOINT, {
@@ -78,7 +126,7 @@ What would you like to know?`
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: finalModel,
+        model: modelToUse,
         messages: messagesWithSystem,
         max_tokens: 2000,
         temperature: 0.7,

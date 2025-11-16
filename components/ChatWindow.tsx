@@ -10,6 +10,7 @@ interface Message {
   id: string
   role: 'user' | 'assistant'
   content: string
+  images?: string[] // Base64 encoded images
   timestamp: Date
 }
 
@@ -19,7 +20,7 @@ interface ChatWindowProps {
   loading: boolean
   input: string
   onInputChange: (value: string) => void
-  onSend: () => void
+  onSend: (images?: string[]) => void
   userPlan: UserPlan | null
   showUpgrade: boolean
   onDismissUpgrade: () => void
@@ -39,15 +40,84 @@ export default function ChatWindow({
   activeSessionTitle,
 }: ChatWindowProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [selectedImages, setSelectedImages] = useState<string[]>([])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files) return
+
+    const imageFiles = Array.from(files).filter(file => file.type.startsWith('image/'))
+    
+    if (imageFiles.length === 0) {
+      alert('Please select image files only')
+      return
+    }
+
+    // Limit to 4 images max
+    const filesToProcess = imageFiles.slice(0, 4 - selectedImages.length)
+    
+    filesToProcess.forEach(file => {
+      const reader = new FileReader()
+      reader.onload = (event) => {
+        const base64 = event.target?.result as string
+        setSelectedImages(prev => [...prev, base64])
+      }
+      reader.readAsDataURL(file)
+    })
+
+    // Reset input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+
+  const handlePaste = (e: React.ClipboardEvent) => {
+    const items = e.clipboardData.items
+    const imageItems: File[] = []
+
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.startsWith('image/')) {
+        const file = items[i].getAsFile()
+        if (file) imageItems.push(file)
+      }
+    }
+
+    if (imageItems.length > 0 && selectedImages.length < 4) {
+      e.preventDefault()
+      const filesToProcess = imageItems.slice(0, 4 - selectedImages.length)
+      
+      filesToProcess.forEach(file => {
+        const reader = new FileReader()
+        reader.onload = (event) => {
+          const base64 = event.target?.result as string
+          setSelectedImages(prev => [...prev, base64])
+        }
+        reader.readAsDataURL(file)
+      })
+    }
+  }
+
+  const removeImage = (index: number) => {
+    setSelectedImages(prev => prev.filter((_, i) => i !== index))
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (input.trim() && !loading) {
-      onSend()
+    if ((input.trim() || selectedImages.length > 0) && !loading) {
+      // Require text message if images are present
+      if (selectedImages.length > 0 && !input.trim()) {
+        alert('Please add a message with your images')
+        return
+      }
+      
+      const imagesToSend = [...selectedImages]
+      setSelectedImages([])
+      onSend(imagesToSend.length > 0 ? imagesToSend : undefined)
     }
   }
 
@@ -152,9 +222,24 @@ export default function ChatWindow({
                       : 'bg-[var(--bg-elevated)] border border-[var(--border-primary)]'
                   }`}
                 >
-                  <p className="whitespace-pre-wrap leading-relaxed text-sm break-words text-[var(--text-primary)]">
-                    {message.content}
-                  </p>
+                  {message.images && message.images.length > 0 && (
+                    <div className="mb-3 flex flex-wrap gap-2">
+                      {message.images.map((img, idx) => (
+                        <div key={idx} className="relative group">
+                          <img
+                            src={img}
+                            alt={`Attachment ${idx + 1}`}
+                            className="max-w-[200px] max-h-[200px] rounded-lg object-cover border border-[var(--border-primary)]"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {message.content && (
+                    <p className="whitespace-pre-wrap leading-relaxed text-sm break-words text-[var(--text-primary)]">
+                      {message.content}
+                    </p>
+                  )}
                   <p className="text-xs mt-2 text-[var(--text-tertiary)]">
                     {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </p>
@@ -184,13 +269,54 @@ export default function ChatWindow({
 
       {/* Input */}
       <div className="border-t border-[var(--border-primary)] px-4 md:px-6 py-4 glass flex-shrink-0">
-        <form onSubmit={handleSubmit} className="max-w-4xl mx-auto">
+        <form onSubmit={handleSubmit} className="max-w-4xl mx-auto" onPaste={handlePaste}>
+          {/* Image Preview */}
+          {selectedImages.length > 0 && (
+            <div className="mb-3 flex flex-wrap gap-2">
+              {selectedImages.map((img, idx) => (
+                <div key={idx} className="relative group">
+                  <img
+                    src={img}
+                    alt={`Preview ${idx + 1}`}
+                    className="w-20 h-20 rounded-lg object-cover border border-[var(--border-primary)]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeImage(idx)}
+                    className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center text-white text-xs transition-colors"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          
           <div className="flex gap-3">
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleImageSelect}
+              accept="image/*"
+              multiple
+              className="hidden"
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={loading || selectedImages.length >= 4}
+              className="px-4 py-3 bg-[var(--bg-elevated)] border border-[var(--border-primary)] rounded-xl hover:border-[var(--accent-primary)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+              title="Add images (max 4)"
+            >
+              <svg className="w-5 h-5 text-[var(--text-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+            </button>
             <input
               type="text"
               value={input}
               onChange={(e) => onInputChange(e.target.value)}
-              placeholder="Type your message..."
+              placeholder={selectedImages.length > 0 ? "Add a message with your images..." : "Type your message..."}
               className="flex-1 px-4 py-3 bg-[var(--bg-elevated)] border border-[var(--border-primary)] rounded-xl focus:outline-none focus:border-[var(--accent-primary)] focus:ring-2 focus:ring-[var(--accent-primary)]/20 transition-all text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] text-sm"
               disabled={loading}
               onKeyDown={(e) => {
@@ -202,7 +328,7 @@ export default function ChatWindow({
             />
             <button
               type="submit"
-              disabled={loading || !input.trim()}
+              disabled={loading || (!input.trim() && selectedImages.length === 0)}
               className="px-6 py-3 btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
             >
               <span className="flex items-center gap-2">

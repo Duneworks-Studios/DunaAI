@@ -1,153 +1,132 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import Link from 'next/link'
 
 export default function Hero() {
   const [isMobile, setIsMobile] = useState(false)
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
 
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768)
     }
     checkMobile()
+    
+    // Check for reduced motion preference
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+    setPrefersReducedMotion(mediaQuery.matches)
+    
+    const handleReducedMotion = (e: MediaQueryListEvent) => {
+      setPrefersReducedMotion(e.matches)
+    }
+    
+    mediaQuery.addEventListener('change', handleReducedMotion)
     window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
+    
+    return () => {
+      window.removeEventListener('resize', checkMobile)
+      mediaQuery.removeEventListener('change', handleReducedMotion)
+    }
   }, [])
+
+  // Memoize particle data to prevent re-renders
+  const particles = useMemo(() => {
+    if (isMobile || prefersReducedMotion) return []
+    return Array.from({ length: 8 }, (_, i) => ({
+      id: i,
+      width: 2 + Math.random() * 2,
+      height: 2 + Math.random() * 2,
+      left: Math.random() * 100,
+      top: Math.random() * 100,
+      background: `radial-gradient(circle, rgba(255, 215, ${Math.random() * 50 + 200}, 1), transparent)`,
+      boxShadow: `0 0 ${4 + Math.random() * 4}px rgba(255, 215, 0, ${0.4 + Math.random() * 0.2})`,
+      duration: 5 + Math.random() * 2,
+      delay: Math.random() * 2,
+      x: Math.random() * 30 - 15,
+    }))
+  }, [isMobile, prefersReducedMotion])
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
       {/* Optimized Background - Reduced on Mobile */}
       <div className="absolute inset-0 z-0 overflow-hidden">
-        {/* Responsive Gold Gradient Orbs */}
+        {/* Optimized Gold Gradient Orbs - Reduced blur and simpler animations */}
         <motion.div
-          className="absolute top-1/4 left-1/4 w-[300px] h-[300px] sm:w-[400px] sm:h-[400px] md:w-[600px] md:h-[600px] rounded-full blur-[80px] sm:blur-[100px] md:blur-[120px]"
+          className="absolute top-1/4 left-1/4 w-[300px] h-[300px] sm:w-[400px] sm:h-[400px] md:w-[500px] md:h-[500px] rounded-full blur-[60px] sm:blur-[80px] md:blur-[100px] will-change-transform"
           style={{
-            background: 'radial-gradient(circle, rgba(255, 215, 0, 0.4), rgba(255, 237, 78, 0.3), transparent 70%)',
-            boxShadow: '0 0 100px rgba(255, 215, 0, 0.3), 0 0 200px rgba(212, 175, 55, 0.2)',
+            background: 'radial-gradient(circle, rgba(255, 215, 0, 0.3), rgba(255, 237, 78, 0.2), transparent 70%)',
+            boxShadow: '0 0 80px rgba(255, 215, 0, 0.25), 0 0 150px rgba(212, 175, 55, 0.15)',
           }}
-          animate={isMobile ? {} : {
-            scale: [1, 1.3, 1],
-            x: [0, 50, 0],
-            y: [0, -30, 0],
-            rotate: [0, 90, 180],
+          animate={isMobile || prefersReducedMotion ? {} : {
+            scale: [1, 1.15, 1],
+            x: [0, 30, 0],
+            y: [0, -20, 0],
           }}
-          transition={isMobile ? {} : {
-            duration: 20,
+          transition={isMobile || prefersReducedMotion ? {} : {
+            duration: 25,
             repeat: Infinity,
             ease: 'easeInOut',
           }}
         />
         <motion.div
-          className="absolute bottom-1/4 right-1/4 w-[350px] h-[350px] sm:w-[500px] sm:h-[500px] md:w-[700px] md:h-[700px] rounded-full blur-[90px] sm:blur-[120px] md:blur-[140px]"
+          className="absolute bottom-1/4 right-1/4 w-[350px] h-[350px] sm:w-[450px] sm:h-[450px] md:w-[550px] md:h-[550px] rounded-full blur-[70px] sm:blur-[90px] md:blur-[110px] will-change-transform"
           style={{
-            background: 'radial-gradient(circle, rgba(212, 175, 55, 0.4), rgba(255, 215, 0, 0.3), transparent 70%)',
-            boxShadow: '0 0 120px rgba(212, 175, 55, 0.3), 0 0 250px rgba(255, 215, 0, 0.2)',
+            background: 'radial-gradient(circle, rgba(212, 175, 55, 0.3), rgba(255, 215, 0, 0.2), transparent 70%)',
+            boxShadow: '0 0 90px rgba(212, 175, 55, 0.25), 0 0 180px rgba(255, 215, 0, 0.15)',
           }}
-          animate={isMobile ? {} : {
-            scale: [1, 1.4, 1],
-            x: [0, -40, 0],
-            y: [0, 40, 0],
-            rotate: [360, 180, 0],
+          animate={isMobile || prefersReducedMotion ? {} : {
+            scale: [1, 1.2, 1],
+            x: [0, -25, 0],
+            y: [0, 25, 0],
           }}
-          transition={isMobile ? {} : {
-            duration: 25,
+          transition={isMobile || prefersReducedMotion ? {} : {
+            duration: 30,
             repeat: Infinity,
             ease: 'easeInOut',
             delay: 0.5,
           }}
         />
-        <motion.div
-          className="absolute top-1/2 left-1/2 w-[400px] h-[400px] sm:w-[600px] sm:h-[600px] md:w-[800px] md:h-[800px] rounded-full blur-[100px] sm:blur-[140px] md:blur-[160px] -translate-x-1/2 -translate-y-1/2"
-          style={{
-            background: 'radial-gradient(circle, rgba(255, 215, 0, 0.3), rgba(255, 237, 78, 0.2), transparent 70%)',
-            boxShadow: '0 0 150px rgba(255, 215, 0, 0.3), 0 0 300px rgba(212, 175, 55, 0.15)',
-          }}
-          animate={isMobile ? {} : {
-            scale: [1, 1.2, 1],
-            rotate: [0, 360],
-          }}
-          transition={isMobile ? {} : {
-            duration: 35,
-            repeat: Infinity,
-            ease: 'linear',
-          }}
-        />
 
-        {/* Simplified Grid Pattern - Static on Mobile */}
-        {!isMobile && (
-          <motion.div 
-            className="absolute inset-0 opacity-[0.06]"
+        {/* Static Grid Pattern - No animation for better performance */}
+        {!isMobile && !prefersReducedMotion && (
+          <div 
+            className="absolute inset-0 opacity-[0.04]"
             style={{
               backgroundImage: `
-                linear-gradient(rgba(255, 215, 0, 0.2) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 215, 0, 0.2) 1px, transparent 1px)
+                linear-gradient(rgba(255, 215, 0, 0.15) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 215, 0, 0.15) 1px, transparent 1px)
               `,
               backgroundSize: '60px 60px',
-            }}
-            animate={{
-              opacity: [0.04, 0.08, 0.04],
-            }}
-            transition={{
-              duration: 4,
-              repeat: Infinity,
-              ease: 'easeInOut',
             }}
           />
         )}
 
-        {/* Reduced Particles - Only on Desktop */}
-        {!isMobile && [...Array(15)].map((_, i) => (
+        {/* Optimized Particles - Reduced count and memoized */}
+        {particles.map((particle) => (
           <motion.div
-            key={i}
-            className="absolute rounded-full"
+            key={particle.id}
+            className="absolute rounded-full will-change-transform"
             style={{
-              width: `${2 + Math.random() * 3}px`,
-              height: `${2 + Math.random() * 3}px`,
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              background: `radial-gradient(circle, rgba(255, 215, ${Math.random() * 100 + 155}, 1), transparent)`,
-              boxShadow: `0 0 ${6 + Math.random() * 8}px rgba(255, 215, 0, ${0.6 + Math.random() * 0.2})`,
+              width: `${particle.width}px`,
+              height: `${particle.height}px`,
+              left: `${particle.left}%`,
+              top: `${particle.top}%`,
+              background: particle.background,
+              boxShadow: particle.boxShadow,
             }}
             animate={{
-              y: [0, -40, 0],
-              opacity: [0.2, 0.8, 0.2],
-              scale: [0.8, 1.5, 0.8],
-              x: [0, Math.random() * 40 - 20, 0],
+              y: [0, -30, 0],
+              opacity: [0.15, 0.6, 0.15],
+              scale: [0.9, 1.2, 0.9],
+              x: [0, particle.x, 0],
             }}
             transition={{
-              duration: 4 + Math.random() * 3,
+              duration: particle.duration,
               repeat: Infinity,
               ease: 'easeInOut',
-              delay: Math.random() * 2,
-            }}
-          />
-        ))}
-
-        {/* Simplified Rings - Only on Desktop */}
-        {!isMobile && [...Array(3)].map((_, i) => (
-          <motion.div
-            key={`ring-${i}`}
-            className="absolute rounded-full border-2"
-            style={{
-              width: `${200 + i * 150}px`,
-              height: `${200 + i * 150}px`,
-              borderColor: `rgba(255, 215, 0, ${0.2 - i * 0.05})`,
-              left: `${20 + i * 20}%`,
-              top: `${30 + i * 20}%`,
-              boxShadow: `0 0 ${20 + i * 10}px rgba(255, 215, 0, ${0.3 - i * 0.05})`,
-            }}
-            animate={{
-              rotate: [0, 360],
-              scale: [1, 1.1, 1],
-              opacity: [0.2, 0.4, 0.2],
-            }}
-            transition={{
-              duration: 20 + i * 5,
-              repeat: Infinity,
-              ease: 'linear',
-              delay: i * 2,
+              delay: particle.delay,
             }}
           />
         ))}
@@ -168,17 +147,17 @@ export default function Hero() {
             className="inline-flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2 sm:py-3 rounded-full glass border-2 border-[rgba(255,215,0,0.4)] mb-6 sm:mb-10"
           >
             <motion.span 
-              className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-[#ffd700]"
-              animate={isMobile ? {} : {
-                scale: [1, 1.3, 1],
+              className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-[#ffd700] will-change-transform"
+              animate={isMobile || prefersReducedMotion ? {} : {
+                scale: [1, 1.2, 1],
                 boxShadow: [
-                  '0 0 8px rgba(255, 215, 0, 0.8)',
-                  '0 0 20px rgba(255, 215, 0, 1), 0 0 40px rgba(255, 215, 0, 0.6)',
-                  '0 0 8px rgba(255, 215, 0, 0.8)',
+                  '0 0 6px rgba(255, 215, 0, 0.7)',
+                  '0 0 15px rgba(255, 215, 0, 0.9), 0 0 30px rgba(255, 215, 0, 0.5)',
+                  '0 0 6px rgba(255, 215, 0, 0.7)',
                 ],
               }}
-              transition={isMobile ? {} : {
-                duration: 2,
+              transition={isMobile || prefersReducedMotion ? {} : {
+                duration: 2.5,
                 repeat: Infinity,
                 ease: 'easeInOut',
               }}
@@ -197,15 +176,15 @@ export default function Hero() {
           >
             <motion.span 
               className="text-gradient block mb-2 sm:mb-4"
-              animate={isMobile ? {} : {
+              animate={isMobile || prefersReducedMotion ? {} : {
                 filter: [
-                  'drop-shadow(0 0 15px rgba(255, 215, 0, 0.6)) drop-shadow(0 0 30px rgba(255, 215, 0, 0.4))',
-                  'drop-shadow(0 0 30px rgba(255, 215, 0, 0.8)) drop-shadow(0 0 60px rgba(255, 215, 0, 0.6)) drop-shadow(0 0 90px rgba(212, 175, 55, 0.4))',
-                  'drop-shadow(0 0 15px rgba(255, 215, 0, 0.6)) drop-shadow(0 0 30px rgba(255, 215, 0, 0.4))',
+                  'drop-shadow(0 0 15px rgba(255, 215, 0, 0.5)) drop-shadow(0 0 25px rgba(255, 215, 0, 0.3))',
+                  'drop-shadow(0 0 25px rgba(255, 215, 0, 0.7)) drop-shadow(0 0 50px rgba(255, 215, 0, 0.5))',
+                  'drop-shadow(0 0 15px rgba(255, 215, 0, 0.5)) drop-shadow(0 0 25px rgba(255, 215, 0, 0.3))',
                 ],
               }}
-              transition={isMobile ? {} : {
-                duration: 4,
+              transition={isMobile || prefersReducedMotion ? {} : {
+                duration: 5,
                 repeat: Infinity,
                 ease: 'easeInOut',
               }}

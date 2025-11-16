@@ -9,6 +9,7 @@ import { createSupabaseClient } from '@/lib/supabase'
 import { useTheme } from '@/contexts/ThemeContext'
 import type { User } from '@supabase/supabase-js'
 import LoginModal from './LoginModal'
+import PromoCodeModal from './PromoCodeModal'
 
 export default function Navbar() {
   const [user, setUser] = useState<User | null>(null)
@@ -16,6 +17,7 @@ export default function Navbar() {
   const [showProfileMenu, setShowProfileMenu] = useState(false)
   const [showMobileMenu, setShowMobileMenu] = useState(false)
   const [showLoginModal, setShowLoginModal] = useState(false)
+  const [showPromoCodeModal, setShowPromoCodeModal] = useState(false)
   const { theme } = useTheme()
   const router = useRouter()
   const supabase = createSupabaseClient()
@@ -232,6 +234,19 @@ export default function Navbar() {
                       <button
                         onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
                           e.stopPropagation()
+                          setShowProfileMenu(false)
+                          setShowPromoCodeModal(true)
+                        }}
+                        className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-[var(--text-primary)] hover:text-[var(--accent-primary)] hover:bg-[rgba(255,215,0,0.1)] rounded-xl transition-all duration-200 text-left cursor-pointer relative z-10 group"
+                      >
+                        <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                        </svg>
+                        Redeem Promo Code
+                      </button>
+                      <button
+                        onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+                          e.stopPropagation()
                           handleSignOut()
                         }}
                         className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-[var(--text-primary)] hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all duration-200 text-left cursor-pointer relative z-10 group"
@@ -353,6 +368,15 @@ export default function Navbar() {
                   <button
                     onClick={() => {
                       setShowMobileMenu(false)
+                      setShowPromoCodeModal(true)
+                    }}
+                    className="w-full text-left py-3 px-4 text-base font-semibold text-[var(--text-primary)] hover:text-[var(--accent-primary)] hover:bg-[rgba(255,215,0,0.1)] rounded-xl transition-all"
+                  >
+                    Redeem Promo Code
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowMobileMenu(false)
                       handleSignOut()
                     }}
                     className="w-full text-left py-3 px-4 text-base font-semibold text-red-400 hover:bg-red-500/10 rounded-xl transition-all"
@@ -400,6 +424,17 @@ export default function Navbar() {
         onLoginSuccess={() => {
           setShowLoginModal(false)
           router.push('/chat')
+        }}
+      />
+
+      {/* Promo Code Modal */}
+      <PromoCodeModal
+        isOpen={showPromoCodeModal}
+        onClose={() => setShowPromoCodeModal(false)}
+        user={user}
+        onSuccess={() => {
+          // Refresh the page to update user plan
+          window.location.reload()
         }}
       />
     </nav>
