@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { createSupabaseClient } from '@/lib/supabase'
 import Intro from '@/components/Intro'
@@ -11,7 +11,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
-  const supabase = createSupabaseClient()
+  const supabase = useMemo(() => createSupabaseClient(), [])
 
   useEffect(() => {
     let mounted = true
@@ -71,7 +71,7 @@ export default function Home() {
         subscription.unsubscribe()
       }
     }
-  }, [supabase]) // Only depend on supabase client
+  }, [supabase]) // Supabase is memoized, so this is safe
 
   if (loading) {
     return (
