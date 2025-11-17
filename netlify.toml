@@ -11,3 +11,6 @@
   SECRETS_SCAN_OMIT_KEYS = "AI_ENDPOINT,NEXTAUTH_URL"
   # Allow build output directories (env vars need to be in build for app to work)
   SECRETS_SCAN_OMIT_PATHS = ".netlify/**,.next/**,**/node_modules/**"
+
+# Note: Next.js API routes are handled automatically by @netlify/plugin-nextjs
+# The maxDuration export in route.ts configures the timeout (60 seconds)

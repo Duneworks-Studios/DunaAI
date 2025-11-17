@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { createSupabaseClient } from '@/lib/supabase'
 import { getUserPlan, canSendMessage, type UserPlan } from '@/lib/planDetection'
 import type { User } from '@supabase/supabase-js'
+import MarkdownRenderer from './MarkdownRenderer'
 
 interface Message {
   id: string
@@ -238,9 +239,9 @@ export default function ChatWindow({
                     </div>
                   )}
                   {message.content && (
-                    <p className="whitespace-pre-wrap leading-relaxed text-sm break-words text-[var(--text-primary)] mb-3">
-                      {message.content}
-                    </p>
+                    <div className="text-sm text-[var(--text-primary)]">
+                      <MarkdownRenderer content={message.content} />
+                    </div>
                   )}
                   
                   {/* Promo Codes Display */}

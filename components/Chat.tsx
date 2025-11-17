@@ -7,6 +7,7 @@ import { getUserPlan, canSendMessage, type UserPlan } from '@/lib/planDetection'
 import { useTheme } from '@/contexts/ThemeContext'
 import type { User } from '@supabase/supabase-js'
 import Link from 'next/link'
+import MarkdownRenderer from './MarkdownRenderer'
 
 interface Message {
   id: string
@@ -342,6 +343,10 @@ export default function Chat() {
     saveChatSessions(user.id, updatedSessions)
 
     try {
+      // Add timeout to client-side fetch (70 seconds to allow for server processing)
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 70000)
+      
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -349,7 +354,10 @@ export default function Chat() {
           messages: newMessages.map(m => ({ role: m.role, content: m.content })),
           userId: user.id,
         }),
+        signal: controller.signal,
       })
+      
+      clearTimeout(timeoutId)
 
       if (!response.ok) {
         throw new Error(`API error: ${response.status} ${response.statusText}`)
@@ -397,10 +405,24 @@ export default function Chat() {
       }
     } catch (error) {
       console.error('Error calling AI:', error)
+      
+      let errorContent = `I apologize, but I encountered an error: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again.`
+      
+      // Handle timeout errors specifically
+      if (error instanceof Error) {
+        if (error.name === 'AbortError' || error.message.includes('timeout')) {
+          errorContent = `I apologize, but the request timed out. The AI service took too long to respond. Please try again in a moment.`
+        } else if (error.message.includes('504')) {
+          errorContent = `I apologize, but I encountered a gateway timeout error. The AI service is taking longer than usual to respond. Please try again in a moment.`
+        } else if (error.message.includes('fetch')) {
+          errorContent = `I apologize, but I couldn't connect to the AI service. Please check your internet connection and try again.`
+        }
+      }
+      
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: `I apologize, but I encountered an error: ${error instanceof Error ? error.message : 'Unknown error'}. Please check the browser console for details and try again.`,
+        content: errorContent,
         timestamp: new Date(),
       }
       setMessages([...newMessages, errorMessage])
@@ -603,7 +625,9 @@ export default function Chat() {
                         : 'bg-[var(--bg-elevated)] border border-[var(--border-primary)]'
                     }`}
                   >
-                    <p className="whitespace-pre-wrap leading-relaxed text-[var(--text-primary)]">{message.content}</p>
+                    <div className="text-[var(--text-primary)]">
+                      <MarkdownRenderer content={message.content} />
+                    </div>
                     <p className="text-xs mt-2 text-[var(--text-tertiary)]">
                       {message.timestamp.toLocaleTimeString()}
                     </p>

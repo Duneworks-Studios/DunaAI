@@ -1,5 +1,75 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+// Configure route timeout (60 seconds for AI API calls)
+export const maxDuration = 60
+export const dynamic = 'force-dynamic'
+
+// Helper function to create a fetch with timeout
+async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs: number = 60000): Promise<Response> {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
+  
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    })
+    clearTimeout(timeoutId)
+    return response
+  } catch (error) {
+    clearTimeout(timeoutId)
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error('Request timeout - the AI service took too long to respond')
+    }
+    throw error
+  }
+}
+
+// Retry function for handling 504 errors
+async function fetchWithRetry(
+  url: string, 
+  options: RequestInit, 
+  maxRetries: number = 2,
+  timeoutMs: number = 60000
+): Promise<Response> {
+  let lastError: Error | null = null
+  
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      if (attempt > 0) {
+        // Wait before retry (exponential backoff: 1s, 2s)
+        await new Promise(resolve => setTimeout(resolve, 1000 * attempt))
+        console.log(`Retrying AI API request (attempt ${attempt + 1}/${maxRetries + 1})...`)
+      }
+      
+      const response = await fetchWithTimeout(url, options, timeoutMs)
+      
+      // If 504 error and we have retries left, retry
+      if (response.status === 504 && attempt < maxRetries) {
+        console.log(`504 Gateway Timeout, retrying... (${attempt + 1}/${maxRetries})`)
+        continue
+      }
+      
+      return response
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error))
+      
+      // If timeout and we have retries left, retry
+      if (lastError.message.includes('timeout') && attempt < maxRetries) {
+        console.log(`Request timeout, retrying... (${attempt + 1}/${maxRetries})`)
+        continue
+      }
+      
+      // If last attempt, throw the error
+      if (attempt === maxRetries) {
+        throw lastError
+      }
+    }
+  }
+  
+  throw lastError || new Error('Failed to fetch after retries')
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { messages, userId, agent = 'chat' } = await request.json()
@@ -118,20 +188,25 @@ What would you like to know?`
       }
     }
 
-    // Call AI API (DeepSeek or OpenAI)
-    const aiResponse = await fetch(AI_ENDPOINT, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${AI_TOKEN}`,
-        'Content-Type': 'application/json',
+    // Call AI API (DeepSeek or OpenAI) with timeout and retry logic
+    const aiResponse = await fetchWithRetry(
+      AI_ENDPOINT,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${AI_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: modelToUse,
+          messages: messagesWithSystem,
+          max_tokens: 2000,
+          temperature: 0.7,
+        }),
       },
-      body: JSON.stringify({
-        model: modelToUse,
-        messages: messagesWithSystem,
-        max_tokens: 2000,
-        temperature: 0.7,
-      }),
-    })
+      2, // Max 2 retries (3 total attempts)
+      60000 // 60 second timeout
+    )
 
     if (!aiResponse.ok) {
       const errorData = await aiResponse.json().catch(() => ({ error: { message: 'Unknown error' } }))
@@ -170,6 +245,20 @@ If this persists, check your usage limits.`
         errorMessage = `❌ AI Service Server Error (500)
 
 The AI service servers are experiencing issues. Please try again in a moment.`
+      } else if (aiResponse.status === 504) {
+        errorMessage = `❌ Gateway Timeout (504)
+
+The AI service took too long to respond. This can happen when:
+- The service is experiencing high load
+- Your request is complex and needs more processing time
+- Network connectivity issues
+
+**What you can do:**
+- Try again in a few moments
+- Simplify your question if it's very complex
+- Check your internet connection
+
+I've automatically retried the request, but it still timed out. Please try again.`
       } else {
         errorMessage = `❌ AI Service Error (${aiResponse.status})
 
@@ -189,13 +278,48 @@ Please check your API configuration and try again.`
     return NextResponse.json({ response })
   } catch (error) {
     console.error('Chat API error:', error)
+    
+    let errorMessage = `❌ Unexpected Error
+
+Something went wrong while processing your request. Please try again.`
+
+    if (error instanceof Error) {
+      if (error.message.includes('timeout')) {
+        errorMessage = `❌ Request Timeout
+
+The AI service took too long to respond (over 60 seconds). This can happen when:
+- The service is experiencing high load
+- Your question requires complex processing
+- Network connectivity issues
+
+**What you can do:**
+- Try again in a few moments
+- Break down complex questions into smaller parts
+- Check your internet connection`
+      } else if (error.message.includes('fetch')) {
+        errorMessage = `❌ Network Error
+
+Unable to connect to the AI service. This could be due to:
+- Network connectivity issues
+- The AI service being temporarily unavailable
+- Firewall or proxy blocking the connection
+
+**What you can do:**
+- Check your internet connection
+- Try again in a few moments
+- Contact support if the issue persists`
+      } else {
+        errorMessage = `❌ Unexpected Error
+
+${error.message}
+
+Please try again. If this persists, the AI service may be experiencing issues.`
+      }
+    }
+    
     return NextResponse.json(
       {
-        response: `❌ Unexpected Error
-
-Something went wrong while processing your request. Please try again.
-
-Error details: ${error instanceof Error ? error.message : 'Unknown error'}`
+        response: errorMessage
       },
       { status: 500 }
     )

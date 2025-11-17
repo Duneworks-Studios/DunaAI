@@ -505,6 +505,10 @@ export default function ChatPage() {
     saveChatSessions(user.id, updatedSessions)
 
         try {
+          // Add timeout to client-side fetch (70 seconds to allow for server processing)
+          const controller = new AbortController()
+          const timeoutId = setTimeout(() => controller.abort(), 70000)
+          
           const response = await fetch('/api/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -517,7 +521,10 @@ export default function ChatPage() {
               userId: user.id,
               agent: currentAgent, // Pass current agent to API
             }),
+            signal: controller.signal,
           })
+          
+          clearTimeout(timeoutId)
 
       if (!response.ok) {
         throw new Error(`API error: ${response.status}`)
@@ -587,10 +594,24 @@ export default function ChatPage() {
       }
     } catch (error) {
       console.error('Error calling AI:', error)
+      
+      let errorContent = `I apologize, but I encountered an error: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again.`
+      
+      // Handle timeout errors specifically
+      if (error instanceof Error) {
+        if (error.name === 'AbortError' || error.message.includes('timeout')) {
+          errorContent = `I apologize, but the request timed out. The AI service took too long to respond. Please try again in a moment.`
+        } else if (error.message.includes('504')) {
+          errorContent = `I apologize, but I encountered a gateway timeout error. The AI service is taking longer than usual to respond. Please try again in a moment.`
+        } else if (error.message.includes('fetch')) {
+          errorContent = `I apologize, but I couldn't connect to the AI service. Please check your internet connection and try again.`
+        }
+      }
+      
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: `I apologize, but I encountered an error: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again.`,
+        content: errorContent,
         timestamp: new Date(),
       }
       setMessages([...newMessages, errorMessage])
