@@ -64,8 +64,8 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 h-16 glass border-b border-[var(--border-primary)]" style={{
-      boxShadow: '0 2px 20px rgba(255, 215, 0, 0.15)'
+    <nav className="fixed top-0 left-0 right-0 z-50 h-16 glass border-b-2 border-[var(--accent-primary)]" style={{
+      boxShadow: '0 2px 20px rgba(255, 215, 0, 0.3)'
     }}>
       <div className="max-w-7xl mx-auto h-full px-6 sm:px-8 lg:px-12 flex items-center justify-between">
         {/* Logo - Simple Design */}
@@ -97,7 +97,7 @@ export default function Navbar() {
         <div className="hidden md:flex items-center gap-1 opacity-100">
           <Link
             href="/"
-            className="px-4 py-2 rounded-md text-sm font-medium text-[var(--text-primary)] hover:text-[var(--accent-primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
+            className="px-4 py-2 rounded-md text-sm font-medium text-[var(--accent-primary)] hover:text-[var(--accent-primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
           >
             Home
           </Link>
@@ -109,13 +109,13 @@ export default function Navbar() {
                 setShowLoginModal(true)
               }
             }}
-            className="px-4 py-2 rounded-md text-sm font-medium text-[var(--text-primary)] hover:text-[var(--accent-primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
+            className="px-4 py-2 rounded-md text-sm font-medium text-[var(--accent-primary)] hover:text-[var(--accent-primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
           >
             Chat
           </button>
           <Link
             href="/pricing"
-            className="px-4 py-2 rounded-md text-sm font-medium text-[var(--text-primary)] hover:text-[var(--accent-primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
+            className="px-4 py-2 rounded-md text-sm font-medium text-[var(--accent-primary)] hover:text-[var(--accent-primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
           >
             Pricing
           </Link>
@@ -123,7 +123,7 @@ export default function Navbar() {
             href="https://discord.gg/Duneworks"
             target="_blank"
             rel="noopener noreferrer"
-            className="px-4 py-2 rounded-md text-sm font-medium text-[var(--text-primary)] hover:text-[var(--accent-primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
+            className="px-4 py-2 rounded-md text-sm font-medium text-[var(--accent-primary)] hover:text-[var(--accent-primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
           >
             Discord
           </a>
@@ -257,7 +257,7 @@ export default function Navbar() {
               <Link
                 href="/"
                 onClick={() => setShowMobileMenu(false)}
-                className="block py-2 px-4 text-base font-medium text-[var(--text-primary)] hover:text-[var(--accent-primary)] hover:bg-[var(--bg-tertiary)] rounded-md transition-colors"
+                className="block py-2 px-4 text-base font-medium text-[var(--accent-primary)] hover:text-[var(--accent-primary)] hover:bg-[var(--bg-tertiary)] rounded-md transition-colors"
               >
                 Home
               </Link>
@@ -270,14 +270,14 @@ export default function Navbar() {
                     setShowLoginModal(true)
                   }
                 }}
-                className="w-full text-left py-2 px-4 text-base font-medium text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] rounded-md transition-colors"
+                className="w-full text-left py-2 px-4 text-base font-medium text-[var(--accent-primary)] hover:bg-[var(--bg-tertiary)] rounded-md transition-colors"
               >
                 Chat
               </button>
               <Link
                 href="/pricing"
                 onClick={() => setShowMobileMenu(false)}
-                className="block py-2 px-4 text-base font-medium text-[var(--text-primary)] hover:text-[var(--accent-primary)] hover:bg-[var(--bg-tertiary)] rounded-md transition-colors"
+                className="block py-2 px-4 text-base font-medium text-[var(--accent-primary)] hover:text-[var(--accent-primary)] hover:bg-[var(--bg-tertiary)] rounded-md transition-colors"
               >
                 Pricing
               </Link>
@@ -286,7 +286,7 @@ export default function Navbar() {
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setShowMobileMenu(false)}
-                className="block py-2 px-4 text-base font-medium text-[var(--text-primary)] hover:text-[var(--accent-primary)] hover:bg-[var(--bg-tertiary)] rounded-md transition-colors"
+                className="block py-2 px-4 text-base font-medium text-[var(--accent-primary)] hover:text-[var(--accent-primary)] hover:bg-[var(--bg-tertiary)] rounded-md transition-colors"
               >
                 Discord
               </a>
@@ -299,7 +299,7 @@ export default function Navbar() {
                   <Link
                     href="/chat"
                     onClick={() => setShowMobileMenu(false)}
-                    className="block py-2 px-4 text-base font-medium text-[var(--text-primary)] hover:text-[var(--accent-primary)] hover:bg-[var(--bg-tertiary)] rounded-md transition-colors"
+                    className="block py-2 px-4 text-base font-medium text-[var(--accent-primary)] hover:text-[var(--accent-primary)] hover:bg-[var(--bg-tertiary)] rounded-md transition-colors"
                   >
                     Chat
                   </Link>
@@ -327,7 +327,7 @@ export default function Navbar() {
                   <Link
                     href="/auth/login"
                     onClick={() => setShowMobileMenu(false)}
-                    className="block py-2 px-4 text-base font-medium text-[var(--text-primary)] hover:text-[var(--accent-primary)] hover:bg-[var(--bg-tertiary)] rounded-md transition-colors"
+                    className="block py-2 px-4 text-base font-medium text-[var(--accent-primary)] hover:text-[var(--accent-primary)] hover:bg-[var(--bg-tertiary)] rounded-md transition-colors"
                   >
                     Login
                   </Link>

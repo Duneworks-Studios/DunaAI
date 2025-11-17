@@ -34,13 +34,13 @@ export default function Hero() {
             </span>
           </h1>
           
-          <p className="text-lg sm:text-2xl md:text-3xl lg:text-4xl font-light mb-4 sm:mb-8 text-[var(--text-primary)] max-w-4xl mx-auto leading-relaxed px-4" style={{
-            textShadow: '0 0 15px rgba(255, 255, 255, 0.4), 0 0 30px rgba(255, 255, 255, 0.2)'
+          <p className="text-lg sm:text-2xl md:text-3xl lg:text-4xl font-light mb-4 sm:mb-8 text-[var(--accent-primary)] max-w-4xl mx-auto leading-relaxed px-4" style={{
+            textShadow: '0 0 15px rgba(255, 215, 0, 0.6), 0 0 30px rgba(255, 215, 0, 0.4)'
           }}>
             The Premium AI Browser Reimagined
           </p>
           
-          <p className="text-sm sm:text-lg md:text-xl lg:text-2xl mb-8 sm:mb-16 max-w-3xl mx-auto text-[var(--text-tertiary)] leading-relaxed px-4">
+          <p className="text-sm sm:text-lg md:text-xl lg:text-2xl mb-8 sm:mb-16 max-w-3xl mx-auto text-[var(--text-secondary)] leading-relaxed px-4">
             Experience the future of intelligent browsing. Designed for those who demand performance, elegance, and precision.
           </p>
 
@@ -84,8 +84,8 @@ export default function Hero() {
                 >
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
-                <span className="font-medium text-[var(--text-primary)]" style={{
-                  textShadow: '0 0 10px rgba(255, 255, 255, 0.5)'
+                <span className="font-medium text-[var(--accent-primary)]" style={{
+                  textShadow: '0 0 10px rgba(255, 215, 0, 0.6), 0 0 20px rgba(255, 215, 0, 0.4)'
                 }}>{item.text}</span>
               </div>
             ))}

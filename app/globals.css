@@ -94,15 +94,17 @@
     @apply relative px-6 py-3 rounded-lg font-semibold;
     @apply bg-[var(--bg-elevated)] border;
     border-color: var(--accent-primary);
-    @apply text-[var(--text-primary)];
+    @apply text-[var(--accent-primary)];
     @apply transition-colors duration-200;
     box-shadow: 0 0 20px rgba(255, 215, 0, 0.4), 0 0 40px rgba(255, 215, 0, 0.2);
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
   }
 
   .btn-secondary:hover {
     border-color: var(--accent-primary);
     background: var(--bg-tertiary);
     box-shadow: 0 0 25px rgba(255, 215, 0, 0.6), 0 0 50px rgba(255, 215, 0, 0.3);
+    text-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
   }
 
   .btn-secondary:active {
