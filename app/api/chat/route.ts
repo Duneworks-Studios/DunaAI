@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-// Configure route timeout (60 seconds for AI API calls)
+// Configure route timeout (60 seconds for AI API calls - balanced for speed and reliability)
 export const maxDuration = 60
 export const dynamic = 'force-dynamic'
 
@@ -37,8 +37,8 @@ async function fetchWithRetry(
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       if (attempt > 0) {
-        // Wait before retry (exponential backoff: 1s, 2s)
-        await new Promise(resolve => setTimeout(resolve, 1000 * attempt))
+        // Wait before retry (quick backoff: 0.5s, 1s for faster retries)
+        await new Promise(resolve => setTimeout(resolve, 500 * attempt))
         console.log(`Retrying AI API request (attempt ${attempt + 1}/${maxRetries + 1})...`)
       }
       
@@ -204,8 +204,8 @@ What would you like to know?`
           temperature: 0.7,
         }),
       },
-      2, // Max 2 retries (3 total attempts)
-      60000 // 60 second timeout
+      2, // Max 2 retries (3 total attempts) - balanced for speed and reliability
+      60000 // 60 second timeout - balanced for speed and reliability
     )
 
     if (!aiResponse.ok) {

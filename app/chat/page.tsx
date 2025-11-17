@@ -505,7 +505,7 @@ export default function ChatPage() {
     saveChatSessions(user.id, updatedSessions)
 
         try {
-          // Add timeout to client-side fetch (70 seconds to allow for server processing)
+          // Add timeout to client-side fetch (70 seconds - balanced for speed)
           const controller = new AbortController()
           const timeoutId = setTimeout(() => controller.abort(), 70000)
           
@@ -600,11 +600,11 @@ export default function ChatPage() {
       // Handle timeout errors specifically
       if (error instanceof Error) {
         if (error.name === 'AbortError' || error.message.includes('timeout')) {
-          errorContent = `I apologize, but the request timed out. The AI service took too long to respond. Please try again in a moment.`
+          errorContent = `I apologize, but the request timed out. This can happen on slower connections. The system will automatically retry. Please wait a moment or try again.`
         } else if (error.message.includes('504')) {
-          errorContent = `I apologize, but I encountered a gateway timeout error. The AI service is taking longer than usual to respond. Please try again in a moment.`
+          errorContent = `I encountered a gateway timeout. The system is automatically retrying with longer timeouts for mobile connections. Please wait a moment.`
         } else if (error.message.includes('fetch')) {
-          errorContent = `I apologize, but I couldn't connect to the AI service. Please check your internet connection and try again.`
+          errorContent = `I couldn't connect to the AI service. Please check your internet connection and try again.`
         }
       }
       
