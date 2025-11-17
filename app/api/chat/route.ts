@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-// Configure route timeout (120 seconds for AI API calls - longer for mobile/slow connections)
-export const maxDuration = 120
+// Configure route timeout (180 seconds for AI API calls - very long for mobile/slow connections)
+// Netlify allows up to 26 seconds on free tier, but Next.js can handle longer
+export const maxDuration = 180
 export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs' // Ensure we're using Node.js runtime
 
 // Helper function to create a fetch with timeout
 async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs: number = 60000): Promise<Response> {
@@ -38,29 +40,46 @@ async function fetchWithRetry(
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       if (attempt > 0) {
-        // Wait before retry (exponential backoff: 1s, 2s, 3s)
-        await new Promise(resolve => setTimeout(resolve, 1000 * attempt))
+        // Quick retry with minimal delay (0.5s, 1s, 1.5s) for faster recovery
+        await new Promise(resolve => setTimeout(resolve, 500 * attempt))
         console.log(`Retrying AI API request (attempt ${attempt + 1}/${maxRetries + 1})...`)
       }
       
-      // Increase timeout on each retry for 504 errors (60s, 90s, 120s)
+      // Use progressive timeouts - AI service often times out at 60s
+      // Strategy: Start shorter, increase gradually to catch responses that are just slow
+      // Try: 45s, 50s, 55s, 60s, 65s (avoid hitting 60s limit on first try)
       const currentTimeout = attempt === 0 
-        ? baseTimeoutMs 
-        : baseTimeoutMs + (30000 * attempt) // Add 30s per retry
+        ? 45000 // Start with 45s to avoid hitting AI service's 60s limit
+        : 45000 + (5000 * attempt) // Add 5s per retry: 45s, 50s, 55s, 60s, 65s
       
       console.log(`Attempt ${attempt + 1}: Using timeout of ${currentTimeout}ms`)
       
-      const response = await fetchWithTimeout(url, options, currentTimeout)
-      
-      // If 504 error and we have retries left, retry with longer timeout
-      if (response.status === 504 && attempt < maxRetries) {
-        console.log(`504 Gateway Timeout, retrying with longer timeout (${attempt + 1}/${maxRetries})...`)
-        lastResponse = response
-        continue
+      try {
+        const response = await fetchWithTimeout(url, options, currentTimeout)
+        
+        // If we got a response, check if it's an error
+        if (!response.ok && response.status === 504 && attempt < maxRetries) {
+          // 504 from AI service - retry immediately with longer timeout
+          console.log(`504 Gateway Timeout from AI service, retrying with longer timeout (${attempt + 1}/${maxRetries})...`)
+          lastResponse = response
+          continue
+        }
+        
+        return response
+      } catch (fetchError) {
+        // If fetch itself failed (network error, timeout, etc.), handle it
+        if (fetchError instanceof Error) {
+          lastError = fetchError
+          // If it's a timeout and we have retries left, continue
+          if (fetchError.message.includes('timeout') && attempt < maxRetries) {
+            console.log(`Request timeout, retrying with longer timeout (${attempt + 1}/${maxRetries})...`)
+            continue
+          }
+        }
+        throw fetchError
       }
-      
-      return response
     } catch (error) {
+      // Catch any other errors
       lastError = error instanceof Error ? error : new Error(String(error))
       
       // If timeout and we have retries left, retry with longer timeout
@@ -202,6 +221,14 @@ What would you like to know?`
       }
     }
 
+    // Optimize message history for mobile - limit context to reduce request size
+    const optimizedMessages = messagesWithSystem.length > 10 
+      ? [
+          messagesWithSystem[0], // Keep system prompt
+          ...messagesWithSystem.slice(-9) // Keep last 9 messages (recent context)
+        ]
+      : messagesWithSystem
+
     // Call AI API (DeepSeek or OpenAI) with timeout and retry logic
     const aiResponse = await fetchWithRetry(
       AI_ENDPOINT,
@@ -213,13 +240,14 @@ What would you like to know?`
         },
         body: JSON.stringify({
           model: modelToUse,
-          messages: messagesWithSystem,
-          max_tokens: 2000,
+          messages: optimizedMessages, // Use optimized message history
+          max_tokens: 1500, // Reduced for faster responses on mobile
           temperature: 0.7,
+          stream: false, // Ensure streaming is off for reliability
         }),
       },
-      3, // Max 3 retries (4 total attempts) - more retries for mobile/slow connections
-      60000 // Base 60 second timeout, increases to 90s, 120s on retries
+      4, // Max 4 retries (5 total attempts) - more retries with shorter timeouts
+      50000 // Base 50 second timeout, increases to 55s, 60s, 65s, 70s on retries
     )
 
     if (!aiResponse.ok) {
@@ -264,15 +292,20 @@ The AI service servers are experiencing issues. Please try again in a moment.`
 
 The AI service took too long to respond. This can happen on mobile or slower connections.
 
-**I've automatically retried 4 times with increasing timeouts (60s → 90s → 120s), but the service is still timing out.**
+**I've automatically retried 5 times with optimized timeouts, but the service is still timing out.**
+
+**This usually means:**
+- The AI service is experiencing high load
+- Your mobile connection is very slow
+- The request is too complex
 
 **What you can do:**
-- Wait a moment and try again (the service may be experiencing high load)
-- Check your internet connection (mobile connections can be slower)
-- Try a simpler question if your current one is very complex
+- **Wait 10-15 seconds and try again** (the service may recover quickly)
+- Check your internet connection (try switching to WiFi if on mobile data)
+- Try a simpler, shorter question
 - The service should work - this is usually temporary
 
-**Note:** On mobile, responses can take longer. Please be patient.`
+**Note:** I've optimized the request for faster responses. Please try again in a moment.`
       } else {
         errorMessage = `❌ AI Service Error (${aiResponse.status})
 

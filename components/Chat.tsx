@@ -345,8 +345,9 @@ export default function Chat() {
     try {
       // Detect mobile and use longer timeout
       const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-      // Use longer timeout for mobile (150 seconds) vs desktop (120 seconds)
-      const clientTimeout = isMobile ? 150000 : 120000
+      // Use much longer timeout for mobile (180 seconds) vs desktop (150 seconds)
+      // This allows for all retries to complete
+      const clientTimeout = isMobile ? 180000 : 150000
       
       // Add timeout to client-side fetch (longer for mobile)
       const controller = new AbortController()
@@ -418,7 +419,7 @@ export default function Chat() {
         if (error.name === 'AbortError' || error.message.includes('timeout')) {
           errorContent = `I apologize, but the request timed out. This can happen on slower connections. The system will automatically retry. Please wait a moment or try again.`
         } else if (error.message.includes('504')) {
-          errorContent = `I encountered a gateway timeout. The system is automatically retrying with longer timeouts for mobile connections. Please wait a moment.`
+          errorContent = `I encountered a gateway timeout. I've automatically retried 5 times with optimized settings. This usually means the AI service is busy or your connection is slow. Please wait 10-15 seconds and try again - it should work.`
         } else if (error.message.includes('fetch')) {
           errorContent = `I couldn't connect to the AI service. Please check your internet connection and try again.`
         }
