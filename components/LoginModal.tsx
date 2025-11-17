@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { motion, AnimatePresence } from 'framer-motion'
+// Removed framer-motion for better performance
 import Link from 'next/link'
 import { createSupabaseClient } from '@/lib/supabase'
 
@@ -78,27 +78,19 @@ export default function LoginModal({
   if (!isOpen) return null
 
   return (
-    <AnimatePresence>
-      <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
-        {/* Backdrop */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="absolute inset-0 bg-black/80 backdrop-blur-md"
-          onClick={onClose}
-        />
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-black/80"
+        onClick={onClose}
+      />
 
-        {/* Modal */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.9, y: 20 }}
-          transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          className="relative premium-card glass-strong max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto z-[201]"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="p-6">
+      {/* Modal */}
+      <div
+        className="relative premium-card glass-strong max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto z-[201]"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="p-6">
             <h2 className="text-2xl font-bold text-gradient mb-2">Sign In Required</h2>
             <p className="text-[var(--text-secondary)] mb-6 text-sm">
               Please sign in to access the chat feature.
@@ -208,10 +200,9 @@ export default function LoginModal({
             >
               Cancel
             </button>
-          </div>
-        </motion.div>
+        </div>
       </div>
-    </AnimatePresence>
+    </div>
   )
 }
 

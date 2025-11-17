@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { motion, AnimatePresence } from 'framer-motion'
 import { createSupabaseClient } from '@/lib/supabase'
 import { useTheme } from '@/contexts/ThemeContext'
 import type { User } from '@supabase/supabase-js'
@@ -65,66 +64,37 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 h-16 glass border-b-2 border-[rgba(255,215,0,0.3)]">
+    <nav className="fixed top-0 left-0 right-0 z-50 h-16 glass border-b border-[var(--border-primary)]">
       <div className="max-w-7xl mx-auto h-full px-6 sm:px-8 lg:px-12 flex items-center justify-between">
-        {/* Logo - Modern Design */}
+        {/* Logo - Simple Design */}
         <Link 
           href="/" 
-          className="flex items-center gap-4 group"
+          className="flex items-center gap-3"
           onClick={() => setShowMobileMenu(false)}
         >
-          <motion.div 
-            className="relative h-12 w-12 flex items-center justify-center"
-            whileHover={{ scale: 1.1, rotate: 5 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            {/* Multi-layer Gold Glow */}
-            <div className="absolute inset-0 bg-gradient-to-br from-[#ffd700] via-[#ffed4e] to-[#d4af37] rounded-xl blur-xl opacity-60 group-hover:opacity-80 transition-opacity animate-glow"></div>
-            <div className="absolute inset-0 bg-gradient-to-br from-[#ffd700] to-[#d4af37] rounded-lg blur-md opacity-40 group-hover:opacity-60 transition-opacity"></div>
-            
-            {/* Logo Image - 3D Gold Logo */}
-            <div className="relative z-10 w-full h-full flex items-center justify-center">
-              <Image 
-                src="/duneailogo.png" 
-                alt="Duna Logo" 
-                width={48}
-                height={48}
-                className="object-contain w-full h-full filter drop-shadow-[0_0_20px_rgba(255,215,0,0.8)] drop-shadow-[0_0_40px_rgba(212,175,55,0.5)]"
-                priority
-                unoptimized
-              />
-            </div>
-            
-            {/* Rotating Gold Ring */}
-            <motion.div
-              className="absolute inset-0 border-2 border-[rgba(255,215,0,0.4)] rounded-xl"
-              animate={{ rotate: 360 }}
-              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+          <div className="relative h-10 w-10 flex items-center justify-center">
+            <Image 
+              src="/duneailogo.png" 
+              alt="Duna Logo" 
+              width={40}
+              height={40}
+              className="object-contain w-full h-full"
+              priority
+              unoptimized
             />
-          </motion.div>
-          
-          {/* Brand Name - No box, just text */}
-          <motion.span 
-            className="text-2xl font-black text-gradient tracking-tight"
-            whileHover={{ scale: 1.05 }}
-          >
+          </div>
+          <span className="text-xl font-bold text-[var(--text-primary)] tracking-tight">
             Duna
-          </motion.span>
+          </span>
         </Link>
 
-        {/* Center Navigation - Modern Layout */}
-        <div className="hidden lg:flex items-center gap-1">
+        {/* Center Navigation - Simple Layout - Always visible */}
+        <div className="hidden md:flex items-center gap-1 opacity-100">
           <Link
             href="/"
-            className="px-6 py-3 rounded-xl text-sm font-semibold text-[var(--text-secondary)] hover:text-[var(--accent-primary)] hover:bg-[rgba(255,215,0,0.1)] transition-all duration-300 relative group"
+            className="px-4 py-2 rounded-md text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
           >
             Home
-            <motion.span 
-              className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)]"
-              initial={{ scaleX: 0 }}
-              whileHover={{ scaleX: 1 }}
-              transition={{ duration: 0.3 }}
-            />
           </Link>
           <button
             onClick={() => {
@@ -134,87 +104,58 @@ export default function Navbar() {
                 setShowLoginModal(true)
               }
             }}
-            className="px-6 py-3 rounded-xl text-sm font-semibold text-[var(--text-secondary)] hover:text-[var(--accent-primary)] hover:bg-[rgba(255,215,0,0.1)] transition-all duration-300 relative group"
+            className="px-4 py-2 rounded-md text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
           >
             Chat
-            <motion.span 
-              className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)]"
-              initial={{ scaleX: 0 }}
-              whileHover={{ scaleX: 1 }}
-              transition={{ duration: 0.3 }}
-            />
           </button>
           <Link
             href="/pricing"
-            className="px-6 py-3 rounded-xl text-sm font-semibold text-[var(--text-secondary)] hover:text-[var(--accent-primary)] hover:bg-[rgba(255,215,0,0.1)] transition-all duration-300 relative group"
+            className="px-4 py-2 rounded-md text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
           >
             Pricing
-            <motion.span 
-              className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)]"
-              initial={{ scaleX: 0 }}
-              whileHover={{ scaleX: 1 }}
-              transition={{ duration: 0.3 }}
-            />
           </Link>
           <a
             href="https://discord.gg/Duneworks"
             target="_blank"
             rel="noopener noreferrer"
-            className="px-6 py-3 rounded-xl text-sm font-semibold text-[var(--text-secondary)] hover:text-[var(--accent-primary)] hover:bg-[rgba(255,215,0,0.1)] transition-all duration-300 relative group"
+            className="px-4 py-2 rounded-md text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
           >
             Discord
-            <motion.span 
-              className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)]"
-              initial={{ scaleX: 0 }}
-              whileHover={{ scaleX: 1 }}
-              transition={{ duration: 0.3 }}
-            />
           </a>
         </div>
 
         {/* Right Section - Modern Design */}
         <div className="flex items-center gap-4">
-          {loading ? (
-            <div className="w-6 h-6 border-2 border-[var(--border-secondary)] border-t-[var(--accent-primary)] rounded-full animate-spin" />
-          ) : user ? (
+          {user ? (
             <div className="relative">
-              <motion.button
+              <button
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
-                className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-[var(--bg-elevated)] border-2 border-[rgba(255,215,0,0.3)] hover:border-[rgba(255,215,0,0.6)] transition-all duration-300 group"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                className="flex items-center gap-2 px-3 py-2 rounded-md bg-[var(--bg-elevated)] border border-[var(--border-primary)] hover:border-[var(--border-secondary)] transition-colors"
               >
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--accent-primary)] to-[var(--accent-secondary)] flex items-center justify-center text-black font-bold text-sm shadow-lg glow">
+                <div className="w-8 h-8 rounded-full bg-[var(--text-primary)] flex items-center justify-center text-[var(--bg-primary)] font-semibold text-xs">
                   {user.email?.charAt(0).toUpperCase() || 'U'}
                 </div>
-                <span className="hidden xl:inline text-sm font-semibold text-[var(--text-primary)] max-w-[140px] truncate">
+                <span className="hidden xl:inline text-sm font-medium text-[var(--text-primary)] max-w-[140px] truncate">
                   {user.email?.split('@')[0] || 'User'}
                 </span>
-                <motion.svg 
-                  className="w-4 h-4 text-[var(--text-secondary)] group-hover:text-[var(--accent-primary)] transition-colors"
+                <svg 
+                  className={`w-4 h-4 text-[var(--text-secondary)] transition-transform ${showProfileMenu ? 'rotate-180' : ''}`}
                   fill="none" 
                   viewBox="0 0 24 24" 
                   stroke="currentColor"
-                  animate={{ rotate: showProfileMenu ? 180 : 0 }}
-                  transition={{ duration: 0.3 }}
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
-                </motion.svg>
-              </motion.button>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
 
-              {/* Profile Dropdown - Modern Design */}
-              <AnimatePresence>
-                {showProfileMenu && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                    transition={{ duration: 0.2, type: 'spring', stiffness: 300 }}
-                    className="absolute right-0 top-full mt-3 w-64 premium-card glass-strong overflow-hidden z-[100]"
+              {/* Profile Dropdown - Simple Design */}
+              {showProfileMenu && (
+                  <div
+                    className="absolute right-0 top-full mt-2 w-64 bg-[var(--bg-elevated)] border border-[var(--border-primary)] rounded-lg overflow-hidden z-[100] shadow-lg"
                     onClick={(e: React.MouseEvent<HTMLDivElement>) => e.stopPropagation()}
                   >
                     <div className="p-3">
-                      <div className="px-4 py-3 text-sm text-[var(--text-secondary)] border-b-2 border-[rgba(255,215,0,0.2)] mb-2 break-all font-medium">
+                      <div className="px-4 py-3 text-sm text-[var(--text-secondary)] border-b border-[var(--border-primary)] mb-2 break-all font-medium">
                         {user.email}
                       </div>
                       <Link
@@ -224,10 +165,10 @@ export default function Navbar() {
                           setShowProfileMenu(false)
                           setShowMobileMenu(false)
                         }}
-                        className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-[var(--text-primary)] hover:text-[var(--accent-primary)] hover:bg-[rgba(255,215,0,0.1)] rounded-xl transition-all duration-200 cursor-pointer relative z-10 group"
+                        className="flex items-center gap-3 px-4 py-2 text-sm font-medium text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
                       >
-                        <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                         </svg>
                         Chat
                       </Link>
@@ -237,10 +178,10 @@ export default function Navbar() {
                           setShowProfileMenu(false)
                           setShowPromoCodeModal(true)
                         }}
-                        className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-[var(--text-primary)] hover:text-[var(--accent-primary)] hover:bg-[rgba(255,215,0,0.1)] rounded-xl transition-all duration-200 text-left cursor-pointer relative z-10 group"
+                        className="w-full flex items-center gap-3 px-4 py-2 text-sm font-medium text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors text-left"
                       >
-                        <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
                         </svg>
                         Redeem Promo Code
                       </button>
@@ -249,17 +190,16 @@ export default function Navbar() {
                           e.stopPropagation()
                           handleSignOut()
                         }}
-                        className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-[var(--text-primary)] hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all duration-200 text-left cursor-pointer relative z-10 group"
+                        className="w-full flex items-center gap-3 px-4 py-2 text-sm font-medium text-red-400 hover:bg-red-500/10 transition-colors text-left"
                       >
-                        <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                         </svg>
                         Logout
                       </button>
                     </div>
-                  </motion.div>
+                  </div>
                 )}
-              </AnimatePresence>
             </div>
           ) : (
             <div className="flex items-center gap-3">
@@ -281,45 +221,38 @@ export default function Navbar() {
           {/* Mobile Menu Button */}
           <button
             onClick={() => setShowMobileMenu(!showMobileMenu)}
-            className="lg:hidden p-2.5 rounded-xl text-[var(--text-secondary)] hover:text-[var(--accent-primary)] hover:bg-[rgba(255,215,0,0.1)] transition-all"
+            className="md:hidden p-2 rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
             aria-label="Toggle menu"
           >
-            <motion.svg
-              className="w-6 h-6"
+            <svg
+              className={`w-6 h-6 transition-transform ${showMobileMenu ? 'rotate-90' : ''}`}
               fill="none"
               strokeLinecap="round"
               strokeLinejoin="round"
-              strokeWidth="2.5"
+              strokeWidth="2"
               viewBox="0 0 24 24"
               stroke="currentColor"
-              animate={{ rotate: showMobileMenu ? 90 : 0 }}
-              transition={{ duration: 0.3 }}
             >
               {showMobileMenu ? (
                 <path d="M6 18L18 6M6 6l12 12" />
               ) : (
                 <path d="M4 6h16M4 12h16M4 18h16" />
               )}
-            </motion.svg>
+            </svg>
           </button>
         </div>
       </div>
 
-      {/* Mobile Menu - Modern Design */}
-      <AnimatePresence>
-        {showMobileMenu && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
-            className="lg:hidden overflow-hidden glass border-t-2 border-[rgba(255,215,0,0.3)]"
+      {/* Mobile Menu - Simple Design */}
+      {showMobileMenu && (
+          <div
+            className="md:hidden overflow-hidden glass border-t border-[var(--border-primary)]"
           >
-            <div className="px-6 py-6 space-y-2">
+            <div className="px-4 py-4 space-y-1">
               <Link
                 href="/"
                 onClick={() => setShowMobileMenu(false)}
-                className="block py-3 px-4 text-base font-semibold text-[var(--text-primary)] hover:text-[var(--accent-primary)] hover:bg-[rgba(255,215,0,0.1)] rounded-xl transition-all"
+                className="block py-2 px-4 text-base font-medium text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] rounded-md transition-colors"
               >
                 Home
               </Link>
@@ -332,14 +265,14 @@ export default function Navbar() {
                     setShowLoginModal(true)
                   }
                 }}
-                className="w-full text-left py-3 px-4 text-base font-semibold text-[var(--text-primary)] hover:text-[var(--accent-primary)] hover:bg-[rgba(255,215,0,0.1)] rounded-xl transition-all"
+                className="w-full text-left py-2 px-4 text-base font-medium text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] rounded-md transition-colors"
               >
                 Chat
               </button>
               <Link
                 href="/pricing"
                 onClick={() => setShowMobileMenu(false)}
-                className="block py-3 px-4 text-base font-semibold text-[var(--text-primary)] hover:text-[var(--accent-primary)] hover:bg-[rgba(255,215,0,0.1)] rounded-xl transition-all"
+                className="block py-2 px-4 text-base font-medium text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] rounded-md transition-colors"
               >
                 Pricing
               </Link>
@@ -348,20 +281,20 @@ export default function Navbar() {
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setShowMobileMenu(false)}
-                className="block py-3 px-4 text-base font-semibold text-[var(--text-primary)] hover:text-[var(--accent-primary)] hover:bg-[rgba(255,215,0,0.1)] rounded-xl transition-all"
+                className="block py-2 px-4 text-base font-medium text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] rounded-md transition-colors"
               >
                 Discord
               </a>
               
               {user ? (
-                <div className="pt-4 border-t-2 border-[rgba(255,215,0,0.2)] mt-4">
+                <div className="pt-4 border-t border-[var(--border-primary)] mt-4">
                   <div className="px-4 py-2 text-xs text-[var(--text-secondary)] break-all mb-3 font-medium">
                     {user.email}
                   </div>
                   <Link
                     href="/chat"
                     onClick={() => setShowMobileMenu(false)}
-                    className="block py-3 px-4 text-base font-semibold text-[var(--text-primary)] hover:text-[var(--accent-primary)] hover:bg-[rgba(255,215,0,0.1)] rounded-xl transition-all"
+                    className="block py-2 px-4 text-base font-medium text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] rounded-md transition-colors"
                   >
                     Chat
                   </Link>
@@ -370,7 +303,7 @@ export default function Navbar() {
                       setShowMobileMenu(false)
                       setShowPromoCodeModal(true)
                     }}
-                    className="w-full text-left py-3 px-4 text-base font-semibold text-[var(--text-primary)] hover:text-[var(--accent-primary)] hover:bg-[rgba(255,215,0,0.1)] rounded-xl transition-all"
+                    className="w-full text-left py-2 px-4 text-base font-medium text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] rounded-md transition-colors"
                   >
                     Redeem Promo Code
                   </button>
@@ -379,33 +312,32 @@ export default function Navbar() {
                       setShowMobileMenu(false)
                       handleSignOut()
                     }}
-                    className="w-full text-left py-3 px-4 text-base font-semibold text-red-400 hover:bg-red-500/10 rounded-xl transition-all"
+                    className="w-full text-left py-2 px-4 text-base font-medium text-red-400 hover:bg-red-500/10 rounded-md transition-colors"
                   >
                     Logout
                   </button>
                 </div>
               ) : (
-                <div className="pt-4 border-t-2 border-[rgba(255,215,0,0.2)] mt-4 space-y-2">
+                <div className="pt-4 border-t border-[var(--border-primary)] mt-4 space-y-2">
                   <Link
                     href="/auth/login"
                     onClick={() => setShowMobileMenu(false)}
-                    className="block py-3 px-4 text-base font-semibold text-[var(--text-primary)] hover:text-[var(--accent-primary)] hover:bg-[rgba(255,215,0,0.1)] rounded-xl transition-all"
+                    className="block py-2 px-4 text-base font-medium text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] rounded-md transition-colors"
                   >
                     Login
                   </Link>
                   <Link
                     href="/auth/signup"
                     onClick={() => setShowMobileMenu(false)}
-                    className="block w-full text-center py-3 btn-primary"
+                    className="block w-full text-center py-2 px-4 btn-primary rounded-md"
                   >
                     Sign Up
                   </Link>
                 </div>
               )}
             </div>
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
 
       {/* Click outside to close dropdown */}
       {showProfileMenu && (

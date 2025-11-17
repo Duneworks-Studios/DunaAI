@@ -1,8 +1,5 @@
 'use client'
 
-import { motion } from 'framer-motion'
-import { useEffect, useState } from 'react'
-
 const features = [
   {
     title: 'AI Assistant',
@@ -75,92 +72,39 @@ const features = [
 ]
 
 export default function Features() {
-  const [isMobile, setIsMobile] = useState(false)
-
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768)
-    }
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
-
   return (
     <section id="features" className="relative py-16 sm:py-24 md:py-32 px-4 sm:px-6 overflow-hidden">
-      {/* Background with subtle gold glow */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[rgba(255,215,0,0.02)] to-transparent" />
-      
       <div className="relative z-10 max-w-7xl mx-auto">
-        <motion.div
-          className="text-center mb-12 sm:mb-16"
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-100px' }}
-          transition={{ duration: 0.8 }}
-        >
-          <h2 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-4 sm:mb-6 text-gradient">
+        <div className="text-center mb-12 sm:mb-16">
+          <h2 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-4 sm:mb-6 text-[var(--text-primary)]">
             Powerful Features
           </h2>
           <p className="text-base sm:text-lg md:text-xl max-w-2xl mx-auto text-[var(--text-secondary)] px-4">
             Everything you need for intelligent, efficient browsing
           </p>
-        </motion.div>
+        </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 px-4">
-          {features.map((feature, index) => (
-            <motion.div
+          {features.map((feature) => (
+            <div
               key={feature.title}
-              className="relative group"
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-50px' }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-              whileHover={isMobile ? {} : { scale: 1.02, y: -5 }}
+              className="relative h-full bg-[var(--bg-elevated)] border border-[var(--border-primary)] rounded-lg p-6 sm:p-8 hover:border-[var(--border-secondary)] transition-colors"
             >
-              {/* Card */}
-              <div 
-                className="relative h-full bg-[#1a1a1a] border border-[rgba(255,215,0,0.2)] rounded-xl p-6 sm:p-8 backdrop-blur-sm"
-                style={{
-                  boxShadow: `0 4px 20px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 215, 0, 0.1)`,
-                }}
-              >
-                {/* Glow effect on hover */}
-                <div 
-                  className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                  style={{
-                    background: `radial-gradient(circle at center, ${feature.glowColor}, transparent 70%)`,
-                    filter: 'blur(20px)',
-                  }}
-                />
-
-                {/* Icon Container */}
-                <div className="relative mb-4 sm:mb-6 flex items-center justify-center">
-                  <div className="relative">
-                    {feature.icon}
-                    <div 
-                      className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                      style={{
-                        filter: `drop-shadow(0 0 20px ${feature.glowColor})`,
-                      }}
-                    />
-                  </div>
+              {/* Icon Container */}
+              <div className="relative mb-4 sm:mb-6 flex items-center justify-center">
+                <div className="relative">
+                  {feature.icon}
                 </div>
-
-                {/* Content */}
-                <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-2 sm:mb-3 text-[var(--text-primary)] text-center">
-                  {feature.title}
-                </h3>
-                <p className="text-sm sm:text-base text-[var(--text-secondary)] leading-relaxed text-center">
-                  {feature.description}
-                </p>
-
-                {/* Bottom accent line */}
-                <div 
-                  className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-[rgba(255,215,0,0.5)] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                />
               </div>
-            </motion.div>
+
+              {/* Content */}
+              <h3 className="text-lg sm:text-xl md:text-2xl font-bold mb-2 sm:mb-3 text-[var(--text-primary)] text-center">
+                {feature.title}
+              </h3>
+              <p className="text-sm sm:text-base text-[var(--text-secondary)] leading-relaxed text-center">
+                {feature.description}
+              </p>
+            </div>
           ))}
         </div>
       </div>
