@@ -91,7 +91,7 @@ export default function LoginModal({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-6">
-            <h2 className="text-2xl font-bold text-gradient mb-2">Sign In Required</h2>
+            <h2 className="text-2xl font-bold text-gradient-gold mb-2">Sign In Required</h2>
             <p className="text-[var(--text-secondary)] mb-6 text-sm">
               Please sign in to access the chat feature.
             </p>
