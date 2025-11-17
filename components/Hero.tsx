@@ -9,24 +9,34 @@ export default function Hero() {
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 md:px-8 text-center">
         <div>
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2 sm:py-3 rounded-full bg-[var(--bg-elevated)] border border-[var(--border-primary)] mb-6 sm:mb-10">
-            <span className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-[var(--text-primary)]"></span>
-            <span className="text-xs sm:text-sm font-bold text-[var(--text-secondary)] tracking-wider uppercase">
+          <div className="inline-flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2 sm:py-3 rounded-full bg-[var(--bg-elevated)] border border-[var(--border-primary)] mb-6 sm:mb-10" style={{
+            boxShadow: '0 0 15px rgba(255, 215, 0, 0.2)'
+          }}>
+            <span className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-[var(--accent-primary)]" style={{
+              boxShadow: '0 0 10px rgba(255, 215, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.5)'
+            }}></span>
+            <span className="text-xs sm:text-sm font-bold text-[var(--text-primary)] tracking-wider uppercase" style={{
+              textShadow: '0 0 8px rgba(255, 255, 255, 0.5)'
+            }}>
               Premium AI Browser
             </span>
           </div>
 
           {/* Main Heading */}
           <h1 className="font-display text-5xl sm:text-7xl md:text-8xl lg:text-9xl xl:text-[12rem] font-black mb-6 sm:mb-8 leading-[0.9]">
-            <span className="text-[var(--text-primary)] block mb-2 sm:mb-4">
+            <span className="text-gradient block mb-2 sm:mb-4">
               Duna
             </span>
-            <span className="text-[var(--text-primary)] text-3xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-light block">
+            <span className="text-[var(--text-primary)] text-3xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-light block" style={{
+              textShadow: '0 0 20px rgba(255, 255, 255, 0.5), 0 0 40px rgba(255, 255, 255, 0.3)'
+            }}>
               Intelligence
             </span>
           </h1>
           
-          <p className="text-lg sm:text-2xl md:text-3xl lg:text-4xl font-light mb-4 sm:mb-8 text-[var(--text-secondary)] max-w-4xl mx-auto leading-relaxed px-4">
+          <p className="text-lg sm:text-2xl md:text-3xl lg:text-4xl font-light mb-4 sm:mb-8 text-[var(--text-primary)] max-w-4xl mx-auto leading-relaxed px-4" style={{
+            textShadow: '0 0 15px rgba(255, 255, 255, 0.4), 0 0 30px rgba(255, 255, 255, 0.2)'
+          }}>
             The Premium AI Browser Reimagined
           </p>
           
@@ -65,13 +75,18 @@ export default function Hero() {
                 className="flex items-center gap-2 sm:gap-3"
               >
                 <svg 
-                  className="w-5 h-5 sm:w-6 sm:h-6 text-[var(--text-primary)]" 
+                  className="w-5 h-5 sm:w-6 sm:h-6 text-[var(--accent-primary)]" 
                   fill="currentColor" 
                   viewBox="0 0 20 20"
+                  style={{
+                    filter: 'drop-shadow(0 0 8px rgba(255, 215, 0, 0.8))'
+                  }}
                 >
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
-                <span className="font-medium">{item.text}</span>
+                <span className="font-medium text-[var(--text-primary)]" style={{
+                  textShadow: '0 0 10px rgba(255, 255, 255, 0.5)'
+                }}>{item.text}</span>
               </div>
             ))}
           </div>

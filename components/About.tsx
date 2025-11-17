@@ -5,7 +5,7 @@ export default function About() {
     <section className="relative py-24 sm:py-32 px-6 overflow-hidden">
       <div className="relative z-10 max-w-5xl mx-auto">
         <div className="text-center">
-          <h2 className="font-display text-5xl sm:text-6xl md:text-7xl font-bold mb-8 text-[var(--text-primary)]">
+          <h2 className="font-display text-5xl sm:text-6xl md:text-7xl font-bold mb-8 text-gradient">
             The Future of Browsing, Powered by AI.
           </h2>
           

@@ -76,7 +76,7 @@ export default function Features() {
     <section id="features" className="relative py-16 sm:py-24 md:py-32 px-4 sm:px-6 overflow-hidden">
       <div className="relative z-10 max-w-7xl mx-auto">
         <div className="text-center mb-12 sm:mb-16">
-          <h2 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-4 sm:mb-6 text-[var(--text-primary)]">
+          <h2 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-4 sm:mb-6 text-gradient">
             Powerful Features
           </h2>
           <p className="text-base sm:text-lg md:text-xl max-w-2xl mx-auto text-[var(--text-secondary)] px-4">

@@ -4,21 +4,21 @@
 
 @layer base {
   :root {
-    /* Matte Design - Clean and Minimal like Cursor */
-    --bg-primary: #0d0d0d;
-    --bg-secondary: #141414;
+    /* Black and Gold Theme - No flickering animations */
+    --bg-primary: #0a0a0a;
+    --bg-secondary: #111111;
     --bg-tertiary: #1a1a1a;
     --bg-elevated: #1f1f1f;
     --text-primary: #ffffff;
-    --text-secondary: #999999;
-    --text-tertiary: #666666;
-    --border-primary: #262626;
-    --border-secondary: #333333;
-    --accent-primary: #ffffff;
-    --accent-secondary: #e5e5e5;
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
-    --shadow-md: 0 2px 4px 0 rgba(0, 0, 0, 0.5);
-    --shadow-lg: 0 4px 8px 0 rgba(0, 0, 0, 0.5);
+    --text-secondary: #d4c4a0;
+    --text-tertiary: #888888;
+    --border-primary: rgba(255, 215, 0, 0.3);
+    --border-secondary: rgba(255, 215, 0, 0.5);
+    --accent-primary: #ffd700;
+    --accent-secondary: #d4c4a0;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
   }
 
   * {
@@ -44,71 +44,97 @@
 }
 
 @layer components {
-  /* Matte Cards - Simple and Clean - No blur, no glow */
+  /* Cards - Black and Gold Theme with Glow - No blur, no flickering */
   .glass {
     background: var(--bg-elevated);
     border: 1px solid var(--border-primary);
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.1);
   }
 
   .glass-strong {
     background: var(--bg-elevated);
     border: 1px solid var(--border-primary);
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.15);
   }
 
   .premium-card {
-    @apply relative overflow-hidden rounded-md;
+    @apply relative overflow-hidden rounded-lg;
     background: var(--bg-elevated);
     border: 1px solid var(--border-primary);
-    transition: border-color 0.1s ease, background-color 0.1s ease;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.1);
+    transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
   }
 
   .premium-card:hover {
     border-color: var(--border-secondary);
     background: var(--bg-tertiary);
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.2), 0 0 40px rgba(255, 215, 0, 0.1);
   }
 
-  /* Matte Buttons - Clean and Simple - No transforms */
+  /* Buttons - Gold Theme with Glow - No transforms, no flickering */
   .btn-primary {
-    @apply relative px-6 py-3 rounded-md font-medium;
+    @apply relative px-6 py-3 rounded-lg font-semibold;
     background: var(--text-primary);
     color: var(--bg-primary);
-    border: 1px solid var(--border-primary);
-    transition: background-color 0.1s ease;
+    border: 1px solid var(--text-primary);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
   }
 
   .btn-primary:hover {
     background: var(--accent-secondary);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
   }
 
   .btn-primary:active {
-    background: var(--text-primary);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
   }
 
   .btn-secondary {
-    @apply relative px-6 py-3 rounded-md font-medium;
+    @apply relative px-6 py-3 rounded-lg font-semibold;
     @apply bg-[var(--bg-elevated)] border;
-    border-color: var(--border-primary);
+    border-color: var(--accent-primary);
     @apply text-[var(--text-primary)];
-    @apply transition-colors duration-100;
+    @apply transition-colors duration-200;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.4), 0 0 40px rgba(255, 215, 0, 0.2);
   }
 
   .btn-secondary:hover {
-    border-color: var(--border-secondary);
+    border-color: var(--accent-primary);
     background: var(--bg-tertiary);
+    box-shadow: 0 0 25px rgba(255, 215, 0, 0.6), 0 0 50px rgba(255, 215, 0, 0.3);
   }
 
   .btn-secondary:active {
     background: var(--bg-elevated);
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
   }
 
-  /* Simple Text Effects */
+  /* Text Effects - Gold Gradient with Glow */
   .text-gradient {
-    @apply text-[var(--text-primary)];
+    background: linear-gradient(135deg, #ffd700 0%, #ffed4e 50%, #d4c4a0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
     font-weight: 700;
+    text-shadow: 0 0 30px rgba(255, 215, 0, 0.8), 0 0 60px rgba(255, 215, 0, 0.6), 0 0 90px rgba(255, 215, 0, 0.4);
+    filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.6));
   }
 
   .text-gradient-gold {
-    @apply text-[var(--text-primary)];
+    @apply text-[var(--accent-primary)];
+    font-weight: 700;
+    text-shadow: 0 0 15px rgba(255, 215, 0, 0.6), 0 0 30px rgba(255, 215, 0, 0.4);
+  }
+
+  /* Navigation Links with Glow */
+  nav a, nav button {
+    text-shadow: 0 0 5px rgba(255, 215, 0, 0.3);
+    transition: text-shadow 0.2s ease;
+  }
+
+  nav a:hover, nav button:hover {
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.5);
   }
 }
 
@@ -139,12 +165,13 @@
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: var(--border-secondary);
+    background: var(--accent-primary);
+    opacity: 0.7;
   }
 
   /* Selection */
   ::selection {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 215, 0, 0.3);
     color: var(--text-primary);
   }
 }
