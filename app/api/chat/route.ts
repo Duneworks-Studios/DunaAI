@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-// Configure route timeout (60 seconds for AI API calls - balanced for speed and reliability)
-export const maxDuration = 60
+// Configure route timeout (120 seconds for AI API calls - longer for mobile/slow connections)
+export const maxDuration = 120
 export const dynamic = 'force-dynamic'
 
 // Helper function to create a fetch with timeout
@@ -25,28 +25,37 @@ async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs: nu
   }
 }
 
-// Retry function for handling 504 errors
+// Retry function for handling 504 errors with progressive timeout increases
 async function fetchWithRetry(
   url: string, 
   options: RequestInit, 
-  maxRetries: number = 2,
-  timeoutMs: number = 60000
+  maxRetries: number = 3,
+  baseTimeoutMs: number = 60000
 ): Promise<Response> {
   let lastError: Error | null = null
+  let lastResponse: Response | null = null
   
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       if (attempt > 0) {
-        // Wait before retry (quick backoff: 0.5s, 1s for faster retries)
-        await new Promise(resolve => setTimeout(resolve, 500 * attempt))
+        // Wait before retry (exponential backoff: 1s, 2s, 3s)
+        await new Promise(resolve => setTimeout(resolve, 1000 * attempt))
         console.log(`Retrying AI API request (attempt ${attempt + 1}/${maxRetries + 1})...`)
       }
       
-      const response = await fetchWithTimeout(url, options, timeoutMs)
+      // Increase timeout on each retry for 504 errors (60s, 90s, 120s)
+      const currentTimeout = attempt === 0 
+        ? baseTimeoutMs 
+        : baseTimeoutMs + (30000 * attempt) // Add 30s per retry
       
-      // If 504 error and we have retries left, retry
+      console.log(`Attempt ${attempt + 1}: Using timeout of ${currentTimeout}ms`)
+      
+      const response = await fetchWithTimeout(url, options, currentTimeout)
+      
+      // If 504 error and we have retries left, retry with longer timeout
       if (response.status === 504 && attempt < maxRetries) {
-        console.log(`504 Gateway Timeout, retrying... (${attempt + 1}/${maxRetries})`)
+        console.log(`504 Gateway Timeout, retrying with longer timeout (${attempt + 1}/${maxRetries})...`)
+        lastResponse = response
         continue
       }
       
@@ -54,9 +63,9 @@ async function fetchWithRetry(
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error))
       
-      // If timeout and we have retries left, retry
+      // If timeout and we have retries left, retry with longer timeout
       if (lastError.message.includes('timeout') && attempt < maxRetries) {
-        console.log(`Request timeout, retrying... (${attempt + 1}/${maxRetries})`)
+        console.log(`Request timeout, retrying with longer timeout (${attempt + 1}/${maxRetries})...`)
         continue
       }
       
@@ -65,6 +74,11 @@ async function fetchWithRetry(
         throw lastError
       }
     }
+  }
+  
+  // If we have a 504 response, return it so it can be handled properly
+  if (lastResponse && lastResponse.status === 504) {
+    return lastResponse
   }
   
   throw lastError || new Error('Failed to fetch after retries')
@@ -204,8 +218,8 @@ What would you like to know?`
           temperature: 0.7,
         }),
       },
-      2, // Max 2 retries (3 total attempts) - balanced for speed and reliability
-      60000 // 60 second timeout - balanced for speed and reliability
+      3, // Max 3 retries (4 total attempts) - more retries for mobile/slow connections
+      60000 // Base 60 second timeout, increases to 90s, 120s on retries
     )
 
     if (!aiResponse.ok) {
@@ -248,17 +262,17 @@ The AI service servers are experiencing issues. Please try again in a moment.`
       } else if (aiResponse.status === 504) {
         errorMessage = `❌ Gateway Timeout (504)
 
-The AI service took too long to respond. This can happen when:
-- The service is experiencing high load
-- Your request is complex and needs more processing time
-- Network connectivity issues
+The AI service took too long to respond. This can happen on mobile or slower connections.
+
+**I've automatically retried 4 times with increasing timeouts (60s → 90s → 120s), but the service is still timing out.**
 
 **What you can do:**
-- Try again in a few moments
-- Simplify your question if it's very complex
-- Check your internet connection
+- Wait a moment and try again (the service may be experiencing high load)
+- Check your internet connection (mobile connections can be slower)
+- Try a simpler question if your current one is very complex
+- The service should work - this is usually temporary
 
-I've automatically retried the request, but it still timed out. Please try again.`
+**Note:** On mobile, responses can take longer. Please be patient.`
       } else {
         errorMessage = `❌ AI Service Error (${aiResponse.status})
 

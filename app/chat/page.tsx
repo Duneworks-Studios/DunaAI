@@ -505,9 +505,14 @@ export default function ChatPage() {
     saveChatSessions(user.id, updatedSessions)
 
         try {
-          // Add timeout to client-side fetch (70 seconds - balanced for speed)
+          // Detect mobile and use longer timeout
+          const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+          // Use longer timeout for mobile (150 seconds) vs desktop (120 seconds)
+          const clientTimeout = isMobile ? 150000 : 120000
+          
+          // Add timeout to client-side fetch (longer for mobile)
           const controller = new AbortController()
-          const timeoutId = setTimeout(() => controller.abort(), 70000)
+          const timeoutId = setTimeout(() => controller.abort(), clientTimeout)
           
           const response = await fetch('/api/chat', {
             method: 'POST',
