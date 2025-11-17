@@ -64,8 +64,8 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 h-16 glass border-b-2 border-[var(--accent-primary)]" style={{
-      boxShadow: '0 2px 20px rgba(255, 215, 0, 0.3)'
+    <nav className="fixed top-0 left-0 right-0 z-50 h-16 glass border-b border-[var(--accent-primary)]" style={{
+      boxShadow: '0 1px 10px rgba(255, 215, 0, 0.2)'
     }}>
       <div className="max-w-7xl mx-auto h-full px-6 sm:px-8 lg:px-12 flex items-center justify-between">
         {/* Logo - Simple Design */}

@@ -5,10 +5,10 @@
 @layer base {
   :root {
     /* Black and Gold Theme - No flickering animations */
-    --bg-primary: #0a0a0a;
-    --bg-secondary: #111111;
-    --bg-tertiary: #1a1a1a;
-    --bg-elevated: #1f1f1f;
+    --bg-primary: #000000;
+    --bg-secondary: #0a0a0a;
+    --bg-tertiary: #111111;
+    --bg-elevated: #1a1a1a;
     --text-primary: #ffffff;
     --text-secondary: #d4c4a0;
     --text-tertiary: #888888;
@@ -74,20 +74,22 @@
   /* Buttons - Gold Theme with Glow - No transforms, no flickering */
   .btn-primary {
     @apply relative px-6 py-3 rounded-lg font-semibold;
-    background: var(--text-primary);
+    background: var(--accent-primary);
     color: var(--bg-primary);
-    border: 1px solid var(--text-primary);
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+    border: 1px solid var(--accent-primary);
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.4), 0 0 40px rgba(255, 215, 0, 0.2);
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
     transition: background-color 0.2s ease, box-shadow 0.2s ease;
   }
 
   .btn-primary:hover {
-    background: var(--accent-secondary);
-    box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+    background: #ffed4e;
+    box-shadow: 0 0 25px rgba(255, 215, 0, 0.6), 0 0 50px rgba(255, 215, 0, 0.3);
+    text-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
   }
 
   .btn-primary:active {
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
   }
 
   .btn-secondary {

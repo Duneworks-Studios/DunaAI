@@ -5,8 +5,11 @@ export default function Integration() {
     <section className="relative py-24 sm:py-32 px-6 overflow-hidden">
       <div className="relative z-10 max-w-4xl mx-auto text-center">
         <div>
-          <h2 className="font-display text-4xl sm:text-5xl md:text-6xl font-bold mb-6 text-[var(--text-primary)]">
-            Seamless and Secure <span className="text-[var(--text-primary)]">Payments</span>
+          <h2 className="font-display text-4xl sm:text-5xl md:text-6xl font-bold mb-6 text-gradient" style={{
+            textShadow: '0 0 20px rgba(255, 215, 0, 0.6), 0 0 40px rgba(255, 215, 0, 0.4)',
+            filter: 'drop-shadow(0 0 15px rgba(255, 215, 0, 0.5))'
+          }}>
+            Seamless and Secure <span className="text-gradient">Payments</span>
           </h2>
           
           <p className="text-lg sm:text-xl leading-relaxed mb-12 max-w-2xl mx-auto text-[var(--text-primary)]">
