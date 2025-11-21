@@ -363,6 +363,30 @@ What would you like to know?`
       
       let errorMessage = `❌ AI Service Error (${aiResponse.status})`
       
+      // Check if this is an image-related error (400 with image_url or deserialize error)
+      if (aiResponse.status === 400) {
+        const errorText = JSON.stringify(errorData).toLowerCase()
+        const isImageError = errorText.includes('image_url') || 
+                            errorText.includes('deserialize') ||
+                            errorText.includes('image')
+        
+        if (isImageError) {
+          errorMessage = `🖼️ Duna AI is having trouble processing your image.
+          
+The image format may not be supported, or the AI service is having issues analyzing images right now.
+
+**What you can try:**
+- Try a different image format (JPEG, PNG)
+- Make sure the image isn't too large
+- Try again in a few moments
+- If the issue persists, the AI service may not support image analysis with your current configuration`
+          
+          return NextResponse.json({
+            response: errorMessage
+          })
+        }
+      }
+      
       if (aiResponse.status === 401) {
         const serviceName = AI_ENDPOINT.includes('deepseek') ? 'DeepSeek' : 'OpenAI'
         errorMessage = `❌ Authentication Failed (401)
