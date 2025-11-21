@@ -11,6 +11,7 @@ import ChatWindow from '@/components/ChatWindow'
 import PremiumModal from '@/components/PremiumModal'
 import { useAgent } from '@/contexts/AgentContext'
 import type { User } from '@supabase/supabase-js'
+import { AGENTS, isAgentAvailable, getDefaultAgent, type AgentId } from '@/lib/agents'
 
 interface Message {
   id: string
@@ -42,7 +43,6 @@ export default function ChatPage() {
   const [showPremiumModal, setShowPremiumModal] = useState(false)
   const [premiumModalTitle, setPremiumModalTitle] = useState('')
   const [premiumModalMessage, setPremiumModalMessage] = useState('')
-  const [pendingAgent, setPendingAgent] = useState<'chat' | 'coding' | null>(null)
   const router = useRouter()
   const supabase = createSupabaseClient()
   const { currentAgent, setCurrentAgent } = useAgent()
@@ -95,6 +95,14 @@ export default function ChatPage() {
   const loadUserPlan = async (user: User) => {
     const plan = await getUserPlan(user)
     setUserPlan(plan)
+    
+    // Ensure current agent is available for user's plan
+    const isPro = plan?.isUnlimited || false
+    if (!isAgentAvailable(currentAgent, isPro)) {
+      // Switch to default agent for their plan
+      const defaultAgent = getDefaultAgent(isPro)
+      setCurrentAgent(defaultAgent)
+    }
   }
 
   const loadChatSessions = async (userId: string) => {
@@ -148,17 +156,11 @@ export default function ChatPage() {
     saveChatSessions(user.id, updatedSessions)
   }
 
-  const handleAgentSelect = useCallback((agent: 'chat' | 'coding') => {
-    if (agent === 'coding' && !userPlan?.isUnlimited) {
-      setPremiumModalTitle('Premium Required')
-      setPremiumModalMessage('Upgrade to unlock the Coding Agent. Get unlimited access to advanced AI features.')
-      setShowPremiumModal(true)
-      setPendingAgent('coding')
-      return
-    }
-    setCurrentAgent(agent)
-    setPendingAgent(null)
-  }, [userPlan, setCurrentAgent])
+  // Agent selection is now handled in ChatWindow dropdown
+  // This function is kept for compatibility but not used
+  const handleAgentSelect = useCallback((agent: any) => {
+    // No longer needed - handled in ChatWindow
+  }, [])
 
   const handleSend = async (images?: string[]) => {
     if ((!input.trim() && (!images || images.length === 0)) || loading || !user) return
@@ -455,8 +457,12 @@ export default function ChatPage() {
       }
     }
 
-    // Check if user can send message (only for Chat Agent - free users have 20/day limit)
-    if (currentAgent === 'chat') {
+    // Check if user can send message (free users have 20/day limit)
+    // Free agents: nova-advanced, nova
+    const currentAgentData = AGENTS[currentAgent]
+    const isFreeAgent = currentAgentData?.plan === 'free'
+    
+    if (isFreeAgent || !userPlan?.isUnlimited) {
       try {
         const { canSend } = await canSendMessage(user)
         if (!canSend) {
@@ -469,6 +475,16 @@ export default function ChatPage() {
         console.error('Error checking message limit:', error)
         // Continue anyway - don't block messages if check fails
       }
+    }
+    
+    // Check if user is trying to use a Pro agent without Pro plan
+    if (currentAgentData?.plan === 'pro' && !userPlan?.isUnlimited) {
+      setPremiumModalTitle('Premium Required')
+      setPremiumModalMessage('This agent requires a Premium subscription. Upgrade to unlock all advanced AI agents.')
+      setShowPremiumModal(true)
+      // Switch to default free agent
+      setCurrentAgent(getDefaultAgent(false))
+      return
     }
 
     if (!activeSessionId) {
@@ -695,6 +711,11 @@ export default function ChatPage() {
           showUpgrade={showUpgrade}
           onDismissUpgrade={() => setShowUpgrade(false)}
           activeSessionTitle={activeSession?.title}
+          onShowPremiumModal={(title, message) => {
+            setPremiumModalTitle(title)
+            setPremiumModalMessage(message)
+            setShowPremiumModal(true)
+          }}
         />
       </div>
 
@@ -703,7 +724,6 @@ export default function ChatPage() {
         isOpen={showPremiumModal}
         onClose={() => {
           setShowPremiumModal(false)
-          setPendingAgent(null)
         }}
         title={premiumModalTitle}
         message={premiumModalMessage}

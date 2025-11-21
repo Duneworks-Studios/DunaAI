@@ -1,8 +1,6 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { useAgent } from '@/contexts/AgentContext'
-import type { UserPlan } from '@/lib/planDetection'
 
 interface Message {
   id: string
@@ -24,8 +22,8 @@ interface ChatSidebarProps {
   onSelectSession: (id: string) => void
   onCreateNewChat: () => void
   onClose?: () => void
-  userPlan: UserPlan | null
-  onAgentSelect: (agent: 'chat' | 'coding') => void
+  userPlan: any
+  onAgentSelect: any
 }
 
 export default function ChatSidebar({
@@ -37,59 +35,9 @@ export default function ChatSidebar({
   userPlan,
   onAgentSelect,
 }: ChatSidebarProps) {
-  const { currentAgent } = useAgent()
-  const isPro = userPlan?.isUnlimited || false
-
-  const handleAgentClick = (agent: 'chat' | 'coding') => {
-    if (agent === 'coding' && !isPro) {
-      onAgentSelect('coding')
-      return
-    }
-    onAgentSelect(agent)
-    onClose?.()
-  }
-
   return (
     <aside className="w-full h-full bg-[var(--bg-secondary)] border-r border-[var(--border-primary)] flex flex-col overflow-hidden">
-      {/* AI Agents Section */}
-      <div className="p-4 border-b border-[var(--border-primary)] flex-shrink-0">
-        <div className="text-xs uppercase tracking-wider text-[var(--text-tertiary)] mb-3 font-semibold">
-          AI Agents
-        </div>
-        <div className="space-y-2">
-          <button
-            onClick={() => handleAgentClick('chat')}
-            className={`w-full px-4 py-3 rounded-xl text-left transition-all duration-200 text-sm premium-card ${
-              currentAgent === 'chat'
-                ? 'bg-[var(--accent-primary)]/10 border border-[var(--accent-primary)]/30 text-[var(--accent-primary)]'
-                : 'hover:bg-[var(--bg-elevated)] text-[var(--text-primary)]'
-            }`}
-          >
-            <div className="font-semibold">Chat Agent</div>
-            <div className="text-xs text-[var(--text-tertiary)] mt-1">General assistant</div>
-          </button>
-          <button
-            onClick={() => handleAgentClick('coding')}
-            className={`w-full px-4 py-3 rounded-xl text-left transition-all duration-200 text-sm premium-card relative ${
-              currentAgent === 'coding'
-                ? 'bg-[var(--accent-primary)]/10 border border-[var(--accent-primary)]/30 text-[var(--accent-primary)]'
-                : 'hover:bg-[var(--bg-elevated)] text-[var(--text-primary)]'
-            } ${!isPro ? 'opacity-70' : ''}`}
-          >
-            <div className="font-semibold flex items-center justify-between">
-              <span>Coding Agent</span>
-              {!isPro && (
-                <span className="text-xs px-2 py-1 bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)] text-white rounded-full font-semibold">
-                  Pro
-                </span>
-              )}
-            </div>
-            <div className="text-xs text-[var(--text-tertiary)] mt-1">Code-focused assistant</div>
-          </button>
-        </div>
-      </div>
-
-      {/* New Chat Button */}
+      {/* New Chat Button - Moved to top */}
       <div className="p-4 border-b border-[var(--border-primary)] flex-shrink-0">
         <button
           onClick={() => {

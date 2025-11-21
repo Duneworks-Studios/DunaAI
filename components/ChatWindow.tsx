@@ -6,6 +6,8 @@ import { createSupabaseClient } from '@/lib/supabase'
 import { getUserPlan, canSendMessage, type UserPlan } from '@/lib/planDetection'
 import type { User } from '@supabase/supabase-js'
 import MarkdownRenderer from './MarkdownRenderer'
+import { useAgent } from '@/contexts/AgentContext'
+import { AGENTS, getAvailableAgents, isAgentAvailable, type AgentId } from '@/lib/agents'
 
 interface Message {
   id: string
@@ -28,6 +30,7 @@ interface ChatWindowProps {
   showUpgrade: boolean
   onDismissUpgrade: () => void
   activeSessionTitle?: string
+  onShowPremiumModal?: (title: string, message: string) => void
 }
 
 export default function ChatWindow({
@@ -41,10 +44,16 @@ export default function ChatWindow({
   showUpgrade,
   onDismissUpgrade,
   activeSessionTitle,
+  onShowPremiumModal,
 }: ChatWindowProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [selectedImages, setSelectedImages] = useState<string[]>([])
+  const [showAgentDropdown, setShowAgentDropdown] = useState(false)
+  const { currentAgent, setCurrentAgent } = useAgent()
+  const isPro = userPlan?.isUnlimited || false
+  const availableAgents = getAvailableAgents(isPro)
+  const currentAgentData = AGENTS[currentAgent]
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -340,6 +349,96 @@ export default function ChatWindow({
           )}
 
           <div ref={messagesEndRef} />
+        </div>
+      </div>
+
+      {/* Agent Selector Dropdown */}
+      <div className="border-t border-[var(--border-primary)] px-4 md:px-6 py-2 glass flex-shrink-0">
+        <div className="max-w-4xl mx-auto relative">
+          <button
+            type="button"
+            onClick={() => setShowAgentDropdown(!showAgentDropdown)}
+            className="w-full px-4 py-2 bg-[var(--bg-elevated)] border border-[var(--border-primary)] rounded-lg hover:border-[var(--accent-primary)] transition-colors flex items-center justify-between text-sm"
+          >
+            <div className="flex items-center gap-2">
+              <span className="text-[var(--text-primary)] font-medium">
+                {currentAgentData?.name || 'Select Agent'}
+              </span>
+              {currentAgentData?.plan === 'pro' && (
+                <span className="px-2 py-0.5 rounded-full bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)] text-white text-xs font-semibold">
+                  Pro
+                </span>
+              )}
+            </div>
+            <svg
+              className={`w-4 h-4 text-[var(--text-secondary)] transition-transform ${showAgentDropdown ? 'rotate-180' : ''}`}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          {showAgentDropdown && (
+            <>
+              <div
+                className="fixed inset-0 z-10"
+                onClick={() => setShowAgentDropdown(false)}
+              />
+              <div className="absolute bottom-full left-0 right-0 mb-2 bg-[var(--bg-elevated)] border border-[var(--border-primary)] rounded-lg shadow-lg max-h-96 overflow-y-auto z-20">
+                {availableAgents.map((agent) => (
+                  <button
+                    key={agent.id}
+                    type="button"
+                    onClick={() => {
+                      if (agent.plan === 'pro' && !isPro) {
+                        // Show upgrade modal
+                        if (onShowPremiumModal) {
+                          onShowPremiumModal(
+                            'Premium Required',
+                            `"${agent.name}" requires a Premium subscription. Upgrade to unlock all advanced AI agents.`
+                          )
+                        }
+                        setShowAgentDropdown(false)
+                        return
+                      }
+                      setCurrentAgent(agent.id)
+                      setShowAgentDropdown(false)
+                    }}
+                    className={`w-full text-left px-4 py-3 hover:bg-[var(--bg-tertiary)] transition-colors border-b border-[var(--border-primary)] last:border-b-0 ${
+                      currentAgent === agent.id
+                        ? 'bg-[var(--accent-primary)]/10 border-l-2 border-l-[var(--accent-primary)]'
+                        : ''
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium text-[var(--text-primary)]">
+                            {agent.name}
+                          </span>
+                          {agent.plan === 'pro' && (
+                            <span className="px-2 py-0.5 rounded-full bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)] text-white text-xs font-semibold">
+                              Pro
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-[var(--text-secondary)] mt-1">
+                          {agent.description}
+                        </p>
+                      </div>
+                      {currentAgent === agent.id && (
+                        <svg className="w-5 h-5 text-[var(--accent-primary)]" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </div>
 
