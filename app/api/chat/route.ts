@@ -202,8 +202,10 @@ What would you like to know?`
     }
 
     // Prepare messages with system prompt and handle images
-    const formatMessage = (msg: any) => {
-      if (msg.images && msg.images.length > 0) {
+    // Only include images in the LAST message to avoid format issues with message history
+    const formatMessage = (msg: any, index: number, isLastMessage: boolean) => {
+      // Only process images for the last message (current message being sent)
+      if (isLastMessage && msg.images && msg.images.length > 0) {
         // Format for vision models (OpenAI/DeepSeek vision format)
         const contentParts: any[] = [
           { type: 'text', text: msg.content || 'What is in this image?' }
@@ -230,20 +232,28 @@ What would you like to know?`
           content: contentParts
         }
       }
+      // For all other messages (history), strip images and only send text content
       return {
         role: msg.role,
-        content: msg.content
+        content: msg.content || ''
       }
     }
 
+    // Format messages - only include images in the last message
+    const formattedMessages = messages.map((msg: any, index: number) => {
+      const isLastMessage = index === messages.length - 1
+      return formatMessage(msg, index, isLastMessage)
+    })
+
     const messagesWithSystem = [
       { role: 'system', content: systemPrompt },
-      ...messages.map(formatMessage)
+      ...formattedMessages
     ]
 
-    // Use vision model if images are present
+    // Use vision model if images are present in the last message only
     let modelToUse = finalModel
-    const hasImages = messages.some((m: any) => m.images && m.images.length > 0)
+    const lastMessage = messages[messages.length - 1]
+    const hasImages = lastMessage && lastMessage.images && lastMessage.images.length > 0
     
     if (hasImages) {
       // Use vision-capable models

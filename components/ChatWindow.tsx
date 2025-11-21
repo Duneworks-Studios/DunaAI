@@ -52,7 +52,8 @@ export default function ChatWindow({
   const [showAgentDropdown, setShowAgentDropdown] = useState(false)
   const { currentAgent, setCurrentAgent } = useAgent()
   const isPro = userPlan?.isUnlimited || false
-  const availableAgents = getAvailableAgents(isPro)
+  // Show all agents, but filter availability for clicking
+  const allAgents = Object.values(AGENTS)
   const currentAgentData = AGENTS[currentAgent]
 
   useEffect(() => {
@@ -387,55 +388,75 @@ export default function ChatWindow({
                 onClick={() => setShowAgentDropdown(false)}
               />
               <div className="absolute bottom-full left-0 right-0 mb-2 bg-[var(--bg-elevated)] border border-[var(--border-primary)] rounded-lg shadow-lg max-h-96 overflow-y-auto z-20">
-                {availableAgents.map((agent) => (
-                  <button
-                    key={agent.id}
-                    type="button"
-                    onClick={() => {
-                      if (agent.plan === 'pro' && !isPro) {
-                        // Show upgrade modal
-                        if (onShowPremiumModal) {
-                          onShowPremiumModal(
-                            'Premium Required',
-                            `"${agent.name}" requires a Premium subscription. Upgrade to unlock all advanced AI agents.`
-                          )
+                {allAgents.map((agent) => {
+                  const isProAgent = agent.plan === 'pro'
+                  const isLocked = isProAgent && !isPro
+                  const isAvailable = !isProAgent || isPro
+                  
+                  return (
+                    <button
+                      key={agent.id}
+                      type="button"
+                      onClick={() => {
+                        if (isLocked) {
+                          // Show upgrade modal
+                          if (onShowPremiumModal) {
+                            onShowPremiumModal(
+                              'Premium Required',
+                              `"${agent.name}" requires a Premium subscription. Upgrade to unlock all advanced AI agents.`
+                            )
+                          }
+                          setShowAgentDropdown(false)
+                          return
                         }
+                        setCurrentAgent(agent.id)
                         setShowAgentDropdown(false)
-                        return
-                      }
-                      setCurrentAgent(agent.id)
-                      setShowAgentDropdown(false)
-                    }}
-                    className={`w-full text-left px-4 py-3 hover:bg-[var(--bg-tertiary)] transition-colors border-b border-[var(--border-primary)] last:border-b-0 ${
-                      currentAgent === agent.id
-                        ? 'bg-[var(--accent-primary)]/10 border-l-2 border-l-[var(--accent-primary)]'
-                        : ''
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium text-[var(--text-primary)]">
-                            {agent.name}
-                          </span>
-                          {agent.plan === 'pro' && (
-                            <span className="px-2 py-0.5 rounded-full bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)] text-white text-xs font-semibold">
-                              Pro
+                      }}
+                      disabled={isLocked}
+                      className={`w-full text-left px-4 py-3 transition-colors border-b border-[var(--border-primary)] last:border-b-0 ${
+                        isLocked
+                          ? 'opacity-50 cursor-not-allowed'
+                          : 'hover:bg-[var(--bg-tertiary)] cursor-pointer'
+                      } ${
+                        currentAgent === agent.id && !isLocked
+                          ? 'bg-[var(--accent-primary)]/10 border-l-2 border-l-[var(--accent-primary)]'
+                          : ''
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className={`text-sm font-medium ${
+                              isLocked ? 'text-[var(--text-tertiary)]' : 'text-[var(--text-primary)]'
+                            }`}>
+                              {agent.name}
                             </span>
-                          )}
+                            {isProAgent && (
+                              <span className="px-2 py-0.5 rounded-full bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)] text-white text-xs font-semibold">
+                                Pro
+                              </span>
+                            )}
+                          </div>
+                          <p className={`text-xs mt-1 ${
+                            isLocked ? 'text-[var(--text-tertiary)]' : 'text-[var(--text-secondary)]'
+                          }`}>
+                            {agent.description}
+                          </p>
                         </div>
-                        <p className="text-xs text-[var(--text-secondary)] mt-1">
-                          {agent.description}
-                        </p>
+                        {currentAgent === agent.id && !isLocked && (
+                          <svg className="w-5 h-5 text-[var(--accent-primary)]" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                        )}
+                        {isLocked && (
+                          <svg className="w-5 h-5 text-[var(--text-tertiary)]" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                          </svg>
+                        )}
                       </div>
-                      {currentAgent === agent.id && (
-                        <svg className="w-5 h-5 text-[var(--accent-primary)]" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                        </svg>
-                      )}
-                    </div>
-                  </button>
-                ))}
+                    </button>
+                  )
+                })}
               </div>
             </>
           )}
