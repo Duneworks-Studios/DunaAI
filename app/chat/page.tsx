@@ -533,13 +533,23 @@ export default function ChatPage() {
           
           // Strip images from all messages except the last one to prevent API errors
           // Only the current message (last one) should have images
+          // CRITICAL: Completely omit images property for non-last messages (don't set to undefined)
           const messagesToSend = newMessages.map((m, index) => {
             const isLastMessage = index === newMessages.length - 1
-            return {
-              role: m.role,
-              content: m.content,
+            if (isLastMessage && m.images && m.images.length > 0) {
               // Only include images in the last message
-              images: isLastMessage ? m.images : undefined
+              return {
+                role: m.role,
+                content: m.content,
+                images: m.images
+              }
+            } else {
+              // Completely omit images property for all other messages
+              return {
+                role: m.role,
+                content: m.content
+                // No images property at all
+              }
             }
           })
           

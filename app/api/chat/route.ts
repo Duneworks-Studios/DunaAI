@@ -107,17 +107,27 @@ export async function POST(request: NextRequest) {
   try {
     const { messages, userId, agent = 'chat' } = await request.json()
     
-    // Safety: Strip images from all messages except the last one
+    // CRITICAL: Strip images from all messages except the last one
     // This prevents API errors when message history contains images
+    // We must completely remove the images property, not just set it to undefined
     const sanitizedMessages = messages.map((msg: any, index: number) => {
       const isLastMessage = index === messages.length - 1
-      if (isLastMessage) {
-        // Keep images only in the last message
-        return msg
+      if (isLastMessage && msg.images && Array.isArray(msg.images) && msg.images.length > 0) {
+        // Keep images only in the last message if it has images
+        return {
+          role: msg.role,
+          content: msg.content || '',
+          images: msg.images
+        }
       } else {
-        // Remove images from all other messages
+        // Completely remove images property from all other messages
+        // Create a new object without the images property
         const { images, ...messageWithoutImages } = msg
-        return messageWithoutImages
+        return {
+          role: messageWithoutImages.role,
+          content: messageWithoutImages.content || ''
+          // Explicitly omit images property
+        }
       }
     })
 
@@ -216,10 +226,11 @@ What would you like to know?`
     }
 
     // Prepare messages with system prompt and handle images
-    // Only include images in the LAST message to avoid format issues with message history
+    // CRITICAL: Only include images in the LAST message to avoid format issues with message history
     const formatMessage = (msg: any, index: number, isLastMessage: boolean) => {
-      // Only process images for the last message (current message being sent)
-      if (isLastMessage && msg.images && msg.images.length > 0) {
+      // Double-check: Only process images for the last message (current message being sent)
+      // Even if images property exists, ignore it unless it's the last message
+      if (isLastMessage && msg.images && Array.isArray(msg.images) && msg.images.length > 0) {
         // Format for vision models (OpenAI/DeepSeek vision format)
         const contentParts: any[] = [
           { type: 'text', text: msg.content || 'What is in this image?' }
@@ -246,7 +257,8 @@ What would you like to know?`
           content: contentParts
         }
       }
-      // For all other messages (history), strip images and only send text content
+      // For ALL other messages (history), ALWAYS return only text content
+      // Never include images, even if the property exists
       return {
         role: msg.role,
         content: msg.content || ''
@@ -255,9 +267,22 @@ What would you like to know?`
 
     // Format messages - only include images in the last message
     // Use sanitizedMessages to ensure no images in history
+    // CRITICAL: Final verification - ensure no images in history
     const formattedMessages = sanitizedMessages.map((msg: any, index: number) => {
       const isLastMessage = index === sanitizedMessages.length - 1
-      return formatMessage(msg, index, isLastMessage)
+      
+      // Defensive check: If this is NOT the last message, ensure images property doesn't exist
+      if (!isLastMessage) {
+        // Create a completely clean message object without images property
+        const cleanMsg = {
+          role: msg.role,
+          content: msg.content || ''
+        }
+        return formatMessage(cleanMsg, index, false)
+      }
+      
+      // Only the last message can have images
+      return formatMessage(msg, index, true)
     })
 
     const messagesWithSystem = [
@@ -288,6 +313,29 @@ What would you like to know?`
         ]
       : messagesWithSystem
 
+    // FINAL SAFETY CHECK: Verify no images in history before sending to AI
+    // This is a critical check to prevent API errors
+    const finalMessages = optimizedMessages.map((msg: any, index: number) => {
+      const isLastMessage = index === optimizedMessages.length - 1
+      
+      // If this is the system prompt, return as-is
+      if (msg.role === 'system') {
+        return msg
+      }
+      
+      // If this is NOT the last message, ensure it has NO images property
+      if (!isLastMessage) {
+        // Create a completely clean message - only role and content
+        return {
+          role: msg.role,
+          content: typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content)
+        }
+      }
+      
+      // Last message can have images (already formatted correctly)
+      return msg
+    })
+
     // Call AI API (DeepSeek or OpenAI) with timeout and retry logic
     const aiResponse = await fetchWithRetry(
       AI_ENDPOINT,
@@ -299,7 +347,7 @@ What would you like to know?`
         },
         body: JSON.stringify({
           model: modelToUse,
-          messages: optimizedMessages, // Use optimized message history
+          messages: finalMessages, // Use final verified messages (no images in history)
           max_tokens: 1500, // Reduced for faster responses on mobile
           temperature: 0.7,
           stream: false, // Ensure streaming is off for reliability
