@@ -531,15 +531,23 @@ export default function ChatPage() {
           const controller = new AbortController()
           const timeoutId = setTimeout(() => controller.abort(), clientTimeout)
           
+          // Strip images from all messages except the last one to prevent API errors
+          // Only the current message (last one) should have images
+          const messagesToSend = newMessages.map((m, index) => {
+            const isLastMessage = index === newMessages.length - 1
+            return {
+              role: m.role,
+              content: m.content,
+              // Only include images in the last message
+              images: isLastMessage ? m.images : undefined
+            }
+          })
+          
           const response = await fetch('/api/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              messages: newMessages.map(m => ({ 
-                role: m.role, 
-                content: m.content,
-                images: m.images 
-              })),
+              messages: messagesToSend,
               userId: user.id,
               agent: currentAgent, // Pass current agent to API
             }),

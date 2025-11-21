@@ -106,6 +106,20 @@ async function fetchWithRetry(
 export async function POST(request: NextRequest) {
   try {
     const { messages, userId, agent = 'chat' } = await request.json()
+    
+    // Safety: Strip images from all messages except the last one
+    // This prevents API errors when message history contains images
+    const sanitizedMessages = messages.map((msg: any, index: number) => {
+      const isLastMessage = index === messages.length - 1
+      if (isLastMessage) {
+        // Keep images only in the last message
+        return msg
+      } else {
+        // Remove images from all other messages
+        const { images, ...messageWithoutImages } = msg
+        return messageWithoutImages
+      }
+    })
 
     // Get AI service configuration
     // Support both DeepSeek and OpenAI
@@ -240,8 +254,9 @@ What would you like to know?`
     }
 
     // Format messages - only include images in the last message
-    const formattedMessages = messages.map((msg: any, index: number) => {
-      const isLastMessage = index === messages.length - 1
+    // Use sanitizedMessages to ensure no images in history
+    const formattedMessages = sanitizedMessages.map((msg: any, index: number) => {
+      const isLastMessage = index === sanitizedMessages.length - 1
       return formatMessage(msg, index, isLastMessage)
     })
 
@@ -252,7 +267,7 @@ What would you like to know?`
 
     // Use vision model if images are present in the last message only
     let modelToUse = finalModel
-    const lastMessage = messages[messages.length - 1]
+    const lastMessage = sanitizedMessages[sanitizedMessages.length - 1]
     const hasImages = lastMessage && lastMessage.images && lastMessage.images.length > 0
     
     if (hasImages) {
