@@ -1,8 +1,49 @@
 'use client'
 
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { createSupabaseClient } from '@/lib/supabase'
+import type { User } from '@supabase/supabase-js'
 
 export default function Hero() {
+  const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
+  const router = useRouter()
+  const supabase = createSupabaseClient()
+
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        setUser(session?.user ?? null)
+      } catch (error) {
+        console.error('Error checking session:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    checkSession()
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
+
+  const handleGetStarted = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault()
+    if (user) {
+      router.push('/chat')
+    } else {
+      router.push('/auth/signup')
+    }
+  }
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
       {/* Content */}
@@ -47,7 +88,8 @@ export default function Hero() {
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center mb-12 sm:mb-20 px-4">
             <a
-              href="#pricing"
+              href={user ? '/chat' : '/auth/signup'}
+              onClick={handleGetStarted}
               className="btn-primary text-base sm:text-lg px-8 sm:px-12 py-4 sm:py-6 w-full sm:w-auto"
             >
               Get Started Free
