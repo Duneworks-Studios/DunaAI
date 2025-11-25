@@ -213,5 +213,32 @@
       padding-right: 0.75rem;
       padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
     }
+
+    /* Mobile chat layout improvements */
+    .chat-header {
+      padding-left: 3.5rem; /* Space for hamburger button */
+      min-height: 4rem;
+    }
+
+    /* Ensure message bubbles have proper spacing on mobile */
+    .chat-message-container {
+      margin-left: 0.5rem;
+      margin-right: 0.5rem;
+    }
+
+    /* Prevent overlapping with fixed elements */
+    .chat-messages-area {
+      padding-top: 1rem;
+      padding-bottom: 1rem;
+    }
+
+    /* Safe area for mobile devices */
+    .mobile-safe-top {
+      padding-top: env(safe-area-inset-top, 0);
+    }
+
+    .mobile-safe-bottom {
+      padding-bottom: env(safe-area-inset-bottom, 0);
+    }
   }
 }

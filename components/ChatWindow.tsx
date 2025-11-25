@@ -137,8 +137,8 @@ export default function ChatWindow({
   return (
     <div className="flex-1 flex flex-col h-full bg-[var(--bg-primary)] min-w-0 overflow-hidden">
       {/* Header */}
-      <div className="h-16 border-b border-[var(--border-primary)] px-4 sm:px-6 flex items-center flex-shrink-0 glass">
-        <h1 className="text-lg font-semibold text-[var(--text-primary)] truncate flex-1 min-w-0">
+      <div className="h-16 border-b border-[var(--border-primary)] pl-14 md:pl-4 pr-4 sm:pr-6 flex items-center flex-shrink-0 glass relative z-30">
+        <h1 className="text-base sm:text-lg font-semibold text-[var(--text-primary)] truncate flex-1 min-w-0">
           {activeSessionTitle || 'New Chat'}
         </h1>
         {userPlan && (
@@ -202,18 +202,18 @@ export default function ChatWindow({
       </AnimatePresence>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 sm:px-6 md:px-8 py-6 md:py-8 min-h-0">
-        <div className="max-w-4xl mx-auto space-y-6">
+      <div className="flex-1 overflow-y-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8 min-h-0">
+        <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
           {messages.length === 0 && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="text-center py-20"
+              className="text-center py-12 sm:py-20 px-4"
             >
-              <h2 className="text-2xl font-semibold mb-2 text-[var(--text-primary)]">
+              <h2 className="text-xl sm:text-2xl font-semibold mb-2 text-[var(--text-primary)]">
                 Welcome to Duna
               </h2>
-              <p className="text-base text-[var(--text-secondary)]">
+              <p className="text-sm sm:text-base text-[var(--text-secondary)]">
                 Start a conversation with your AI assistant
               </p>
             </motion.div>
@@ -226,10 +226,10 @@ export default function ChatWindow({
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
-                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'} px-2 sm:px-0`}
               >
                 <div
-                  className={`max-w-[85%] sm:max-w-[75%] md:max-w-[70%] rounded-xl px-4 py-3 premium-card ${
+                  className={`max-w-[90%] sm:max-w-[80%] md:max-w-[75%] lg:max-w-[70%] rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 premium-card ${
                     message.role === 'user'
                       ? 'bg-[var(--accent-primary)]/10 border border-[var(--accent-primary)]/20'
                       : 'bg-[var(--bg-elevated)] border border-[var(--border-primary)]'
@@ -338,12 +338,12 @@ export default function ChatWindow({
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="flex justify-start"
+              className="flex justify-start px-2 sm:px-0"
             >
-              <div className="premium-card px-4 py-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-5 h-5 border-2 border-[var(--border-secondary)] border-t-[var(--accent-primary)] rounded-full animate-spin"></div>
-                  <span className="text-sm text-[var(--text-secondary)]">Duna is thinking...</span>
+              <div className="premium-card px-3 sm:px-4 py-2.5 sm:py-3">
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-[var(--border-secondary)] border-t-[var(--accent-primary)] rounded-full animate-spin"></div>
+                  <span className="text-xs sm:text-sm text-[var(--text-secondary)]">Duna is thinking...</span>
                 </div>
               </div>
             </motion.div>
@@ -354,12 +354,12 @@ export default function ChatWindow({
       </div>
 
       {/* Agent Selector Dropdown */}
-      <div className="border-t border-[var(--border-primary)] px-4 md:px-6 py-2 glass flex-shrink-0">
+      <div className="border-t border-[var(--border-primary)] px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 glass flex-shrink-0">
         <div className="max-w-4xl mx-auto relative">
           <button
             type="button"
             onClick={() => setShowAgentDropdown(!showAgentDropdown)}
-            className="w-full px-4 py-2 bg-[var(--bg-elevated)] border border-[var(--border-primary)] rounded-lg hover:border-[var(--accent-primary)] transition-colors flex items-center justify-between text-sm"
+            className="w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-[var(--bg-elevated)] border border-[var(--border-primary)] rounded-lg hover:border-[var(--accent-primary)] transition-colors flex items-center justify-between text-xs sm:text-sm touch-manipulation"
           >
             <div className="flex items-center gap-2">
               <span className="text-[var(--text-primary)] font-medium">

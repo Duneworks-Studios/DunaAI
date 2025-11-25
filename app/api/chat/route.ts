@@ -6,6 +6,23 @@ export const maxDuration = 180
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs' // Ensure we're using Node.js runtime
 
+// Server-side HTML entity decoder (doesn't use DOM)
+function decodeHtmlEntities(text: string): string {
+  return text
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;/g, "'")
+    .replace(/&#39;/g, "'")
+    .replace(/&apos;/g, "'")
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&#x27;/g, "'")
+    .replace(/&#x2F;/g, '/')
+    .replace(/&#x60;/g, '`')
+    .replace(/&#x3D;/g, '=')
+}
+
 // Helper function to create a fetch with timeout
 async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs: number = 60000): Promise<Response> {
   const controller = new AbortController()
@@ -33,11 +50,13 @@ async function fetchWithRetry(
   options: RequestInit, 
   maxRetries: number = 3,
   baseTimeoutMs: number = 60000
-): Promise<Response> {
+): Promise<{ response: Response; attempts: number }> {
   let lastError: Error | null = null
   let lastResponse: Response | null = null
+  let totalAttempts = 0
   
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    totalAttempts = attempt + 1
     try {
       if (attempt > 0) {
         // Use exponential backoff with jitter for gateway errors
@@ -82,16 +101,15 @@ async function fetchWithRetry(
           continue
         }
         
-        return response
+        return { response, attempts: totalAttempts }
       } catch (fetchError) {
         // If fetch itself failed (network error, timeout, etc.), handle it
         if (fetchError instanceof Error) {
           lastError = fetchError
           // If it's a timeout and we have retries left, continue
           if (fetchError.message.includes('timeout') && attempt < maxRetries) {
-            if (process.env.NODE_ENV === 'development') {
-              console.log(`Request timeout, retrying with exponential backoff (${attempt + 1}/${maxRetries})...`)
-            }
+            // Log error for debugging
+            console.error(`[AI API] Request timeout (attempt ${totalAttempts}/${maxRetries + 1}):`, fetchError.message)
             continue
           }
         }
@@ -103,14 +121,13 @@ async function fetchWithRetry(
       
       // If timeout and we have retries left, retry with exponential backoff
       if (lastError.message.includes('timeout') && attempt < maxRetries) {
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`Request timeout, retrying with exponential backoff (${attempt + 1}/${maxRetries})...`)
-        }
+        console.error(`[AI API] Request timeout (attempt ${totalAttempts}/${maxRetries + 1}):`, lastError.message)
         continue
       }
       
       // If last attempt, throw the error
       if (attempt === maxRetries) {
+        console.error(`[AI API] All retries exhausted (${totalAttempts} attempts):`, lastError.message)
         throw lastError
       }
     }
@@ -118,9 +135,11 @@ async function fetchWithRetry(
   
   // If we have a 502, 503, or 504 response, return it so it can be handled properly
   if (lastResponse && (lastResponse.status === 502 || lastResponse.status === 503 || lastResponse.status === 504)) {
-    return lastResponse
+    console.error(`[AI API] Gateway error after ${totalAttempts} attempts:`, lastResponse.status)
+    return { response: lastResponse, attempts: totalAttempts }
   }
   
+  console.error(`[AI API] Failed after ${totalAttempts} attempts:`, lastError?.message || 'Unknown error')
   throw lastError || new Error('Failed to fetch after retries')
 }
 
@@ -621,7 +640,7 @@ What would you like to know?`
 
     // Call AI API (DeepSeek or OpenAI) with timeout and retry logic
     // Use more aggressive retry strategy: shorter initial timeout, more retries
-    const aiResponse = await fetchWithRetry(
+    const { response: aiResponse, attempts: retryAttempts } = await fetchWithRetry(
       AI_ENDPOINT,
       {
         method: 'POST',
@@ -637,13 +656,23 @@ What would you like to know?`
           stream: false, // Ensure streaming is off for reliability
         }),
       },
-      5, // Max 5 retries (6 total attempts) - more retries for better reliability
-      40000 // Base 40 second timeout, increases progressively: 40s, 45s, 50s, 55s, 60s, 65s
+      3, // Max 3 retries (4 total attempts) - balanced retry count
+      40000 // Base 40 second timeout, increases progressively: 40s, 45s, 50s, 55s
     )
+    
+    // Log successful request
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[AI API] Request succeeded after ${retryAttempts} attempt(s)`)
+    }
 
     if (!aiResponse.ok) {
       const errorData = await aiResponse.json().catch(() => ({ error: { message: 'Unknown error' } }))
-      console.error('AI API error:', aiResponse.status, errorData)
+      console.error(`[AI API] Error (${aiResponse.status}) after ${retryAttempts} attempt(s):`, {
+        status: aiResponse.status,
+        statusText: aiResponse.statusText,
+        error: errorData?.error || errorData,
+        retryAttempts
+      })
       
       let errorMessage = `❌ AI Service Error (${aiResponse.status})`
       
@@ -703,62 +732,33 @@ If this persists, check your usage limits.`
 
 The AI service servers are experiencing issues. Please try again in a moment.`
       } else if (aiResponse.status === 502) {
-        errorMessage = `❌ Bad Gateway (502)
+        errorMessage = `⚠️ The AI is momentarily unavailable. Please try again in a few seconds.
 
-The AI service gateway received an invalid response from an upstream server. This is usually a temporary issue.
-
-**I've automatically retried 6 times with exponential backoff delays, but the gateway is still experiencing issues.**
-
-**This usually means:**
-- The AI service backend is temporarily unavailable
-- There's a communication issue between gateway and backend servers
-- The service is experiencing infrastructure problems
+The AI service gateway is experiencing temporary issues. I've automatically retried multiple times, but the service needs a moment to recover.
 
 **What you can do:**
-- **Wait 1-2 minutes and try again** (gateway issues usually resolve within this time)
-- Try a simpler, shorter question to reduce processing time
-- Check your internet connection
-- If the issue persists after waiting, the service may be experiencing extended downtime
-
-**Note:** This is a temporary infrastructure issue with the AI service provider. The system will automatically use longer delays between retries to give the gateway time to recover.`
-      } else if (aiResponse.status === 503) {
-        errorMessage = `❌ Service Unavailable (503)
-
-The AI service is temporarily overloaded or unavailable. This is usually temporary.
-
-**I've automatically retried 6 times with exponential backoff delays, but the service is still unavailable.**
-
-**This usually means:**
-- The AI service is experiencing high traffic
-- The service is temporarily down for maintenance
-- Your request couldn't be processed due to server load
-
-**What you can do:**
-- **Wait 1-2 minutes and try again** (the service usually recovers within this time)
-- Try a simpler, shorter question to reduce processing time
-- Check your internet connection
-- If the issue persists after waiting, the service may be experiencing extended downtime
-
-**Note:** This is a temporary issue with the AI service provider, not your configuration. The system will automatically use longer delays between retries to give the service time to recover.`
-      } else if (aiResponse.status === 504) {
-        errorMessage = `❌ Gateway Timeout (504)
-
-The AI service took too long to respond. This can happen on mobile or slower connections.
-
-**I've automatically retried 6 times with optimized timeouts, but the service is still timing out.**
-
-**This usually means:**
-- The AI service is experiencing high load
-- Your mobile connection is very slow
-- The request is too complex
-
-**What you can do:**
-- **Wait 15-30 seconds and try again** (the service may recover quickly)
-- Check your internet connection (try switching to WiFi if on mobile data)
+- Wait 10-15 seconds and try again
 - Try a simpler, shorter question
-- The service should work - this is usually temporary
+- If this persists, consider switching to a different AI agent (like Nova instead of Meta Advanced)`
+      } else if (aiResponse.status === 503) {
+        errorMessage = `⚠️ The AI is momentarily unavailable. Please try again in a few seconds.
 
-**Note:** I've optimized the request for faster responses. Please try again in a moment.`
+The AI service is temporarily overloaded. I've automatically retried multiple times, but the service needs a moment to recover.
+
+**What you can do:**
+- Wait 10-15 seconds and try again
+- Try a simpler, shorter question
+- If this persists, consider switching to a different AI agent (like Nova instead of Meta Advanced)`
+      } else if (aiResponse.status === 504) {
+        errorMessage = `⚠️ The AI is momentarily unavailable. Please try again in a few seconds.
+
+The AI service took too long to respond. I've automatically retried multiple times, but the service needs a moment to recover.
+
+**What you can do:**
+- Wait 10-15 seconds and try again
+- Check your internet connection
+- Try a simpler, shorter question
+- If this persists, consider switching to a different AI agent (like Nova instead of Meta Advanced)`
       } else {
         errorMessage = `❌ AI Service Error (${aiResponse.status})
 
@@ -767,10 +767,12 @@ ${errorData?.error?.message || 'An unexpected error occurred'}
 Please check your API configuration and try again.`
       }
       
-      // Include status code in response for better client-side error handling
+      // Include status code and retry info in response for better client-side error handling
       return NextResponse.json({
         response: errorMessage,
-        statusCode: aiResponse.status // Include status code for client-side detection
+        statusCode: aiResponse.status, // Include status code for client-side detection
+        retryAttempts, // Include retry count for client-side handling
+        suggestModelSwitch: retryAttempts >= 3 // Suggest model switch after 3+ retries
       }, { status: aiResponse.status >= 500 ? 502 : aiResponse.status })
     }
 
@@ -791,7 +793,10 @@ The AI service returned an invalid response format.
       }, { status: 502 })
     }
     
-    const response = data.choices?.[0]?.message?.content || 'I apologize, but I couldn\'t generate a response.'
+    let response = data.choices?.[0]?.message?.content || 'I apologize, but I couldn\'t generate a response.'
+    
+    // Decode HTML entities in the response
+    response = decodeHtmlEntities(response)
 
     return NextResponse.json({ response })
     } catch (error) {
@@ -802,51 +807,50 @@ The AI service returned an invalid response format.
         console.error('Chat API error occurred')
       }
     
-    let errorMessage = `❌ Unexpected Error
-
-Something went wrong while processing your request. Please try again.`
+    let errorMessage = `⚠️ The AI is momentarily unavailable. Please try again in a few seconds.`
 
     if (error instanceof Error) {
       if (error.message.includes('timeout') || error.message.includes('Timeout')) {
-        errorMessage = `❌ Request Timeout
+        errorMessage = `⚠️ The AI is momentarily unavailable. Please try again in a few seconds.
 
-The AI service took too long to respond after multiple retry attempts. This can happen when:
-- The service is experiencing high load
-- Your question requires complex processing
-- Network connectivity issues
-
-**I've automatically retried 6 times, but the service is still timing out.**
+The AI service took too long to respond. I've automatically retried multiple times, but the service needs a moment to recover.
 
 **What you can do:**
-- Wait 15-30 seconds and try again
-- Break down complex questions into smaller parts
-- Check your internet connection
-- Try a simpler question`
+- Wait 10-15 seconds and try again
+- Try a simpler, shorter question
+- If this persists, consider switching to a different AI agent (like Nova instead of Meta Advanced)`
       } else if (error.message.includes('fetch') || error.message.includes('network') || error.message.includes('Network')) {
-        errorMessage = `❌ Network Error
+        errorMessage = `⚠️ The AI is momentarily unavailable. Please try again in a few seconds.
 
-Unable to connect to the AI service. This could be due to:
-- Network connectivity issues
-- The AI service being temporarily unavailable
-- Firewall or proxy blocking the connection
+Unable to connect to the AI service. This could be due to network connectivity issues.
 
 **What you can do:**
 - Check your internet connection
-- Try again in a few moments
-- Contact support if the issue persists`
+- Wait a few moments and try again
+- If this persists, consider switching to a different AI agent`
       } else {
-        errorMessage = `❌ Unexpected Error
+        errorMessage = `⚠️ The AI is momentarily unavailable. Please try again in a few seconds.
 
-${error.message}
+An unexpected error occurred. I've automatically retried multiple times, but the service needs a moment to recover.
 
-Please try again. If this persists, the AI service may be experiencing issues.`
+**What you can do:**
+- Wait 10-15 seconds and try again
+- Try a simpler question
+- If this persists, consider switching to a different AI agent`
       }
     }
+    
+    // Log error for debugging
+    console.error('[AI API] Unhandled error:', {
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined
+    })
     
     return NextResponse.json(
       {
         response: errorMessage,
-        statusCode: 500 // Include status code for client-side detection
+        statusCode: 500, // Include status code for client-side detection
+        suggestModelSwitch: true // Suggest model switch on unhandled errors
       },
       { status: 500 }
     )

@@ -366,30 +366,43 @@ export default function Chat() {
       clearTimeout(timeoutId)
 
       // Read response data first (even for errors, API returns JSON with error message)
-      const data = await response.json().catch(() => ({ response: null, statusCode: null }))
+      const data = await response.json().catch(() => ({ response: null, statusCode: null, suggestModelSwitch: false }))
       
       if (!response.ok) {
         // If API returned an error message, use it; otherwise use status code
-        // Include status code in error for better detection
+        // Include status code and model switch suggestion in error for better detection
         const statusCode = data?.statusCode || response.status
+        const suggestModelSwitch = data?.suggestModelSwitch || false
+        
         if (data && data.response) {
           const error = new Error(data.response)
           ;(error as any).statusCode = statusCode
+          ;(error as any).suggestModelSwitch = suggestModelSwitch
           throw error
         }
         const error = new Error(`API error: ${response.status} ${response.statusText}`)
         ;(error as any).statusCode = statusCode
+        ;(error as any).suggestModelSwitch = suggestModelSwitch
         throw error
       }
       
       if (!data || !data.response) {
         throw new Error('Invalid response from API')
       }
+      
+      // Decode HTML entities in the response
+      const decodeHtmlEntities = (text: string): string => {
+        const textarea = document.createElement('textarea')
+        textarea.innerHTML = text
+        return textarea.value
+      }
+      
+      const decodedResponse = decodeHtmlEntities(data.response)
 
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: data.response || 'I apologize, but I encountered an error. Please try again.',
+        content: decodedResponse || 'I apologize, but I encountered an error. Please try again.',
         timestamp: new Date(),
       }
 
@@ -421,56 +434,49 @@ export default function Chat() {
         // Continue anyway - this is not critical
       }
     } catch (error) {
-      console.error('Error calling AI:', error)
+      // Log error for debugging
+      console.error('[Chat] Error calling AI:', {
+        message: error instanceof Error ? error.message : String(error),
+        statusCode: (error as any)?.statusCode,
+        suggestModelSwitch: (error as any)?.suggestModelSwitch
+      })
       
-      let errorContent = `I apologize, but I encountered an error: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again.`
+      let errorContent = `⚠️ The AI is momentarily unavailable. Please try again in a few seconds.`
+      const suggestModelSwitch = (error as any)?.suggestModelSwitch || false
       
       // Handle timeout errors specifically
       if (error instanceof Error) {
         // Check status code first (most reliable)
         const statusCode = (error as any).statusCode
         
-        // If the error message already contains formatted content from API (starts with ❌ or contains markdown),
+        // If the error message already contains formatted content from API (starts with ⚠️ or contains markdown),
         // use it directly as it's already properly formatted
-        if (error.message.includes('❌') || error.message.includes('**') || error.message.startsWith('🖼️')) {
+        if (error.message.includes('⚠️') || error.message.includes('**') || error.message.startsWith('🖼️') || error.message.includes('❌')) {
           errorContent = error.message
         } else if (statusCode === 502 || error.message.includes('502')) {
-          errorContent = `❌ Bad Gateway (502)
+          errorContent = `⚠️ The AI is momentarily unavailable. Please try again in a few seconds.
 
-The AI service gateway received an invalid response. This is usually temporary.
-
-I've automatically retried 6 times, but the gateway is still experiencing issues. Please wait 30-60 seconds and try again - gateway issues usually resolve quickly.`
+The AI service gateway is experiencing temporary issues. I've automatically retried multiple times, but the service needs a moment to recover.`
         } else if (statusCode === 503 || error.message.includes('503')) {
-          errorContent = `❌ Service Unavailable (503)
+          errorContent = `⚠️ The AI is momentarily unavailable. Please try again in a few seconds.
 
-The AI service is temporarily overloaded or unavailable. This is usually temporary.
-
-I've automatically retried 6 times, but the service is still unavailable. Please wait 30-60 seconds and try again - the service usually recovers quickly.`
+The AI service is temporarily overloaded. I've automatically retried multiple times, but the service needs a moment to recover.`
         } else if (statusCode === 504 || error.message.includes('504') || error.message.includes('Gateway Timeout')) {
-          errorContent = `❌ Gateway Timeout (504)
+          errorContent = `⚠️ The AI is momentarily unavailable. Please try again in a few seconds.
 
-I encountered a gateway timeout. I've automatically retried 6 times with optimized settings. This usually means the AI service is busy or your connection is slow.
-
-**What you can do:**
-- Wait 15-30 seconds and try again
-- Check your internet connection (try switching to WiFi if on mobile data)
-- Try a simpler, shorter question
-- The service should work - this is usually temporary`
+The AI service took too long to respond. I've automatically retried multiple times, but the service needs a moment to recover.`
         } else if (error.name === 'AbortError' || error.message.includes('timeout')) {
-          errorContent = `❌ Request Timeout
+          errorContent = `⚠️ The AI is momentarily unavailable. Please try again in a few seconds.
 
-The request took too long to complete. This can happen on slower connections.
-
-**What you can do:**
-- Wait a moment and try again
-- Check your internet connection
-- Try a simpler question`
+The request took too long to complete. This can happen on slower connections.`
         } else if (error.message.includes('fetch') || error.message.includes('network')) {
-          errorContent = `❌ Network Error
+          errorContent = `⚠️ The AI is momentarily unavailable. Please try again in a few seconds.
 
-I couldn't connect to the AI service. Please check your internet connection and try again.`
+I couldn't connect to the AI service. Please check your internet connection.`
         }
       }
+      
+      // Add model switch suggestion if applicable (Note: Chat.tsx doesn't have agent context, so we'll skip this)
       
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -480,6 +486,7 @@ I couldn't connect to the AI service. Please check your internet connection and 
       }
       setMessages([...newMessages, errorMessage])
     } finally {
+      // Always stop loading, even on error
       setLoading(false)
     }
   }
