@@ -49,10 +49,8 @@ async function fetchWithRetry(
       
       // Use progressive timeouts - AI service often times out at 60s
       // Strategy: Start shorter, increase gradually to catch responses that are just slow
-      // Try: 45s, 50s, 55s, 60s, 65s (avoid hitting 60s limit on first try)
-      const currentTimeout = attempt === 0 
-        ? 45000 // Start with 45s to avoid hitting AI service's 60s limit
-        : 45000 + (5000 * attempt) // Add 5s per retry: 45s, 50s, 55s, 60s, 65s
+      // Try: 40s, 45s, 50s, 55s, 60s, 65s (avoid hitting 60s limit on first try)
+      const currentTimeout = baseTimeoutMs + (5000 * attempt) // Progressive: 40s, 45s, 50s, 55s, 60s, 65s
       
       if (process.env.NODE_ENV === 'development') {
         console.log(`Attempt ${attempt + 1}: Using timeout of ${currentTimeout}ms`)
@@ -563,6 +561,7 @@ What would you like to know?`
     })
 
     // Call AI API (DeepSeek or OpenAI) with timeout and retry logic
+    // Use more aggressive retry strategy: shorter initial timeout, more retries
     const aiResponse = await fetchWithRetry(
       AI_ENDPOINT,
       {
@@ -579,8 +578,8 @@ What would you like to know?`
           stream: false, // Ensure streaming is off for reliability
         }),
       },
-      4, // Max 4 retries (5 total attempts) - more retries with shorter timeouts
-      50000 // Base 50 second timeout, increases to 55s, 60s, 65s, 70s on retries
+      5, // Max 5 retries (6 total attempts) - more retries for better reliability
+      40000 // Base 40 second timeout, increases progressively: 40s, 45s, 50s, 55s, 60s, 65s
     )
 
     if (!aiResponse.ok) {
@@ -649,7 +648,7 @@ The AI service servers are experiencing issues. Please try again in a moment.`
 
 The AI service gateway received an invalid response from an upstream server. This is usually a temporary issue.
 
-**I've automatically retried 5 times, but the gateway is still experiencing issues.**
+**I've automatically retried 6 times, but the gateway is still experiencing issues.**
 
 **This usually means:**
 - The AI service backend is temporarily unavailable
@@ -668,7 +667,7 @@ The AI service gateway received an invalid response from an upstream server. Thi
 
 The AI service is temporarily overloaded or unavailable. This is usually temporary.
 
-**I've automatically retried 5 times, but the service is still unavailable.**
+**I've automatically retried 6 times, but the service is still unavailable.**
 
 **This usually means:**
 - The AI service is experiencing high traffic
@@ -687,7 +686,7 @@ The AI service is temporarily overloaded or unavailable. This is usually tempora
 
 The AI service took too long to respond. This can happen on mobile or slower connections.
 
-**I've automatically retried 5 times with optimized timeouts, but the service is still timing out.**
+**I've automatically retried 6 times with optimized timeouts, but the service is still timing out.**
 
 **This usually means:**
 - The AI service is experiencing high load
@@ -695,7 +694,7 @@ The AI service took too long to respond. This can happen on mobile or slower con
 - The request is too complex
 
 **What you can do:**
-- **Wait 10-15 seconds and try again** (the service may recover quickly)
+- **Wait 15-30 seconds and try again** (the service may recover quickly)
 - Check your internet connection (try switching to WiFi if on mobile data)
 - Try a simpler, shorter question
 - The service should work - this is usually temporary
@@ -709,9 +708,11 @@ ${errorData?.error?.message || 'An unexpected error occurred'}
 Please check your API configuration and try again.`
       }
       
+      // Include status code in response for better client-side error handling
       return NextResponse.json({
-        response: errorMessage
-      })
+        response: errorMessage,
+        statusCode: aiResponse.status // Include status code for client-side detection
+      }, { status: aiResponse.status >= 500 ? 502 : aiResponse.status })
     }
 
     let data
@@ -747,19 +748,22 @@ The AI service returned an invalid response format.
 Something went wrong while processing your request. Please try again.`
 
     if (error instanceof Error) {
-      if (error.message.includes('timeout')) {
+      if (error.message.includes('timeout') || error.message.includes('Timeout')) {
         errorMessage = `❌ Request Timeout
 
-The AI service took too long to respond (over 60 seconds). This can happen when:
+The AI service took too long to respond after multiple retry attempts. This can happen when:
 - The service is experiencing high load
 - Your question requires complex processing
 - Network connectivity issues
 
+**I've automatically retried 6 times, but the service is still timing out.**
+
 **What you can do:**
-- Try again in a few moments
+- Wait 15-30 seconds and try again
 - Break down complex questions into smaller parts
-- Check your internet connection`
-      } else if (error.message.includes('fetch')) {
+- Check your internet connection
+- Try a simpler question`
+      } else if (error.message.includes('fetch') || error.message.includes('network') || error.message.includes('Network')) {
         errorMessage = `❌ Network Error
 
 Unable to connect to the AI service. This could be due to:
@@ -782,7 +786,8 @@ Please try again. If this persists, the AI service may be experiencing issues.`
     
     return NextResponse.json(
       {
-        response: errorMessage
+        response: errorMessage,
+        statusCode: 500 // Include status code for client-side detection
       },
       { status: 500 }
     )
