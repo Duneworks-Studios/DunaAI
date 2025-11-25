@@ -515,8 +515,8 @@ What would you like to know?`
     ]
 
     // Use vision model if images are present in the last message only
+    // Reuse lastMessage from above (already declared at line 416)
     let modelToUse = finalModel
-    const lastMessage = sanitizedMessages[sanitizedMessages.length - 1]
     const hasImages = lastMessage && lastMessage.images && lastMessage.images.length > 0
     
     if (hasImages) {
