@@ -8,7 +8,32 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { userId, code } = body
 
-    console.log('🔑 Code activation request:', { userId, code, codeLength: code?.length })
+    // Input validation
+    if (!userId || typeof userId !== 'string' || userId.trim().length === 0) {
+      return NextResponse.json(
+        { error: 'User ID is required and must be a valid string' },
+        { status: 400 }
+      )
+    }
+    
+    if (!code || typeof code !== 'string' || code.trim().length === 0) {
+      return NextResponse.json(
+        { error: 'Code is required and must be a valid string' },
+        { status: 400 }
+      )
+    }
+    
+    // Validate code format (base64 strings are typically 28-100 chars)
+    if (code.length > 200) {
+      return NextResponse.json(
+        { error: 'Invalid code format' },
+        { status: 400 }
+      )
+    }
+
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔑 Code activation request:', { userId, codeLength: code?.length })
+    }
 
     if (!userId || !code) {
       console.error('❌ Missing userId or code:', { userId: !!userId, code: !!code })
@@ -22,13 +47,13 @@ export async function POST(request: NextRequest) {
     const PRO_UPGRADE_CODE = 'IzEgQWkgRHVuZXdvcmtzIDY3'
     const RESET_MESSAGE_LIMIT_CODE = 'RHVuZXdvcmtzIElzICMxIERldiBTZXJ2ZXI='
 
-    console.log('🔍 Code comparison:', {
-      received: code,
-      proCode: PRO_UPGRADE_CODE,
-      resetCode: RESET_MESSAGE_LIMIT_CODE,
-      matchesPro: code === PRO_UPGRADE_CODE,
-      matchesReset: code === RESET_MESSAGE_LIMIT_CODE,
-    })
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔍 Code comparison:', {
+        codeLength: code.length,
+        matchesPro: code === PRO_UPGRADE_CODE,
+        matchesReset: code === RESET_MESSAGE_LIMIT_CODE,
+      })
+    }
 
     // Get service role key from environment
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL

@@ -141,26 +141,41 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
     return elements.length > 0 ? elements : [<p key="empty">{text}</p>]
   }
 
+  // Escape HTML to prevent XSS attacks
+  const escapeHtml = (text: string): string => {
+    const map: Record<string, string> = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;',
+    }
+    return text.replace(/[&<>"']/g, (m) => map[m])
+  }
+
   // Render inline markdown (bold, italic, code)
   const renderInlineMarkdown = (text: string): React.ReactNode[] => {
     if (!text) return [text]
+    
+    // Escape HTML to prevent XSS
+    const escapedText = escapeHtml(text)
     
     const parts: React.ReactNode[] = []
     let currentIndex = 0
     let key = 0
     let i = 0
     
-    while (i < text.length) {
+    while (i < escapedText.length) {
       // Check for ***bold italic*** (must check before **bold**)
-      if (text.substring(i, i + 3) === '***') {
-        const endIdx = text.indexOf('***', i + 3)
+      if (escapedText.substring(i, i + 3) === '***') {
+        const endIdx = escapedText.indexOf('***', i + 3)
         if (endIdx !== -1) {
           // Add text before
           if (i > currentIndex) {
-            parts.push(<span key={key++}>{text.substring(currentIndex, i)}</span>)
+            parts.push(<span key={key++}>{escapedText.substring(currentIndex, i)}</span>)
           }
           // Add bold italic
-          const content = text.substring(i + 3, endIdx)
+          const content = escapedText.substring(i + 3, endIdx)
           parts.push(
             <strong key={key++} className="font-bold italic">
               {content}
@@ -173,15 +188,15 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
       }
       
       // Check for **bold**
-      if (text.substring(i, i + 2) === '**') {
-        const endIdx = text.indexOf('**', i + 2)
+      if (escapedText.substring(i, i + 2) === '**') {
+        const endIdx = escapedText.indexOf('**', i + 2)
         if (endIdx !== -1) {
           // Add text before
           if (i > currentIndex) {
-            parts.push(<span key={key++}>{text.substring(currentIndex, i)}</span>)
+            parts.push(<span key={key++}>{escapedText.substring(currentIndex, i)}</span>)
           }
           // Add bold
-          const content = text.substring(i + 2, endIdx)
+          const content = escapedText.substring(i + 2, endIdx)
           parts.push(
             <strong key={key++} className="font-bold">
               {content}
@@ -194,15 +209,15 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
       }
       
       // Check for `code`
-      if (text[i] === '`') {
-        const endIdx = text.indexOf('`', i + 1)
+      if (escapedText[i] === '`') {
+        const endIdx = escapedText.indexOf('`', i + 1)
         if (endIdx !== -1) {
           // Add text before
           if (i > currentIndex) {
-            parts.push(<span key={key++}>{text.substring(currentIndex, i)}</span>)
+            parts.push(<span key={key++}>{escapedText.substring(currentIndex, i)}</span>)
           }
           // Add code
-          const content = text.substring(i + 1, endIdx)
+          const content = escapedText.substring(i + 1, endIdx)
           parts.push(
             <code key={key++} className="bg-[var(--bg-tertiary)] px-1.5 py-0.5 rounded text-xs font-mono">
               {content}
@@ -215,15 +230,15 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
       }
       
       // Check for *italic* (only if not part of ** or ***)
-      if (text[i] === '*' && text.substring(i, i + 2) !== '**') {
-        const endIdx = text.indexOf('*', i + 1)
-        if (endIdx !== -1 && (endIdx === i + 1 || endIdx + 1 >= text.length || text[endIdx + 1] !== '*')) {
+      if (escapedText[i] === '*' && escapedText.substring(i, i + 2) !== '**') {
+        const endIdx = escapedText.indexOf('*', i + 1)
+        if (endIdx !== -1 && (endIdx === i + 1 || endIdx + 1 >= escapedText.length || escapedText[endIdx + 1] !== '*')) {
           // Add text before
           if (i > currentIndex) {
-            parts.push(<span key={key++}>{text.substring(currentIndex, i)}</span>)
+            parts.push(<span key={key++}>{escapedText.substring(currentIndex, i)}</span>)
           }
           // Add italic
-          const content = text.substring(i + 1, endIdx)
+          const content = escapedText.substring(i + 1, endIdx)
           parts.push(
             <em key={key++} className="italic">
               {content}
@@ -239,8 +254,8 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
     }
     
     // Add remaining text
-    if (currentIndex < text.length) {
-      parts.push(<span key={key++}>{text.substring(currentIndex)}</span>)
+    if (currentIndex < escapedText.length) {
+      parts.push(<span key={key++}>{escapedText.substring(currentIndex)}</span>)
     }
     
     return parts.length > 0 ? parts : [text]

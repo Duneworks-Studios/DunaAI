@@ -566,11 +566,16 @@ export default function ChatPage() {
           
           clearTimeout(timeoutId)
 
+      // Read response data first (even for errors, API returns JSON with error message)
+      const data = await response.json().catch(() => ({ response: null }))
+      
       if (!response.ok) {
+        // If API returned an error message, use it; otherwise use status code
+        if (data && data.response) {
+          throw new Error(data.response)
+        }
         throw new Error(`API error: ${response.status}`)
       }
-
-      const data = await response.json()
       
       if (!data || !data.response) {
         throw new Error('Invalid response from API')
@@ -639,8 +644,24 @@ export default function ChatPage() {
       
       // Handle timeout errors specifically
       if (error instanceof Error) {
-        if (error.name === 'AbortError' || error.message.includes('timeout')) {
+        // If the error message already contains formatted content from API (starts with ❌ or contains markdown),
+        // use it directly as it's already properly formatted
+        if (error.message.includes('❌') || error.message.includes('**') || error.message.startsWith('🖼️')) {
+          errorContent = error.message
+        } else if (error.name === 'AbortError' || error.message.includes('timeout')) {
           errorContent = `I apologize, but the request timed out. This can happen on slower connections. The system will automatically retry. Please wait a moment or try again.`
+        } else if (error.message.includes('502')) {
+          errorContent = `❌ Bad Gateway (502)
+
+The AI service gateway received an invalid response. This is usually temporary.
+
+I've automatically retried 5 times, but the gateway is still experiencing issues. Please wait 30-60 seconds and try again - gateway issues usually resolve quickly.`
+        } else if (error.message.includes('503')) {
+          errorContent = `❌ Service Unavailable (503)
+
+The AI service is temporarily overloaded or unavailable. This is usually temporary.
+
+I've automatically retried 5 times, but the service is still unavailable. Please wait 30-60 seconds and try again - the service usually recovers quickly.`
         } else if (error.message.includes('504')) {
           errorContent = `I encountered a gateway timeout. I've automatically retried 5 times with optimized settings. This usually means the AI service is busy or your connection is slow. Please wait 10-15 seconds and try again - it should work.`
         } else if (error.message.includes('fetch')) {

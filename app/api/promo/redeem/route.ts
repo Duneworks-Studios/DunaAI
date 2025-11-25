@@ -8,9 +8,25 @@ export async function POST(request: NextRequest) {
   try {
     const { code, userId } = await request.json()
 
-    if (!code || !userId) {
+    // Input validation
+    if (!code || typeof code !== 'string' || code.trim().length === 0) {
       return NextResponse.json(
-        { error: 'Code and userId are required' },
+        { error: 'Code is required and must be a valid string' },
+        { status: 400 }
+      )
+    }
+    
+    if (!userId || typeof userId !== 'string' || userId.trim().length === 0) {
+      return NextResponse.json(
+        { error: 'User ID is required and must be a valid string' },
+        { status: 400 }
+      )
+    }
+    
+    // Validate code format (base64 strings)
+    if (code.length > 200) {
+      return NextResponse.json(
+        { error: 'Invalid code format' },
         { status: 400 }
       )
     }

@@ -7,9 +7,28 @@ export async function POST(request: NextRequest) {
   try {
     const { email, planType = 'pro_lifetime' } = await request.json()
 
-    if (!email) {
+    // Input validation
+    if (!email || typeof email !== 'string' || email.trim().length === 0) {
       return NextResponse.json(
-        { error: 'Email is required' },
+        { error: 'Email is required and must be a valid string' },
+        { status: 400 }
+      )
+    }
+    
+    // Basic email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email.trim())) {
+      return NextResponse.json(
+        { error: 'Invalid email format' },
+        { status: 400 }
+      )
+    }
+    
+    // Validate plan type
+    const validPlanTypes = ['pro', 'pro_lifetime', 'free']
+    if (!validPlanTypes.includes(planType)) {
+      return NextResponse.json(
+        { error: `Invalid plan type. Must be one of: ${validPlanTypes.join(', ')}` },
         { status: 400 }
       )
     }
