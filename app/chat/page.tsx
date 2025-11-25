@@ -524,9 +524,9 @@ export default function ChatPage() {
           // Detect mobile and use longer timeout
           const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
           // Use much longer timeout to allow all retries to complete
-          // 5 attempts with delays: 50s + 1s + 55s + 2s + 60s + 3s + 65s + 4s + 70s = ~310s max
-          // Add buffer for network overhead: 360s (6 minutes) should be safe
-          const clientTimeout = isMobile ? 360000 : 360000
+          // 6 attempts with delays: 60s + 1s + 65s + 2s + 70s + 3s + 75s + 4s + 80s + 5s + 85s = ~450s max
+          // Add buffer for network overhead: 540s (9 minutes) should be safe for mobile
+          const clientTimeout = isMobile ? 540000 : 480000
           
           // Add timeout to client-side fetch (longer for mobile)
           const controller = new AbortController()
@@ -567,8 +567,19 @@ export default function ChatPage() {
           
           clearTimeout(timeoutId)
 
-      // Read response data first (even for errors, API returns JSON with error message)
-      const data = await response.json().catch(() => ({ response: null, statusCode: null, suggestModelSwitch: false }))
+          // Read response data first (even for errors, API returns JSON with error message)
+      let data
+      try {
+        data = await response.json()
+      } catch (jsonError) {
+        // If JSON parsing fails, create a fallback error response
+        console.error('[Chat] Failed to parse response as JSON:', jsonError)
+        data = { 
+          response: '⚠️ The AI service returned an invalid response. Please try again.', 
+          statusCode: response.status || 500, 
+          suggestModelSwitch: false 
+        }
+      }
       
       if (!response.ok) {
         // If API returned an error message, use it; otherwise use status code
@@ -665,7 +676,9 @@ export default function ChatPage() {
         suggestModelSwitch: (error as any)?.suggestModelSwitch
       })
       
-      let errorContent = `⚠️ The AI is momentarily unavailable. Please try again in a few seconds.`
+      let errorContent = `⚠️ The AI service is temporarily unavailable.
+
+Please wait a moment and try again.`
       const suggestModelSwitch = (error as any)?.suggestModelSwitch || false
       
       // Handle timeout errors specifically
@@ -678,25 +691,25 @@ export default function ChatPage() {
         if (error.message.includes('⚠️') || error.message.includes('**') || error.message.startsWith('🖼️') || error.message.includes('❌')) {
           errorContent = error.message
         } else if (statusCode === 502 || error.message.includes('502')) {
-          errorContent = `⚠️ The AI is momentarily unavailable. Please try again in a few seconds.
+          errorContent = `⚠️ The AI service is temporarily unavailable.
 
-The AI service gateway is experiencing temporary issues. I've automatically retried multiple times, but the service needs a moment to recover.`
+The service gateway is experiencing temporary issues. Please wait 15-30 seconds and try again.`
         } else if (statusCode === 503 || error.message.includes('503')) {
-          errorContent = `⚠️ The AI is momentarily unavailable. Please try again in a few seconds.
+          errorContent = `⚠️ The AI service is temporarily unavailable.
 
-The AI service is temporarily overloaded. I've automatically retried multiple times, but the service needs a moment to recover.`
+The service is temporarily overloaded. Please wait 15-30 seconds and try again.`
         } else if (statusCode === 504 || error.message.includes('504') || error.message.includes('Gateway Timeout')) {
-          errorContent = `⚠️ The AI is momentarily unavailable. Please try again in a few seconds.
+          errorContent = `⚠️ The AI service is temporarily unavailable.
 
-The AI service took too long to respond. I've automatically retried multiple times, but the service needs a moment to recover.`
+The service took too long to respond. Please check your internet connection and try again.`
         } else if (error.name === 'AbortError' || error.message.includes('timeout')) {
-          errorContent = `⚠️ The AI is momentarily unavailable. Please try again in a few seconds.
+          errorContent = `⚠️ The AI service is temporarily unavailable.
 
-The request took too long to complete. This can happen on slower connections.`
-        } else if (error.message.includes('fetch') || error.message.includes('network')) {
-          errorContent = `⚠️ The AI is momentarily unavailable. Please try again in a few seconds.
+The request took too long to complete. This can happen on slower connections. Please wait 30-60 seconds and try again.`
+        } else if (error.message.includes('fetch') || error.message.includes('network') || error.message.includes('Failed to fetch')) {
+          errorContent = `⚠️ Network Error
 
-I couldn't connect to the AI service. Please check your internet connection.`
+I couldn't connect to the AI service. Please check your internet connection and try again.`
         }
       }
       
@@ -709,7 +722,7 @@ I couldn't connect to the AI service. Please check your internet connection.`
           // Find a free alternative
           const freeAgents = Object.values(AGENTS).filter(a => a.plan === 'free')
           if (freeAgents.length > 0) {
-            errorContent += `\n\n💡 **Tip:** If this persists, try switching to a lighter agent like **${freeAgents[0].name}** which may be more stable.`
+            errorContent += `\n\n💡 **Tip:** If this persists, try switching to a lighter agent like **${freeAgents[0].name}** which may be more stable on slower connections.`
           }
         }
       }

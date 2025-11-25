@@ -48,8 +48,8 @@ async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs: nu
 async function fetchWithRetry(
   url: string, 
   options: RequestInit, 
-  maxRetries: number = 4,
-  baseTimeoutMs: number = 50000
+  maxRetries: number = 5,
+  baseTimeoutMs: number = 60000
 ): Promise<{ response: Response; attempts: number }> {
   let lastError: Error | null = null
   let lastResponse: Response | null = null
@@ -60,12 +60,12 @@ async function fetchWithRetry(
     try {
       if (attempt > 0) {
         // Use faster exponential backoff for quicker recovery
-        // For 502/503/504: shorter delays (1s, 2s, 3s, 4s) for faster retries
-        // For other errors: even shorter delays (0.5s, 1s, 1.5s, 2s)
+        // For 502/503/504: shorter delays (1s, 2s, 3s, 4s, 5s) for faster retries
+        // For other errors: even shorter delays (0.5s, 1s, 1.5s, 2s, 2.5s)
         const isGatewayError = lastResponse && (lastResponse.status === 502 || lastResponse.status === 503 || lastResponse.status === 504)
         const baseDelay = isGatewayError 
-          ? Math.min(1000 * attempt, 4000) // Linear: 1s, 2s, 3s, 4s (capped at 4s)
-          : 500 * attempt // Linear: 0.5s, 1s, 1.5s, 2s
+          ? Math.min(1000 * attempt, 5000) // Linear: 1s, 2s, 3s, 4s, 5s (capped at 5s)
+          : 500 * attempt // Linear: 0.5s, 1s, 1.5s, 2s, 2.5s
         
         // Add small jitter (±10%) to prevent thundering herd
         const jitter = baseDelay * 0.1 * (Math.random() * 2 - 1)
@@ -79,8 +79,8 @@ async function fetchWithRetry(
       }
       
       // Use progressive timeouts - start longer, increase gradually
-      // Strategy: 50s, 55s, 60s, 65s, 70s to give more time for responses
-      const currentTimeout = baseTimeoutMs + (5000 * attempt) // Progressive: 50s, 55s, 60s, 65s, 70s
+      // Strategy: 60s, 65s, 70s, 75s, 80s, 85s to give more time for responses (especially on mobile)
+      const currentTimeout = baseTimeoutMs + (5000 * attempt) // Progressive: 60s, 65s, 70s, 75s, 80s, 85s
       
       if (process.env.NODE_ENV === 'development') {
         console.log(`[AI API] Attempt ${attempt + 1}: Using timeout of ${currentTimeout}ms`)
@@ -655,6 +655,7 @@ What would you like to know?`
 
     // Call AI API (DeepSeek or OpenAI) with timeout and retry logic
     // Use more aggressive retry strategy: shorter initial timeout, more retries
+    // Increased retries and timeouts for better mobile reliability
     const { response: aiResponse, attempts: retryAttempts } = await fetchWithRetry(
       AI_ENDPOINT,
       {
@@ -671,8 +672,8 @@ What would you like to know?`
           stream: false, // Ensure streaming is off for reliability
         }),
       },
-      4, // Max 4 retries (5 total attempts) - more retries for better reliability
-      50000 // Base 50 second timeout, increases progressively: 50s, 55s, 60s, 65s, 70s
+      5, // Max 5 retries (6 total attempts) - more retries for better reliability on mobile
+      60000 // Base 60 second timeout, increases progressively: 60s, 65s, 70s, 75s, 80s, 85s
     )
     
     // Log successful request
@@ -747,33 +748,35 @@ If this persists, check your usage limits.`
 
 The AI service servers are experiencing issues. Please try again in a moment.`
       } else if (aiResponse.status === 502) {
-        errorMessage = `⚠️ The AI is momentarily unavailable. Please try again in a few seconds.
+        errorMessage = `⚠️ The AI service is temporarily unavailable.
 
-The AI service gateway is experiencing temporary issues. I've automatically retried multiple times, but the service needs a moment to recover.
+I've automatically tried multiple times, but the service needs a moment to recover.
 
 **What you can do:**
-- Wait 10-15 seconds and try again
+- Wait 15-30 seconds and try again
 - Try a simpler, shorter question
-- If this persists, consider switching to a different AI agent (like Nova instead of Meta Advanced)`
+- Check your internet connection
+- If this persists, try switching to a different AI agent`
       } else if (aiResponse.status === 503) {
-        errorMessage = `⚠️ The AI is momentarily unavailable. Please try again in a few seconds.
+        errorMessage = `⚠️ The AI service is temporarily unavailable.
 
-The AI service is temporarily overloaded. I've automatically retried multiple times, but the service needs a moment to recover.
+The service is temporarily overloaded. I've automatically tried multiple times, but it needs a moment to recover.
 
 **What you can do:**
-- Wait 10-15 seconds and try again
+- Wait 15-30 seconds and try again
 - Try a simpler, shorter question
-- If this persists, consider switching to a different AI agent (like Nova instead of Meta Advanced)`
+- Check your internet connection
+- If this persists, try switching to a different AI agent`
       } else if (aiResponse.status === 504) {
-        errorMessage = `⚠️ The AI is momentarily unavailable. Please try again in a few seconds.
+        errorMessage = `⚠️ The AI service is temporarily unavailable.
 
-The AI service took too long to respond. I've automatically retried multiple times, but the service needs a moment to recover.
+The service took too long to respond. I've automatically tried multiple times, but it needs a moment to recover.
 
 **What you can do:**
-- Wait 10-15 seconds and try again
+- Wait 15-30 seconds and try again
 - Check your internet connection
 - Try a simpler, shorter question
-- If this persists, consider switching to a different AI agent (like Nova instead of Meta Advanced)`
+- If this persists, try switching to a different AI agent`
       } else {
         errorMessage = `❌ AI Service Error (${aiResponse.status})
 
@@ -822,36 +825,41 @@ The AI service returned an invalid response format.
         console.error('Chat API error occurred')
       }
     
-    let errorMessage = `⚠️ The AI is momentarily unavailable. Please try again in a few seconds.`
+    let errorMessage = `⚠️ The AI service is temporarily unavailable.
+
+Please wait a moment and try again.`
 
     if (error instanceof Error) {
       if (error.message.includes('timeout') || error.message.includes('Timeout')) {
-        errorMessage = `⚠️ The AI is momentarily unavailable. Please try again in a few seconds.
+        errorMessage = `⚠️ The AI service is temporarily unavailable.
 
-The AI service took too long to respond. I've automatically retried multiple times, but the service needs a moment to recover.
+The service took too long to respond. This can happen on slower connections.
 
 **What you can do:**
-- Wait 10-15 seconds and try again
+- Wait 30-60 seconds and try again
+- Check your internet connection
 - Try a simpler, shorter question
-- If this persists, consider switching to a different AI agent (like Nova instead of Meta Advanced)`
-      } else if (error.message.includes('fetch') || error.message.includes('network') || error.message.includes('Network')) {
-        errorMessage = `⚠️ The AI is momentarily unavailable. Please try again in a few seconds.
+- If this persists, try switching to a different AI agent`
+      } else if (error.message.includes('fetch') || error.message.includes('network') || error.message.includes('Network') || error.message.includes('Failed to fetch')) {
+        errorMessage = `⚠️ Network Error
 
-Unable to connect to the AI service. This could be due to network connectivity issues.
+I couldn't connect to the AI service. Please check your internet connection and try again.
 
 **What you can do:**
 - Check your internet connection
+- Make sure you're connected to Wi-Fi or mobile data
 - Wait a few moments and try again
-- If this persists, consider switching to a different AI agent`
+- If this persists, try switching to a different AI agent`
       } else {
-        errorMessage = `⚠️ The AI is momentarily unavailable. Please try again in a few seconds.
+        errorMessage = `⚠️ The AI service is temporarily unavailable.
 
-An unexpected error occurred. I've automatically retried multiple times, but the service needs a moment to recover.
+An unexpected error occurred. Please wait a moment and try again.
 
 **What you can do:**
-- Wait 10-15 seconds and try again
+- Wait 30-60 seconds and try again
 - Try a simpler question
-- If this persists, consider switching to a different AI agent`
+- Check your internet connection
+- If this persists, try switching to a different AI agent`
       }
     }
     
