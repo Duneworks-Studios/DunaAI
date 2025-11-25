@@ -178,4 +178,40 @@
     background: rgba(255, 215, 0, 0.3);
     color: var(--text-primary);
   }
+
+  /* Touch optimization */
+  .touch-manipulation {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(255, 215, 0, 0.2);
+  }
+
+  /* Safe area for mobile devices */
+  .safe-area-inset-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  /* Mobile-specific chat input improvements */
+  @media (max-width: 768px) {
+    /* Ensure buttons are touch-friendly on mobile */
+    button[type="submit"],
+    button[type="button"] {
+      -webkit-tap-highlight-color: rgba(255, 215, 0, 0.3);
+      touch-action: manipulation;
+    }
+
+    /* Prevent text input zoom on iOS */
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    textarea {
+      font-size: 16px;
+    }
+
+    /* Better spacing for mobile chat input */
+    .chat-input-container {
+      padding-left: 0.75rem;
+      padding-right: 0.75rem;
+      padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+    }
+  }
 }

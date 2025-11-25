@@ -464,7 +464,7 @@ export default function ChatWindow({
       </div>
 
       {/* Input */}
-      <div className="border-t border-[var(--border-primary)] px-4 md:px-6 py-4 glass flex-shrink-0">
+      <div className="border-t border-[var(--border-primary)] px-3 sm:px-4 md:px-6 py-3 sm:py-4 glass flex-shrink-0 safe-area-inset-bottom">
         <form onSubmit={handleSubmit} className="max-w-4xl mx-auto" onPaste={handlePaste}>
           {/* Image Preview */}
           {selectedImages.length > 0 && (
@@ -488,7 +488,7 @@ export default function ChatWindow({
             </div>
           )}
           
-          <div className="flex gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 w-full min-w-0">
             <input
               type="file"
               ref={fileInputRef}
@@ -501,10 +501,11 @@ export default function ChatWindow({
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={loading || selectedImages.length >= 4}
-              className="px-4 py-3 bg-[var(--bg-elevated)] border border-[var(--border-primary)] rounded-xl hover:border-[var(--accent-primary)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+              className="w-11 h-11 sm:w-12 sm:h-12 flex items-center justify-center bg-[var(--bg-elevated)] border border-[var(--border-primary)] rounded-xl hover:border-[var(--accent-primary)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 touch-manipulation"
               title="Add images (max 4)"
+              aria-label="Add images"
             >
-              <svg className="w-5 h-5 text-[var(--text-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="w-5 h-5 sm:w-6 sm:h-6 text-[var(--text-primary)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
             </button>
@@ -513,7 +514,7 @@ export default function ChatWindow({
               value={input}
               onChange={(e) => onInputChange(e.target.value)}
               placeholder={selectedImages.length > 0 ? "Add a message with your images..." : "Type your message..."}
-              className="flex-1 px-4 py-3 bg-[var(--bg-elevated)] border border-[var(--border-primary)] rounded-xl focus:outline-none focus:border-[var(--accent-primary)] focus:ring-2 focus:ring-[var(--accent-primary)]/20 transition-all text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] text-sm"
+              className="flex-1 min-w-0 px-3 sm:px-4 py-2.5 sm:py-3 bg-[var(--bg-elevated)] border border-[var(--border-primary)] rounded-xl focus:outline-none focus:border-[var(--accent-primary)] focus:ring-2 focus:ring-[var(--accent-primary)]/20 transition-all text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] text-sm sm:text-base"
               disabled={loading}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
@@ -525,18 +526,22 @@ export default function ChatWindow({
             <button
               type="submit"
               disabled={loading || (!input.trim() && selectedImages.length === 0)}
-              className="px-6 py-3 btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+              className="min-w-[44px] min-h-[44px] sm:min-w-[52px] sm:min-h-[52px] px-3 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)] hover:from-[var(--accent-primary)]/90 hover:to-[var(--accent-secondary)]/90 text-white font-semibold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 flex items-center justify-center transition-all shadow-lg shadow-[var(--accent-primary)]/20 hover:shadow-[var(--accent-primary)]/30 active:scale-95 touch-manipulation"
+              style={{
+                boxShadow: '0 4px 12px rgba(255, 215, 0, 0.3), 0 0 20px rgba(255, 215, 0, 0.1)'
+              }}
+              aria-label="Send message"
             >
-              <span className="flex items-center gap-2">
-                <span>Send</span>
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+              <span className="flex items-center gap-1.5 sm:gap-2">
+                <span className="hidden sm:inline text-sm sm:text-base font-semibold">Send</span>
+                <svg className="w-5 h-5 sm:w-5 sm:h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                 </svg>
               </span>
             </button>
           </div>
           {userPlan && !userPlan.isUnlimited && (
-            <p className="text-xs text-[var(--text-tertiary)] text-center mt-2">
+            <p className="text-xs text-[var(--text-tertiary)] text-center mt-2 sm:mt-3">
               {userPlan.messagesUsed} / {userPlan.messagesLimit} messages today
             </p>
           )}

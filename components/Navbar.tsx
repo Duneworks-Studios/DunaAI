@@ -91,6 +91,9 @@ export default function Navbar() {
           }}>
             Duna
           </span>
+          <span className="text-[12px] font-medium px-[8px] py-[3px] rounded-[12px] bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 shadow-sm">
+            Beta
+          </span>
         </Link>
 
         {/* Center Navigation - Simple Layout - Always visible */}

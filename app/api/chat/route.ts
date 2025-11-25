@@ -40,11 +40,23 @@ async function fetchWithRetry(
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       if (attempt > 0) {
-        // Quick retry with minimal delay (0.5s, 1s, 1.5s) for faster recovery
-        await new Promise(resolve => setTimeout(resolve, 500 * attempt))
+        // Use exponential backoff with jitter for gateway errors
+        // For 502/503/504: longer delays (2s, 4s, 8s, 16s, 32s)
+        // For other errors: shorter delays (1s, 2s, 3s, 4s, 5s)
+        const isGatewayError = lastResponse && (lastResponse.status === 502 || lastResponse.status === 503 || lastResponse.status === 504)
+        const baseDelay = isGatewayError 
+          ? Math.min(2000 * Math.pow(2, attempt - 1), 10000) // Exponential: 2s, 4s, 8s, 10s, 10s (capped at 10s)
+          : 1000 * attempt // Linear: 1s, 2s, 3s, 4s, 5s
+        
+        // Add jitter (±20%) to prevent thundering herd
+        const jitter = baseDelay * 0.2 * (Math.random() * 2 - 1)
+        const delay = Math.max(500, baseDelay + jitter)
+        
         if (process.env.NODE_ENV === 'development') {
-          console.log(`Retrying AI API request (attempt ${attempt + 1}/${maxRetries + 1})...`)
+          console.log(`Retrying AI API request (attempt ${attempt + 1}/${maxRetries + 1}) after ${Math.round(delay)}ms delay...`)
         }
+        
+        await new Promise(resolve => setTimeout(resolve, delay))
       }
       
       // Use progressive timeouts - AI service often times out at 60s
@@ -64,7 +76,7 @@ async function fetchWithRetry(
         if (!response.ok && (response.status === 502 || response.status === 503 || response.status === 504) && attempt < maxRetries) {
           const statusText = response.status === 502 ? 'Bad Gateway' : response.status === 503 ? 'Service Unavailable' : 'Gateway Timeout'
           if (process.env.NODE_ENV === 'development') {
-            console.log(`${response.status} ${statusText} from AI service, retrying with longer timeout (${attempt + 1}/${maxRetries})...`)
+            console.log(`${response.status} ${statusText} from AI service, retrying with exponential backoff (${attempt + 1}/${maxRetries})...`)
           }
           lastResponse = response
           continue
@@ -78,7 +90,7 @@ async function fetchWithRetry(
           // If it's a timeout and we have retries left, continue
           if (fetchError.message.includes('timeout') && attempt < maxRetries) {
             if (process.env.NODE_ENV === 'development') {
-              console.log(`Request timeout, retrying with longer timeout (${attempt + 1}/${maxRetries})...`)
+              console.log(`Request timeout, retrying with exponential backoff (${attempt + 1}/${maxRetries})...`)
             }
             continue
           }
@@ -89,9 +101,11 @@ async function fetchWithRetry(
       // Catch any other errors
       lastError = error instanceof Error ? error : new Error(String(error))
       
-      // If timeout and we have retries left, retry with longer timeout
+      // If timeout and we have retries left, retry with exponential backoff
       if (lastError.message.includes('timeout') && attempt < maxRetries) {
-        console.log(`Request timeout, retrying with longer timeout (${attempt + 1}/${maxRetries})...`)
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`Request timeout, retrying with exponential backoff (${attempt + 1}/${maxRetries})...`)
+        }
         continue
       }
       
@@ -648,7 +662,7 @@ The AI service servers are experiencing issues. Please try again in a moment.`
 
 The AI service gateway received an invalid response from an upstream server. This is usually a temporary issue.
 
-**I've automatically retried 6 times, but the gateway is still experiencing issues.**
+**I've automatically retried 6 times with exponential backoff delays, but the gateway is still experiencing issues.**
 
 **This usually means:**
 - The AI service backend is temporarily unavailable
@@ -656,18 +670,18 @@ The AI service gateway received an invalid response from an upstream server. Thi
 - The service is experiencing infrastructure problems
 
 **What you can do:**
-- **Wait 30-60 seconds and try again** (gateway issues usually resolve quickly)
-- Try a simpler, shorter question
+- **Wait 1-2 minutes and try again** (gateway issues usually resolve within this time)
+- Try a simpler, shorter question to reduce processing time
 - Check your internet connection
-- If the issue persists, the service may be experiencing extended downtime
+- If the issue persists after waiting, the service may be experiencing extended downtime
 
-**Note:** This is a temporary infrastructure issue with the AI service provider. Please try again in a moment.`
+**Note:** This is a temporary infrastructure issue with the AI service provider. The system will automatically use longer delays between retries to give the gateway time to recover.`
       } else if (aiResponse.status === 503) {
         errorMessage = `❌ Service Unavailable (503)
 
 The AI service is temporarily overloaded or unavailable. This is usually temporary.
 
-**I've automatically retried 6 times, but the service is still unavailable.**
+**I've automatically retried 6 times with exponential backoff delays, but the service is still unavailable.**
 
 **This usually means:**
 - The AI service is experiencing high traffic
@@ -675,12 +689,12 @@ The AI service is temporarily overloaded or unavailable. This is usually tempora
 - Your request couldn't be processed due to server load
 
 **What you can do:**
-- **Wait 30-60 seconds and try again** (the service usually recovers quickly)
-- Try a simpler, shorter question
+- **Wait 1-2 minutes and try again** (the service usually recovers within this time)
+- Try a simpler, shorter question to reduce processing time
 - Check your internet connection
-- If the issue persists, the service may be experiencing extended downtime
+- If the issue persists after waiting, the service may be experiencing extended downtime
 
-**Note:** This is a temporary issue with the AI service provider, not your configuration. Please try again in a moment.`
+**Note:** This is a temporary issue with the AI service provider, not your configuration. The system will automatically use longer delays between retries to give the service time to recover.`
       } else if (aiResponse.status === 504) {
         errorMessage = `❌ Gateway Timeout (504)
 
