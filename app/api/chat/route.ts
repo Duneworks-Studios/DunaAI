@@ -7,20 +7,42 @@ export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs' // Ensure we're using Node.js runtime
 
 // Server-side HTML entity decoder (doesn't use DOM)
+// Handles all common HTML entities including numeric and hex formats
 function decodeHtmlEntities(text: string): string {
-  return text
-    .replace(/&amp;/g, '&')
+  if (!text || typeof text !== 'string') return text
+  
+  // First decode &amp; to avoid double-decoding issues
+  let decoded = text.replace(/&amp;/g, '&')
+  
+  // Decode numeric entities (decimal): &#039; &#39; etc.
+  decoded = decoded.replace(/&#(\d+);/g, (match, num) => {
+    return String.fromCharCode(parseInt(num, 10))
+  })
+  
+  // Decode hex entities: &#x27; &#x2F; etc.
+  decoded = decoded.replace(/&#x([0-9a-fA-F]+);/g, (match, hex) => {
+    return String.fromCharCode(parseInt(hex, 16))
+  })
+  
+  // Decode named entities
+  decoded = decoded
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
     .replace(/&quot;/g, '"')
-    .replace(/&#039;/g, "'")
-    .replace(/&#39;/g, "'")
     .replace(/&apos;/g, "'")
     .replace(/&nbsp;/g, ' ')
-    .replace(/&#x27;/g, "'")
-    .replace(/&#x2F;/g, '/')
-    .replace(/&#x60;/g, '`')
-    .replace(/&#x3D;/g, '=')
+    .replace(/&copy;/g, '©')
+    .replace(/&reg;/g, '®')
+    .replace(/&trade;/g, '™')
+    .replace(/&mdash;/g, '—')
+    .replace(/&ndash;/g, '–')
+    .replace(/&hellip;/g, '…')
+    .replace(/&lsquo;/g, ''')
+    .replace(/&rsquo;/g, ''')
+    .replace(/&ldquo;/g, '"')
+    .replace(/&rdquo;/g, '"')
+  
+  return decoded
 }
 
 // Helper function to create a fetch with timeout

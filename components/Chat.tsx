@@ -404,9 +404,24 @@ export default function Chat() {
       
       // Decode HTML entities in the response
       const decodeHtmlEntities = (text: string): string => {
+        if (!text || typeof text !== 'string') return text
+        
+        // Use textarea method which handles all HTML entities automatically
         const textarea = document.createElement('textarea')
         textarea.innerHTML = text
-        return textarea.value
+        let decoded = textarea.value
+        
+        // Fallback: manually decode any remaining numeric entities
+        decoded = decoded.replace(/&#(\d+);/g, (match, num) => {
+          return String.fromCharCode(parseInt(num, 10))
+        })
+        
+        // Decode hex entities
+        decoded = decoded.replace(/&#x([0-9a-fA-F]+);/g, (match, hex) => {
+          return String.fromCharCode(parseInt(hex, 16))
+        })
+        
+        return decoded
       }
       
       const decodedResponse = decodeHtmlEntities(data.response)
