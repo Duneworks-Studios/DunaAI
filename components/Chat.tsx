@@ -406,20 +406,30 @@ export default function Chat() {
       const decodeHtmlEntities = (text: string): string => {
         if (!text || typeof text !== 'string') return text
         
-        // Use textarea method which handles all HTML entities automatically
-        const textarea = document.createElement('textarea')
-        textarea.innerHTML = text
-        let decoded = textarea.value
+        let decoded = text
         
-        // Fallback: manually decode any remaining numeric entities
+        // First decode numeric entities (decimal): &#039; &#39; etc.
         decoded = decoded.replace(/&#(\d+);/g, (match, num) => {
-          return String.fromCharCode(parseInt(num, 10))
+          const charCode = parseInt(num, 10)
+          if (charCode >= 0 && charCode <= 0x10FFFF) {
+            return String.fromCharCode(charCode)
+          }
+          return match
         })
         
-        // Decode hex entities
-        decoded = decoded.replace(/&#x([0-9a-fA-F]+);/g, (match, hex) => {
-          return String.fromCharCode(parseInt(hex, 16))
+        // Decode hex entities: &#x27; etc.
+        decoded = decoded.replace(/&#x([0-9a-fA-F]+);/gi, (match, hex) => {
+          const charCode = parseInt(hex, 16)
+          if (charCode >= 0 && charCode <= 0x10FFFF) {
+            return String.fromCharCode(charCode)
+          }
+          return match
         })
+        
+        // Use textarea method which handles all named HTML entities automatically
+        const textarea = document.createElement('textarea')
+        textarea.innerHTML = decoded
+        decoded = textarea.value
         
         return decoded
       }

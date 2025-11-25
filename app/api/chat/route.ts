@@ -11,20 +11,28 @@ export const runtime = 'nodejs' // Ensure we're using Node.js runtime
 function decodeHtmlEntities(text: string): string {
   if (!text || typeof text !== 'string') return text
   
-  // First decode &amp; to avoid double-decoding issues
-  let decoded = text.replace(/&amp;/g, '&')
+  let decoded = text
   
-  // Decode numeric entities (decimal): &#039; &#39; etc.
+  // Decode numeric entities (decimal): &#039; &#39; etc. - MUST be done before &amp;
   decoded = decoded.replace(/&#(\d+);/g, (match, num) => {
-    return String.fromCharCode(parseInt(num, 10))
+    const charCode = parseInt(num, 10)
+    // Only decode valid character codes
+    if (charCode >= 0 && charCode <= 0x10FFFF) {
+      return String.fromCharCode(charCode)
+    }
+    return match
   })
   
   // Decode hex entities: &#x27; &#x2F; etc.
-  decoded = decoded.replace(/&#x([0-9a-fA-F]+);/g, (match, hex) => {
-    return String.fromCharCode(parseInt(hex, 16))
+  decoded = decoded.replace(/&#x([0-9a-fA-F]+);/gi, (match, hex) => {
+    const charCode = parseInt(hex, 16)
+    if (charCode >= 0 && charCode <= 0x10FFFF) {
+      return String.fromCharCode(charCode)
+    }
+    return match
   })
   
-  // Decode named entities
+  // Decode named entities - do &amp; last to avoid double-decoding
   decoded = decoded
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
@@ -41,6 +49,7 @@ function decodeHtmlEntities(text: string): string {
     .replace(/&rsquo;/g, '\u2019')
     .replace(/&ldquo;/g, '\u201C')
     .replace(/&rdquo;/g, '\u201D')
+    .replace(/&amp;/g, '&') // Do this last
   
   return decoded
 }
