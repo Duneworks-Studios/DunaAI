@@ -609,11 +609,15 @@ export default function ChatPage() {
         
         let decoded = text
         
-        // First decode numeric entities (decimal): &#039; &#39; etc.
-        decoded = decoded.replace(/&#(\d+);/g, (match, num) => {
+        // CRITICAL: Decode numeric entities FIRST (decimal format like &#039;)
+        decoded = decoded.replace(/&#0*(\d+);/g, (match, num) => {
           const charCode = parseInt(num, 10)
           if (charCode >= 0 && charCode <= 0x10FFFF) {
-            return String.fromCharCode(charCode)
+            try {
+              return String.fromCharCode(charCode)
+            } catch (e) {
+              return match
+            }
           }
           return match
         })
@@ -622,7 +626,11 @@ export default function ChatPage() {
         decoded = decoded.replace(/&#x([0-9a-fA-F]+);/gi, (match, hex) => {
           const charCode = parseInt(hex, 16)
           if (charCode >= 0 && charCode <= 0x10FFFF) {
-            return String.fromCharCode(charCode)
+            try {
+              return String.fromCharCode(charCode)
+            } catch (e) {
+              return match
+            }
           }
           return match
         })
@@ -631,6 +639,19 @@ export default function ChatPage() {
         const textarea = document.createElement('textarea')
         textarea.innerHTML = decoded
         decoded = textarea.value
+        
+        // Final pass: catch any remaining numeric entities
+        decoded = decoded.replace(/&#0*(\d+);/g, (match, num) => {
+          const charCode = parseInt(num, 10)
+          if (charCode >= 0 && charCode <= 0x10FFFF) {
+            try {
+              return String.fromCharCode(charCode)
+            } catch (e) {
+              return match
+            }
+          }
+          return match
+        })
         
         return decoded
       }

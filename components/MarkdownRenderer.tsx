@@ -142,15 +142,14 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
   }
 
   // Escape HTML to prevent XSS attacks
+  // Note: React already safely escapes text, so we only need to escape < and > for markdown parsing
+  // Apostrophes don't need escaping in React - they're safe
   const escapeHtml = (text: string): string => {
     const map: Record<string, string> = {
-      '&': '&amp;',
       '<': '&lt;',
       '>': '&gt;',
-      '"': '&quot;',
-      "'": '&#039;',
     }
-    return text.replace(/[&<>"']/g, (m) => map[m])
+    return text.replace(/[<>]/g, (m) => map[m])
   }
 
   // Render inline markdown (bold, italic, code)

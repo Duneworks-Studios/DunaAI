@@ -13,12 +13,17 @@ function decodeHtmlEntities(text: string): string {
   
   let decoded = text
   
-  // Decode numeric entities (decimal): &#039; &#39; etc. - MUST be done before &amp;
-  decoded = decoded.replace(/&#(\d+);/g, (match, num) => {
+  // CRITICAL: Decode numeric entities FIRST (decimal format like &#039;)
+  // This must happen before any other processing
+  decoded = decoded.replace(/&#0*(\d+);/g, (match, num) => {
     const charCode = parseInt(num, 10)
-    // Only decode valid character codes
+    // Decode valid character codes (0-1114111 is valid Unicode range)
     if (charCode >= 0 && charCode <= 0x10FFFF) {
-      return String.fromCharCode(charCode)
+      try {
+        return String.fromCharCode(charCode)
+      } catch (e) {
+        return match
+      }
     }
     return match
   })
@@ -27,7 +32,11 @@ function decodeHtmlEntities(text: string): string {
   decoded = decoded.replace(/&#x([0-9a-fA-F]+);/gi, (match, hex) => {
     const charCode = parseInt(hex, 16)
     if (charCode >= 0 && charCode <= 0x10FFFF) {
-      return String.fromCharCode(charCode)
+      try {
+        return String.fromCharCode(charCode)
+      } catch (e) {
+        return match
+      }
     }
     return match
   })
@@ -50,6 +59,19 @@ function decodeHtmlEntities(text: string): string {
     .replace(/&ldquo;/g, '\u201C')
     .replace(/&rdquo;/g, '\u201D')
     .replace(/&amp;/g, '&') // Do this last
+  
+  // Final pass: catch any remaining numeric entities that might have been missed
+  decoded = decoded.replace(/&#0*(\d+);/g, (match, num) => {
+    const charCode = parseInt(num, 10)
+    if (charCode >= 0 && charCode <= 0x10FFFF) {
+      try {
+        return String.fromCharCode(charCode)
+      } catch (e) {
+        return match
+      }
+    }
+    return match
+  })
   
   return decoded
 }
