@@ -523,9 +523,10 @@ export default function ChatPage() {
         try {
           // Detect mobile and use longer timeout
           const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-          // Use much longer timeout for mobile (180 seconds) vs desktop (150 seconds)
-          // This allows for all retries to complete
-          const clientTimeout = isMobile ? 180000 : 150000
+          // Use much longer timeout to allow all retries to complete
+          // 5 attempts with delays: 50s + 1s + 55s + 2s + 60s + 3s + 65s + 4s + 70s = ~310s max
+          // Add buffer for network overhead: 360s (6 minutes) should be safe
+          const clientTimeout = isMobile ? 360000 : 360000
           
           // Add timeout to client-side fetch (longer for mobile)
           const controller = new AbortController()

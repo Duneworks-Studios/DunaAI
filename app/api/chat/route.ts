@@ -48,8 +48,8 @@ async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs: nu
 async function fetchWithRetry(
   url: string, 
   options: RequestInit, 
-  maxRetries: number = 3,
-  baseTimeoutMs: number = 60000
+  maxRetries: number = 4,
+  baseTimeoutMs: number = 50000
 ): Promise<{ response: Response; attempts: number }> {
   let lastError: Error | null = null
   let lastResponse: Response | null = null
@@ -59,57 +59,68 @@ async function fetchWithRetry(
     totalAttempts = attempt + 1
     try {
       if (attempt > 0) {
-        // Use exponential backoff with jitter for gateway errors
-        // For 502/503/504: longer delays (2s, 4s, 8s, 16s, 32s)
-        // For other errors: shorter delays (1s, 2s, 3s, 4s, 5s)
+        // Use faster exponential backoff for quicker recovery
+        // For 502/503/504: shorter delays (1s, 2s, 3s, 4s) for faster retries
+        // For other errors: even shorter delays (0.5s, 1s, 1.5s, 2s)
         const isGatewayError = lastResponse && (lastResponse.status === 502 || lastResponse.status === 503 || lastResponse.status === 504)
         const baseDelay = isGatewayError 
-          ? Math.min(2000 * Math.pow(2, attempt - 1), 10000) // Exponential: 2s, 4s, 8s, 10s, 10s (capped at 10s)
-          : 1000 * attempt // Linear: 1s, 2s, 3s, 4s, 5s
+          ? Math.min(1000 * attempt, 4000) // Linear: 1s, 2s, 3s, 4s (capped at 4s)
+          : 500 * attempt // Linear: 0.5s, 1s, 1.5s, 2s
         
-        // Add jitter (±20%) to prevent thundering herd
-        const jitter = baseDelay * 0.2 * (Math.random() * 2 - 1)
-        const delay = Math.max(500, baseDelay + jitter)
+        // Add small jitter (±10%) to prevent thundering herd
+        const jitter = baseDelay * 0.1 * (Math.random() * 2 - 1)
+        const delay = Math.max(300, baseDelay + jitter)
         
         if (process.env.NODE_ENV === 'development') {
-          console.log(`Retrying AI API request (attempt ${attempt + 1}/${maxRetries + 1}) after ${Math.round(delay)}ms delay...`)
+          console.log(`[AI API] Retrying request (attempt ${attempt + 1}/${maxRetries + 1}) after ${Math.round(delay)}ms delay...`)
         }
         
         await new Promise(resolve => setTimeout(resolve, delay))
       }
       
-      // Use progressive timeouts - AI service often times out at 60s
-      // Strategy: Start shorter, increase gradually to catch responses that are just slow
-      // Try: 40s, 45s, 50s, 55s, 60s, 65s (avoid hitting 60s limit on first try)
-      const currentTimeout = baseTimeoutMs + (5000 * attempt) // Progressive: 40s, 45s, 50s, 55s, 60s, 65s
+      // Use progressive timeouts - start longer, increase gradually
+      // Strategy: 50s, 55s, 60s, 65s, 70s to give more time for responses
+      const currentTimeout = baseTimeoutMs + (5000 * attempt) // Progressive: 50s, 55s, 60s, 65s, 70s
       
       if (process.env.NODE_ENV === 'development') {
-        console.log(`Attempt ${attempt + 1}: Using timeout of ${currentTimeout}ms`)
+        console.log(`[AI API] Attempt ${attempt + 1}: Using timeout of ${currentTimeout}ms`)
       }
       
       try {
         const response = await fetchWithTimeout(url, options, currentTimeout)
         
-        // If we got a response, check if it's an error
-        // Retry on 502 (Bad Gateway), 503 (Service Unavailable), and 504 (Gateway Timeout) - all indicate temporary issues
-        if (!response.ok && (response.status === 502 || response.status === 503 || response.status === 504) && attempt < maxRetries) {
-          const statusText = response.status === 502 ? 'Bad Gateway' : response.status === 503 ? 'Service Unavailable' : 'Gateway Timeout'
+        // If we got a successful response, return it immediately
+        if (response.ok) {
           if (process.env.NODE_ENV === 'development') {
-            console.log(`${response.status} ${statusText} from AI service, retrying with exponential backoff (${attempt + 1}/${maxRetries})...`)
+            console.log(`[AI API] Request succeeded after ${totalAttempts} attempt(s)`)
           }
+          return { response, attempts: totalAttempts }
+        }
+        
+        // If we got an error response, check if we should retry
+        // Retry on 502 (Bad Gateway), 503 (Service Unavailable), and 504 (Gateway Timeout)
+        if ((response.status === 502 || response.status === 503 || response.status === 504) && attempt < maxRetries) {
+          const statusText = response.status === 502 ? 'Bad Gateway' : response.status === 503 ? 'Service Unavailable' : 'Gateway Timeout'
+          console.error(`[AI API] ${response.status} ${statusText} from AI service, retrying (${attempt + 1}/${maxRetries})...`)
           lastResponse = response
           continue
         }
         
+        // For other error statuses, return the response (don't retry)
         return { response, attempts: totalAttempts }
       } catch (fetchError) {
         // If fetch itself failed (network error, timeout, etc.), handle it
         if (fetchError instanceof Error) {
           lastError = fetchError
-          // If it's a timeout and we have retries left, continue
-          if (fetchError.message.includes('timeout') && attempt < maxRetries) {
-            // Log error for debugging
-            console.error(`[AI API] Request timeout (attempt ${totalAttempts}/${maxRetries + 1}):`, fetchError.message)
+          
+          // Retry on network errors and timeouts if we have retries left
+          const isRetryableError = fetchError.message.includes('timeout') || 
+                                   fetchError.message.includes('network') ||
+                                   fetchError.message.includes('fetch') ||
+                                   fetchError.name === 'TypeError' // Network errors often throw TypeError
+          
+          if (isRetryableError && attempt < maxRetries) {
+            console.error(`[AI API] Network/timeout error (attempt ${totalAttempts}/${maxRetries + 1}):`, fetchError.message)
             continue
           }
         }
@@ -119,9 +130,13 @@ async function fetchWithRetry(
       // Catch any other errors
       lastError = error instanceof Error ? error : new Error(String(error))
       
-      // If timeout and we have retries left, retry with exponential backoff
-      if (lastError.message.includes('timeout') && attempt < maxRetries) {
-        console.error(`[AI API] Request timeout (attempt ${totalAttempts}/${maxRetries + 1}):`, lastError.message)
+      // Retry on timeout/network errors if we have retries left
+      const isRetryableError = lastError.message.includes('timeout') || 
+                               lastError.message.includes('network') ||
+                               lastError.message.includes('fetch')
+      
+      if (isRetryableError && attempt < maxRetries) {
+        console.error(`[AI API] Retryable error (attempt ${totalAttempts}/${maxRetries + 1}):`, lastError.message)
         continue
       }
       
@@ -656,8 +671,8 @@ What would you like to know?`
           stream: false, // Ensure streaming is off for reliability
         }),
       },
-      3, // Max 3 retries (4 total attempts) - balanced retry count
-      40000 // Base 40 second timeout, increases progressively: 40s, 45s, 50s, 55s
+      4, // Max 4 retries (5 total attempts) - more retries for better reliability
+      50000 // Base 50 second timeout, increases progressively: 50s, 55s, 60s, 65s, 70s
     )
     
     // Log successful request
