@@ -369,14 +369,53 @@ export default function Chat() {
       // Read response data first (even for errors, API returns JSON with error message)
       let data
       try {
-        data = await response.json()
+        // Check if response is HTML (common with 504 errors from Netlify)
+        const contentType = response.headers.get('content-type') || ''
+        const text = await response.text()
+        
+        if (contentType.includes('text/html') || text.trim().startsWith('<')) {
+          // Server returned HTML instead of JSON (likely a 504 error page)
+          console.error('[Chat] Server returned HTML instead of JSON:', {
+            status: response.status,
+            contentType,
+            preview: text.substring(0, 100)
+          })
+          
+          // Create appropriate error based on status code
+          if (response.status === 504 || response.status === 502 || response.status === 503) {
+            data = {
+              response: '⚠️ The AI service is temporarily unavailable.\n\nThe service took too long to respond or is experiencing issues. This can happen on slower connections or when the service is overloaded.\n\n**What you can do:**\n- Wait 30-60 seconds and try again\n- Check your internet connection\n- Try a simpler, shorter question\n- If this persists, try switching to a different AI agent',
+              statusCode: response.status,
+              suggestModelSwitch: true
+            }
+          } else {
+            data = {
+              response: '⚠️ The AI service returned an invalid response. Please try again.',
+              statusCode: response.status || 500,
+              suggestModelSwitch: false
+            }
+          }
+        } else {
+          // Try to parse as JSON
+          data = JSON.parse(text)
+        }
       } catch (jsonError) {
         // If JSON parsing fails, create a fallback error response
         console.error('[Chat] Failed to parse response as JSON:', jsonError)
-        data = { 
-          response: '⚠️ The AI service returned an invalid response. Please try again.', 
-          statusCode: response.status || 500, 
-          suggestModelSwitch: false 
+        
+        // Check status code to provide appropriate error message
+        if (response.status === 504 || response.status === 502 || response.status === 503) {
+          data = {
+            response: '⚠️ The AI service is temporarily unavailable.\n\nThe service took too long to respond or is experiencing issues. This can happen on slower connections or when the service is overloaded.\n\n**What you can do:**\n- Wait 30-60 seconds and try again\n- Check your internet connection\n- Try a simpler, shorter question\n- If this persists, try switching to a different AI agent',
+            statusCode: response.status,
+            suggestModelSwitch: true
+          }
+        } else {
+          data = {
+            response: '⚠️ The AI service returned an invalid response. Please try again.',
+            statusCode: response.status || 500,
+            suggestModelSwitch: false
+          }
         }
       }
       

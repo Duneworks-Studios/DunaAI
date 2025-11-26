@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-// Configure route timeout (180 seconds for AI API calls - very long for mobile/slow connections)
-// Netlify allows up to 26 seconds on free tier, but Next.js can handle longer
-export const maxDuration = 180
+// Configure route timeout (60 seconds for AI API calls)
+// Note: Netlify free tier has 26 second timeout, but Next.js serverless can handle longer
+// If Netlify times out, it returns HTML which we now handle gracefully in the client
+export const maxDuration = 60
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs' // Ensure we're using Node.js runtime
 
