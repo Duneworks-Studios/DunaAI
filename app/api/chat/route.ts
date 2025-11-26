@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-// Configure route timeout (60 seconds for AI API calls)
-// Note: Netlify free tier has 26 second timeout, but Next.js serverless can handle longer
-// If Netlify times out, it returns HTML which we now handle gracefully in the client
-export const maxDuration = 60
+// Configure route timeout
+// CRITICAL: Netlify free tier has 26 second timeout - we must complete within this limit
+// Set to 25 seconds to leave 1 second buffer for processing
+export const maxDuration = 25
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs' // Ensure we're using Node.js runtime
 
@@ -98,12 +98,14 @@ async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs: nu
   }
 }
 
-// Retry function for handling 502, 503, and 504 errors with progressive timeout increases
+// Retry function for handling 502, 503, and 504 errors
+// CRITICAL: Must complete within Netlify's 26 second timeout
+// Reduced retries and timeouts to fit within limit
 async function fetchWithRetry(
   url: string, 
   options: RequestInit, 
-  maxRetries: number = 5,
-  baseTimeoutMs: number = 60000
+  maxRetries: number = 2, // Reduced from 5 to 2 (3 total attempts)
+  baseTimeoutMs: number = 15000 // Reduced from 60s to 15s
 ): Promise<{ response: Response; attempts: number }> {
   let lastError: Error | null = null
   let lastResponse: Response | null = null
@@ -113,13 +115,13 @@ async function fetchWithRetry(
     totalAttempts = attempt + 1
     try {
       if (attempt > 0) {
-        // Use faster exponential backoff for quicker recovery
-        // For 502/503/504: shorter delays (1s, 2s, 3s, 4s, 5s) for faster retries
-        // For other errors: even shorter delays (0.5s, 1s, 1.5s, 2s, 2.5s)
+        // Use very short delays to stay within Netlify's 26 second limit
+        // For 502/503/504: minimal delays (0.5s, 1s) for faster retries
+        // For other errors: even shorter delays (0.3s, 0.6s)
         const isGatewayError = lastResponse && (lastResponse.status === 502 || lastResponse.status === 503 || lastResponse.status === 504)
         const baseDelay = isGatewayError 
-          ? Math.min(1000 * attempt, 5000) // Linear: 1s, 2s, 3s, 4s, 5s (capped at 5s)
-          : 500 * attempt // Linear: 0.5s, 1s, 1.5s, 2s, 2.5s
+          ? Math.min(500 * attempt, 1000) // Linear: 0.5s, 1s (capped at 1s)
+          : 300 * attempt // Linear: 0.3s, 0.6s
         
         // Add small jitter (±10%) to prevent thundering herd
         const jitter = baseDelay * 0.1 * (Math.random() * 2 - 1)
@@ -132,9 +134,9 @@ async function fetchWithRetry(
         await new Promise(resolve => setTimeout(resolve, delay))
       }
       
-      // Use progressive timeouts - start longer, increase gradually
-      // Strategy: 60s, 65s, 70s, 75s, 80s, 85s to give more time for responses (especially on mobile)
-      const currentTimeout = baseTimeoutMs + (5000 * attempt) // Progressive: 60s, 65s, 70s, 75s, 80s, 85s
+      // Use progressive timeouts but stay within Netlify's 26 second limit
+      // Strategy: 15s, 18s, 20s - must complete within 25 seconds total
+      const currentTimeout = baseTimeoutMs + (3000 * attempt) // Progressive: 15s, 18s, 20s
       
       if (process.env.NODE_ENV === 'development') {
         console.log(`[AI API] Attempt ${attempt + 1}: Using timeout of ${currentTimeout}ms`)
@@ -708,8 +710,8 @@ What would you like to know?`
     })
 
     // Call AI API (DeepSeek or OpenAI) with timeout and retry logic
-    // Use more aggressive retry strategy: shorter initial timeout, more retries
-    // Increased retries and timeouts for better mobile reliability
+    // CRITICAL: Must complete within Netlify's 26 second timeout
+    // Reduced retries and timeouts to fit within limit
     const { response: aiResponse, attempts: retryAttempts } = await fetchWithRetry(
       AI_ENDPOINT,
       {
@@ -721,13 +723,13 @@ What would you like to know?`
         body: JSON.stringify({
           model: modelToUse,
           messages: finalMessages, // Use final verified messages (no images in history)
-          max_tokens: 1500, // Reduced for faster responses on mobile
+          max_tokens: 1000, // Further reduced for faster responses within timeout
           temperature: 0.7,
           stream: false, // Ensure streaming is off for reliability
         }),
       },
-      5, // Max 5 retries (6 total attempts) - more retries for better reliability on mobile
-      60000 // Base 60 second timeout, increases progressively: 60s, 65s, 70s, 75s, 80s, 85s
+      2, // Max 2 retries (3 total attempts) - reduced to fit within 26s limit
+      15000 // Base 15 second timeout, increases progressively: 15s, 18s, 20s
     )
     
     // Log successful request

@@ -343,12 +343,11 @@ export default function Chat() {
     saveChatSessions(user.id, updatedSessions)
 
     try {
-      // Detect mobile and use longer timeout
+      // Detect mobile and use appropriate timeout
       const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-      // Use much longer timeout to allow all retries to complete
-      // 6 attempts with delays: 60s + 1s + 65s + 2s + 70s + 3s + 75s + 4s + 80s + 5s + 85s = ~450s max
-      // Add buffer for network overhead: 540s (9 minutes) should be safe for mobile
-      const clientTimeout = isMobile ? 540000 : 480000
+      // Reduced timeout to match server-side changes (3 attempts: 15s + 0.5s + 18s + 1s + 20s = ~54s max)
+      // Add buffer for network overhead: 60s should be safe
+      const clientTimeout = 60000 // 60 seconds - matches server-side timeout strategy
       
       // Add timeout to client-side fetch (longer for mobile)
       const controller = new AbortController()
