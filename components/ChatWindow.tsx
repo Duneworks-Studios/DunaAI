@@ -19,6 +19,8 @@ interface Message {
   codeStats?: { total: number; available: number; used: number } // For promo code stats
 }
 
+type Mode = 'chat' | 'research' | 'coding'
+
 interface ChatWindowProps {
   user: User
   messages: Message[]
@@ -31,6 +33,8 @@ interface ChatWindowProps {
   onDismissUpgrade: () => void
   activeSessionTitle?: string
   onShowPremiumModal?: (title: string, message: string) => void
+  mode?: Mode
+  onModeChange?: (mode: Mode) => void
 }
 
 export default function ChatWindow({
@@ -45,11 +49,14 @@ export default function ChatWindow({
   onDismissUpgrade,
   activeSessionTitle,
   onShowPremiumModal,
+  mode = 'chat',
+  onModeChange,
 }: ChatWindowProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [selectedImages, setSelectedImages] = useState<string[]>([])
   const [showAgentDropdown, setShowAgentDropdown] = useState(false)
+  const [showModeDropdown, setShowModeDropdown] = useState(false)
   const { currentAgent, setCurrentAgent } = useAgent()
   const isPro = userPlan?.isUnlimited || false
   // Show all agents, but filter availability for clicking
@@ -353,14 +360,163 @@ export default function ChatWindow({
         </div>
       </div>
 
-      {/* Agent Selector Dropdown */}
+      {/* Mode Selector and Agent Selector */}
       <div className="border-t border-[var(--border-primary)] px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 glass flex-shrink-0">
-        <div className="max-w-4xl mx-auto relative">
-          <button
-            type="button"
-            onClick={() => setShowAgentDropdown(!showAgentDropdown)}
-            className="w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-[var(--bg-elevated)] border border-[var(--border-primary)] rounded-lg hover:border-[var(--accent-primary)] transition-colors flex items-center justify-between text-xs sm:text-sm touch-manipulation"
-          >
+        <div className="max-w-4xl mx-auto flex gap-2 sm:gap-3">
+          {/* Mode Selector */}
+          {onModeChange && (
+            <div className="relative flex-shrink-0">
+              <button
+                type="button"
+                onClick={() => setShowModeDropdown(!showModeDropdown)}
+                className="px-3 sm:px-4 py-2 sm:py-2.5 bg-[var(--bg-elevated)] border border-[var(--border-primary)] rounded-lg hover:border-[var(--accent-primary)] transition-colors flex items-center gap-2 text-xs sm:text-sm touch-manipulation whitespace-nowrap"
+                title="Switch mode: Chat, Research, or Coding"
+              >
+                <span className="text-[var(--text-primary)] font-medium">
+                  {mode === 'chat' ? '💬 Chat' : mode === 'research' ? '📝 Research' : '💻 Coding'}
+                </span>
+                <svg
+                  className={`w-4 h-4 text-[var(--text-secondary)] transition-transform ${showModeDropdown ? 'rotate-180' : ''}`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {showModeDropdown && (
+                <>
+                  <div
+                    className="fixed inset-0 z-10"
+                    onClick={() => setShowModeDropdown(false)}
+                  />
+                  <div className="absolute bottom-full left-0 mb-2 bg-[var(--bg-elevated)] border border-[var(--border-primary)] rounded-lg shadow-lg z-20 min-w-[200px]">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onModeChange('chat')
+                        setShowModeDropdown(false)
+                      }}
+                      className={`w-full text-left px-4 py-3 transition-colors border-b border-[var(--border-primary)] last:border-b-0 ${
+                        mode === 'chat'
+                          ? 'bg-[var(--accent-primary)]/10 border-l-2 border-l-[var(--accent-primary)]'
+                          : 'hover:bg-[var(--bg-tertiary)]'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-[var(--text-primary)]">💬 Chat</span>
+                        {mode === 'chat' && (
+                          <svg className="w-5 h-5 text-[var(--accent-primary)] ml-auto" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                        )}
+                      </div>
+                      <p className="text-xs mt-1 text-[var(--text-secondary)]">Interact with Duna AI for education, questions and more</p>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!isPro) {
+                          if (onShowPremiumModal) {
+                            onShowPremiumModal(
+                              'Premium Required',
+                              'Research mode is a Premium feature. Upgrade to Pro to unlock Research mode and create study notes with AI assistance.'
+                            )
+                          }
+                          setShowModeDropdown(false)
+                          return
+                        }
+                        onModeChange('research')
+                        setShowModeDropdown(false)
+                      }}
+                      disabled={!isPro}
+                      className={`w-full text-left px-4 py-3 transition-colors border-b border-[var(--border-primary)] last:border-b-0 ${
+                        !isPro
+                          ? 'opacity-50 cursor-not-allowed'
+                          : mode === 'research'
+                          ? 'bg-[var(--accent-primary)]/10 border-l-2 border-l-[var(--accent-primary)]'
+                          : 'hover:bg-[var(--bg-tertiary)] cursor-pointer'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-[var(--text-primary)]">📝 Research</span>
+                        {!isPro && (
+                          <span className="px-2 py-0.5 rounded-full bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)] text-white text-xs font-semibold ml-auto">
+                            Pro
+                          </span>
+                        )}
+                        {mode === 'research' && isPro && (
+                          <svg className="w-5 h-5 text-[var(--accent-primary)] ml-auto" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                        )}
+                        {!isPro && (
+                          <svg className="w-5 h-5 text-[var(--text-tertiary)] ml-auto" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                          </svg>
+                        )}
+                      </div>
+                      <p className="text-xs mt-1 text-[var(--text-secondary)]">Use Duna AI's research feature to learn more for education and study for exams</p>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!isPro) {
+                          if (onShowPremiumModal) {
+                            onShowPremiumModal(
+                              'Premium Required',
+                              'Coding mode is a Premium feature. Upgrade to Pro to unlock the code editor with AI assistance powered by Duna AI Luna.'
+                            )
+                          }
+                          setShowModeDropdown(false)
+                          return
+                        }
+                        onModeChange('coding')
+                        setShowModeDropdown(false)
+                      }}
+                      disabled={!isPro}
+                      className={`w-full text-left px-4 py-3 transition-colors ${
+                        !isPro
+                          ? 'opacity-50 cursor-not-allowed'
+                          : mode === 'coding'
+                          ? 'bg-[var(--accent-primary)]/10 border-l-2 border-l-[var(--accent-primary)]'
+                          : 'hover:bg-[var(--bg-tertiary)] cursor-pointer'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-[var(--text-primary)]">💻 Coding</span>
+                        {!isPro && (
+                          <span className="px-2 py-0.5 rounded-full bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)] text-white text-xs font-semibold ml-auto">
+                            Pro
+                          </span>
+                        )}
+                        {mode === 'coding' && isPro && (
+                          <svg className="w-5 h-5 text-[var(--accent-primary)] ml-auto" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                        )}
+                        {!isPro && (
+                          <svg className="w-5 h-5 text-[var(--text-tertiary)] ml-auto" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                          </svg>
+                        )}
+                      </div>
+                      <p className="text-xs mt-1 text-[var(--text-secondary)]">Use Duna's built-in code editor to code anything from websites to apps</p>
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* Agent Selector */}
+          <div className="flex-1 relative">
+            <button
+              type="button"
+              onClick={() => setShowAgentDropdown(!showAgentDropdown)}
+              className="w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-[var(--bg-elevated)] border border-[var(--border-primary)] rounded-lg hover:border-[var(--accent-primary)] transition-colors flex items-center justify-between text-xs sm:text-sm touch-manipulation"
+            >
             <div className="flex items-center gap-2">
               <span className="text-[var(--text-primary)] font-medium">
                 {currentAgentData?.name || 'Select Agent'}
@@ -460,6 +616,7 @@ export default function ChatWindow({
               </div>
             </>
           )}
+          </div>
         </div>
       </div>
 

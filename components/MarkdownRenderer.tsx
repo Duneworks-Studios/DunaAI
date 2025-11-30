@@ -186,24 +186,28 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
         }
       }
       
-      // Check for **bold**
+      // Check for **bold** (must be at word boundaries or have non-word chars around it)
       if (escapedText.substring(i, i + 2) === '**') {
         const endIdx = escapedText.indexOf('**', i + 2)
         if (endIdx !== -1) {
-          // Add text before
-          if (i > currentIndex) {
-            parts.push(<span key={key++}>{escapedText.substring(currentIndex, i)}</span>)
-          }
-          // Add bold
+          // Verify it's not part of a larger pattern and has valid content
           const content = escapedText.substring(i + 2, endIdx)
-          parts.push(
-            <strong key={key++} className="font-bold">
-              {content}
-            </strong>
-          )
-          currentIndex = endIdx + 2
-          i = endIdx + 2
-          continue
+          // Only treat as bold if there's actual content and it's not just whitespace
+          if (content.trim().length > 0) {
+            // Add text before
+            if (i > currentIndex) {
+              parts.push(<span key={key++}>{escapedText.substring(currentIndex, i)}</span>)
+            }
+            // Add bold
+            parts.push(
+              <strong key={key++} className="font-bold">
+                {content}
+              </strong>
+            )
+            currentIndex = endIdx + 2
+            i = endIdx + 2
+            continue
+          }
         }
       }
       

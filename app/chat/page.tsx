@@ -8,10 +8,14 @@ import { getUserPlan, canSendMessage, type UserPlan } from '@/lib/planDetection'
 import { resetLocalMessageCount } from '@/lib/messageCount'
 import ChatSidebar from '@/components/ChatSidebar'
 import ChatWindow from '@/components/ChatWindow'
+import ResearchMode from '@/components/ResearchMode'
+import CodingMode from '@/components/CodingMode'
 import PremiumModal from '@/components/PremiumModal'
 import { useAgent } from '@/contexts/AgentContext'
 import type { User } from '@supabase/supabase-js'
 import { AGENTS, isAgentAvailable, getDefaultAgent, type AgentId } from '@/lib/agents'
+
+type Mode = 'chat' | 'research' | 'coding'
 
 interface Message {
   id: string
@@ -43,6 +47,7 @@ export default function ChatPage() {
   const [showPremiumModal, setShowPremiumModal] = useState(false)
   const [premiumModalTitle, setPremiumModalTitle] = useState('')
   const [premiumModalMessage, setPremiumModalMessage] = useState('')
+  const [mode, setMode] = useState<Mode>('chat')
   const router = useRouter()
   const supabase = createSupabaseClient()
   const { currentAgent, setCurrentAgent } = useAgent()
@@ -102,6 +107,11 @@ export default function ChatPage() {
       // Switch to default agent for their plan
       const defaultAgent = getDefaultAgent(isPro)
       setCurrentAgent(defaultAgent)
+    }
+    
+    // Reset mode to chat if user doesn't have Pro and is in Research or Coding mode
+    if (!isPro && (mode === 'research' || mode === 'coding')) {
+      setMode('chat')
     }
   }
 
@@ -883,25 +893,82 @@ I couldn't connect to the AI service. Please check your internet connection and 
         />
       )}
 
-      {/* Main Chat Window */}
+      {/* Main Content Area - Mode Based */}
       <div className="flex-1 flex flex-col min-w-0 h-full">
-        <ChatWindow
-          user={user}
-          messages={messages}
-          loading={loading}
-          input={input}
-          onInputChange={setInput}
-          onSend={handleSend}
-          userPlan={userPlan}
-          showUpgrade={showUpgrade}
-          onDismissUpgrade={() => setShowUpgrade(false)}
-          activeSessionTitle={activeSession?.title}
-          onShowPremiumModal={(title, message) => {
-            setPremiumModalTitle(title)
-            setPremiumModalMessage(message)
-            setShowPremiumModal(true)
-          }}
-        />
+        {mode === 'chat' && (
+          <ChatWindow
+            user={user}
+            messages={messages}
+            loading={loading}
+            input={input}
+            onInputChange={setInput}
+            onSend={handleSend}
+            userPlan={userPlan}
+            showUpgrade={showUpgrade}
+            onDismissUpgrade={() => setShowUpgrade(false)}
+            activeSessionTitle={activeSession?.title}
+            onShowPremiumModal={(title, message) => {
+              setPremiumModalTitle(title)
+              setPremiumModalMessage(message)
+              setShowPremiumModal(true)
+            }}
+            mode={mode}
+            onModeChange={setMode}
+          />
+        )}
+        {mode === 'research' && userPlan?.isUnlimited && (
+          <ResearchMode
+            user={user}
+            userPlan={userPlan}
+            onShowPremiumModal={(title, message) => {
+              setPremiumModalTitle(title)
+              setPremiumModalMessage(message)
+              setShowPremiumModal(true)
+            }}
+          />
+        )}
+        {mode === 'coding' && userPlan?.isUnlimited && (
+          <CodingMode
+            user={user}
+            userPlan={userPlan}
+            onShowPremiumModal={(title, message) => {
+              setPremiumModalTitle(title)
+              setPremiumModalMessage(message)
+              setShowPremiumModal(true)
+            }}
+          />
+        )}
+        {/* If user tries to access Pro modes without Pro, show upgrade message */}
+        {((mode === 'research' || mode === 'coding') && !userPlan?.isUnlimited) && (
+          <div className="flex-1 flex items-center justify-center p-8">
+            <div className="text-center max-w-md">
+              <h2 className="text-2xl font-semibold text-[var(--text-primary)] mb-4">
+                Premium Feature
+              </h2>
+              <p className="text-[var(--text-secondary)] mb-6">
+                {mode === 'research' 
+                  ? 'Research mode is available for Pro users. Upgrade to unlock AI-powered research and study tools.'
+                  : 'Coding mode is available for Pro users. Upgrade to unlock the code editor with Duna AI Luna.'}
+              </p>
+              <div className="flex gap-3 justify-center">
+                <a
+                  href={process.env.NEXT_PUBLIC_WHOP_CHECKOUT_MONTHLY || '#'}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-6 py-3 btn-primary"
+                >
+                  Upgrade to Pro
+                </a>
+                <button
+                  onClick={() => setMode('chat')}
+                  className="px-6 py-3 bg-[var(--bg-elevated)] border border-[var(--border-primary)] rounded-lg hover:border-[var(--accent-primary)] transition-colors text-[var(--text-primary)]"
+                >
+                  Back to Chat
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Premium Modal */}
