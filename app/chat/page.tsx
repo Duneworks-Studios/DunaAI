@@ -925,6 +925,7 @@ I couldn't connect to the AI service. Please check your internet connection and 
               setPremiumModalMessage(message)
               setShowPremiumModal(true)
             }}
+            onBackToChat={() => setMode('chat')}
           />
         )}
         {mode === 'coding' && userPlan?.isUnlimited && (
@@ -936,6 +937,7 @@ I couldn't connect to the AI service. Please check your internet connection and 
               setPremiumModalMessage(message)
               setShowPremiumModal(true)
             }}
+            onBackToChat={() => setMode('chat')}
           />
         )}
         {/* If user tries to access Pro modes without Pro, show upgrade message */}

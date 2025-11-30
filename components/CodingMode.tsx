@@ -6,6 +6,7 @@ import { createSupabaseClient } from '@/lib/supabase'
 import { getUserPlan, canSendMessage, type UserPlan } from '@/lib/planDetection'
 import type { User } from '@supabase/supabase-js'
 import MarkdownRenderer from './MarkdownRenderer'
+import JSZip from 'jszip'
 
 interface File {
   name: string
@@ -17,6 +18,7 @@ interface CodingModeProps {
   user: User
   userPlan: UserPlan | null
   onShowPremiumModal?: (title: string, message: string) => void
+  onBackToChat?: () => void
 }
 
 const LANGUAGE_EXTENSIONS: Record<string, string> = {
@@ -47,7 +49,7 @@ function detectLanguage(filename: string): string {
   return LANGUAGE_EXTENSIONS[ext] || 'plaintext'
 }
 
-export default function CodingMode({ user, userPlan, onShowPremiumModal }: CodingModeProps) {
+export default function CodingMode({ user, userPlan, onShowPremiumModal, onBackToChat }: CodingModeProps) {
   const [files, setFiles] = useState<File[]>([
     { name: 'index.html', content: '<!DOCTYPE html>\n<html>\n<head>\n    <title>My App</title>\n</head>\n<body>\n    <h1>Hello World</h1>\n</body>\n</html>', language: 'html' },
   ])
@@ -293,6 +295,52 @@ export default function CodingMode({ user, userPlan, onShowPremiumModal }: Codin
             >
               Copy
             </button>
+            <button
+              onClick={async () => {
+                try {
+                  if (files.length === 0) {
+                    alert('No files to download')
+                    return
+                  }
+                  
+                  const zip = new JSZip()
+                  const folder = zip.folder('Duna AI')
+                  
+                  if (!folder) {
+                    alert('Error creating zip folder')
+                    return
+                  }
+                  
+                  files.forEach(file => {
+                    folder.file(file.name, file.content)
+                  })
+                  
+                  const blob = await zip.generateAsync({ type: 'blob' })
+                  const url = URL.createObjectURL(blob)
+                  const a = document.createElement('a')
+                  a.href = url
+                  a.download = 'Duna AI.zip'
+                  document.body.appendChild(a)
+                  a.click()
+                  document.body.removeChild(a)
+                  URL.revokeObjectURL(url)
+                } catch (error) {
+                  console.error('Error downloading files:', error)
+                  alert('Error downloading files. Please try again.')
+                }
+              }}
+              className="px-3 py-1 bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)] text-white rounded hover:opacity-90 transition-opacity font-semibold"
+            >
+              Download All
+            </button>
+            {onBackToChat && (
+              <button
+                onClick={onBackToChat}
+                className="px-3 py-1 bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded hover:border-[var(--accent-primary)] transition-colors"
+              >
+                ← Back to Chat
+              </button>
+            )}
           </div>
         </div>
       </div>

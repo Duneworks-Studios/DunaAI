@@ -11,9 +11,10 @@ interface ResearchModeProps {
   user: User
   userPlan: UserPlan | null
   onShowPremiumModal?: (title: string, message: string) => void
+  onBackToChat?: () => void
 }
 
-export default function ResearchMode({ user, userPlan, onShowPremiumModal }: ResearchModeProps) {
+export default function ResearchMode({ user, userPlan, onShowPremiumModal, onBackToChat }: ResearchModeProps) {
   const [content, setContent] = useState('')
   const [aiMessages, setAiMessages] = useState<Array<{ id: string; role: 'user' | 'assistant'; content: string; timestamp: Date }>>([])
   const [aiInput, setAiInput] = useState('')
@@ -179,6 +180,14 @@ export default function ResearchMode({ user, userPlan, onShowPremiumModal }: Res
             >
               Clear
             </button>
+            {onBackToChat && (
+              <button
+                onClick={onBackToChat}
+                className="px-4 py-2 bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)] text-white rounded-lg hover:opacity-90 transition-opacity text-sm font-semibold"
+              >
+                ← Back to Chat
+              </button>
+            )}
           </div>
         </div>
       </div>
