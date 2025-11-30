@@ -7,6 +7,8 @@ import { getUserPlan, canSendMessage, type UserPlan } from '@/lib/planDetection'
 import type { User } from '@supabase/supabase-js'
 import MarkdownRenderer from './MarkdownRenderer'
 import JSZip from 'jszip'
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'
 
 interface File {
   name: string
@@ -113,6 +115,10 @@ export default function CodingMode({ user, userPlan, onShowPremiumModal, onBackT
       // Include current file context in the message
       const contextMessage = `Current file: ${files[activeFile].name}\n\n${files[activeFile].content.substring(0, 500)}...`
       
+      // Add timeout to client-side fetch
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 60000) // 60 seconds
+      
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -124,12 +130,70 @@ export default function CodingMode({ user, userPlan, onShowPremiumModal, onBackT
           userId: user.id,
           agent: codingAgent, // Always use Luna agent for coding
         }),
+        signal: controller.signal,
       })
 
-      const data = await response.json()
+      clearTimeout(timeoutId)
 
+      // Read response data first (even for errors, API returns JSON with error message)
+      let data
+      try {
+        // Check if response is HTML (common with 504 errors from Netlify)
+        const contentType = response.headers.get('content-type') || ''
+        const text = await response.text()
+        
+        if (contentType.includes('text/html') || text.trim().startsWith('<')) {
+          // Server returned HTML instead of JSON (likely a 504 error page)
+          console.error('[Coding] Server returned HTML instead of JSON:', {
+            status: response.status,
+            contentType,
+            preview: text.substring(0, 100)
+          })
+          
+          // Create appropriate error based on status code
+          if (response.status === 504 || response.status === 502 || response.status === 503) {
+            data = {
+              response: '⚠️ The AI service is temporarily unavailable.\n\nThe service took too long to respond or is experiencing issues. This can happen on slower connections or when the service is overloaded.\n\n**What you can do:**\n- Wait 30-60 seconds and try again\n- Check your internet connection\n- Try a simpler, shorter question',
+              statusCode: response.status,
+            }
+          } else {
+            data = {
+              response: '⚠️ The AI service returned an invalid response. Please try again.',
+              statusCode: response.status || 500,
+            }
+          }
+        } else {
+          // Try to parse as JSON
+          data = JSON.parse(text)
+        }
+      } catch (jsonError) {
+        // If JSON parsing fails, create a fallback error response
+        console.error('[Coding] Failed to parse response as JSON:', jsonError)
+        
+        // Check status code to provide appropriate error message
+        if (response.status === 504 || response.status === 502 || response.status === 503) {
+          data = {
+            response: '⚠️ The AI service is temporarily unavailable.\n\nThe service took too long to respond or is experiencing issues. This can happen on slower connections or when the service is overloaded.\n\n**What you can do:**\n- Wait 30-60 seconds and try again\n- Check your internet connection\n- Try a simpler, shorter question',
+            statusCode: response.status,
+          }
+        } else {
+          data = {
+            response: '⚠️ The AI service returned an invalid response. Please try again.',
+            statusCode: response.status || 500,
+          }
+        }
+      }
+      
       if (!response.ok) {
-        throw new Error(data.response || 'Failed to get response')
+        // If API returned an error message, use it
+        if (data && data.response) {
+          throw new Error(data.response)
+        }
+        throw new Error(`API error: ${response.status} ${response.statusText}`)
+      }
+      
+      if (!data || !data.response) {
+        throw new Error('Invalid response from API')
       }
 
       const aiMessage = {
@@ -176,11 +240,28 @@ export default function CodingMode({ user, userPlan, onShowPremiumModal, onBackT
         console.warn('Could not record message count:', error)
       }
     } catch (error) {
-      console.error('Error calling AI:', error)
+      console.error('[Coding] Error calling AI:', error)
+      
+      let errorContent = '⚠️ The AI service is temporarily unavailable.\n\nPlease wait a moment and try again.'
+      
+      if (error instanceof Error) {
+        // If the error message already contains formatted content from API (starts with ⚠️ or contains markdown),
+        // use it directly as it's already properly formatted
+        if (error.message.includes('⚠️') || error.message.includes('**') || error.message.startsWith('🖼️') || error.message.includes('❌')) {
+          errorContent = error.message
+        } else if (error.name === 'AbortError' || error.message.includes('timeout')) {
+          errorContent = '⚠️ The AI service is temporarily unavailable.\n\nThe request took too long to complete. This can happen on slower connections. Please wait 30-60 seconds and try again.'
+        } else if (error.message.includes('fetch') || error.message.includes('network') || error.message.includes('Failed to fetch')) {
+          errorContent = '⚠️ Network Error\n\nI couldn\'t connect to the AI service. Please check your internet connection and try again.'
+        } else if (error.message.includes('502') || error.message.includes('503') || error.message.includes('504')) {
+          errorContent = '⚠️ The AI service is temporarily unavailable.\n\nThe service gateway is experiencing temporary issues. Please wait 15-30 seconds and try again.'
+        }
+      }
+      
       const errorMessage = {
         id: (Date.now() + 1).toString(),
         role: 'assistant' as const,
-        content: error instanceof Error ? error.message : 'An error occurred. Please try again.',
+        content: errorContent,
         timestamp: new Date(),
       }
       setAiMessages(prev => [...prev, errorMessage])
@@ -258,23 +339,66 @@ export default function CodingMode({ user, userPlan, onShowPremiumModal, onBackT
         </div>
 
         {/* Editor */}
-        <div className="flex-1 overflow-auto">
+        <div className="flex-1 overflow-auto relative bg-[#1e1e1e]" id="code-editor-container">
           {files[activeFile] && (
-            <textarea
-              ref={textareaRef}
-              value={files[activeFile].content}
-              onChange={(e) => {
-                setFiles(prev => prev.map((f, i) => 
-                  i === activeFile ? { ...f, content: e.target.value } : f
-                ))
-              }}
-              placeholder="Start coding here..."
-              className="w-full h-full min-h-[500px] bg-[var(--bg-primary)] text-[var(--text-primary)] resize-none outline-none p-6 font-mono text-sm leading-relaxed"
-              style={{
-                tabSize: 2,
-              }}
-              spellCheck={false}
-            />
+            <div className="relative w-full min-h-[500px]">
+              <div className="flex">
+                {/* Line Numbers */}
+                <div className="w-12 bg-[#1e1e1e] border-r border-[#252526] text-right pr-3 py-6 font-mono text-xs text-[#858585] select-none flex-shrink-0">
+                  {files[activeFile].content.split('\n').map((_, index) => (
+                    <div key={index} className="leading-[1.5]">
+                      {index + 1}
+                    </div>
+                  ))}
+                  {files[activeFile].content.split('\n').length === 0 && (
+                    <div className="leading-[1.5]">1</div>
+                  )}
+                </div>
+                
+                {/* Syntax Highlighted Code Display */}
+                <div className="flex-1 relative">
+                  <div className="relative min-h-full">
+                    <SyntaxHighlighter
+                      language={files[activeFile].language}
+                      style={vscDarkPlus}
+                      customStyle={{
+                        margin: 0,
+                        padding: '24px',
+                        background: '#1e1e1e',
+                        fontSize: '14px',
+                        lineHeight: '1.5',
+                        fontFamily: 'Consolas, "Courier New", monospace',
+                        minHeight: '100%',
+                      }}
+                      showLineNumbers={false}
+                      PreTag="div"
+                    >
+                      {files[activeFile].content || ' '}
+                    </SyntaxHighlighter>
+                  </div>
+                  
+                  {/* Invisible Textarea Overlay for Editing */}
+                  <textarea
+                    ref={textareaRef}
+                    value={files[activeFile].content}
+                    onChange={(e) => {
+                      setFiles(prev => prev.map((f, i) => 
+                        i === activeFile ? { ...f, content: e.target.value } : f
+                      ))
+                    }}
+                    placeholder="Start coding here..."
+                    className="absolute inset-0 bg-transparent text-transparent resize-none outline-none p-6 font-mono text-sm leading-[1.5] z-20 caret-[#d4c4a0]"
+                    style={{
+                      tabSize: 2,
+                      color: 'transparent',
+                      caretColor: '#d4c4a0',
+                      fontFamily: 'Consolas, "Courier New", monospace',
+                    }}
+                    spellCheck={false}
+                  />
+                </div>
+              </div>
+            </div>
           )}
         </div>
 

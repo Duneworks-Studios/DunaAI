@@ -107,8 +107,8 @@ async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs: nu
 async function fetchWithRetry(
   url: string, 
   options: RequestInit, 
-  maxRetries: number = 2, // 2 retries (3 total attempts) - balanced for reliability and timeout
-  baseTimeoutMs: number = 18000 // 18s base timeout - allows for complex questions while staying under 26s
+  maxRetries: number = 3, // 3 retries (4 total attempts) - more retries for better reliability
+  baseTimeoutMs: number = 20000 // 20s base timeout - increased for complex questions
 ): Promise<{ response: Response; attempts: number }> {
   let lastError: Error | null = null
   let lastResponse: Response | null = null
@@ -118,17 +118,17 @@ async function fetchWithRetry(
     totalAttempts = attempt + 1
     try {
       if (attempt > 0) {
-        // Use optimized delays to stay within Netlify's 26 second limit
-        // For 502/503/504: minimal delays (0.3s, 0.5s) for faster retries
-        // For other errors: even shorter delays (0.2s, 0.4s)
+        // Use minimal delays for faster retries - we need to retry quickly to succeed
+        // For 502/503/504: very short delays (0.2s, 0.3s, 0.4s) for faster retries
+        // For other errors: even shorter delays (0.1s, 0.2s, 0.3s)
         const isGatewayError = lastResponse && (lastResponse.status === 502 || lastResponse.status === 503 || lastResponse.status === 504)
         const baseDelay = isGatewayError 
-          ? Math.min(300 + (200 * (attempt - 1)), 500) // Progressive: 0.3s, 0.5s (capped at 0.5s for 2 retries)
-          : 200 + (200 * (attempt - 1)) // Progressive: 0.2s, 0.4s
+          ? Math.min(200 + (100 * (attempt - 1)), 400) // Progressive: 0.2s, 0.3s, 0.4s (capped)
+          : 100 + (100 * (attempt - 1)) // Progressive: 0.1s, 0.2s, 0.3s
         
         // Add small jitter (±10%) to prevent thundering herd
         const jitter = baseDelay * 0.1 * (Math.random() * 2 - 1)
-        const delay = Math.max(300, baseDelay + jitter)
+        const delay = Math.max(100, baseDelay + jitter) // Minimum 100ms instead of 300ms
         
         if (process.env.NODE_ENV === 'development') {
           console.log(`[AI API] Retrying request (attempt ${attempt + 1}/${maxRetries + 1}) after ${Math.round(delay)}ms delay...`)
@@ -138,10 +138,9 @@ async function fetchWithRetry(
       }
       
       // Use progressive timeouts but stay within Netlify's 26 second limit
-      // Strategy: 18s, 20s, 22s - optimized for complex questions while staying within limit
-      // Total worst case: 18s + 0.3s delay + 20s + 0.5s delay + 22s = ~60.8s (but we abort on first success)
-      // In practice, most requests succeed on first attempt, so we stay well under 26s
-      const currentTimeout = baseTimeoutMs + (2000 * attempt) // Progressive: 18s, 20s, 22s
+      // Strategy: 20s, 22s, 24s, 25s - optimized for complex questions
+      // Most requests succeed on first attempt, so we stay well under 26s
+      const currentTimeout = Math.min(baseTimeoutMs + (2000 * attempt), 25000) // Progressive: 20s, 22s, 24s, 25s (capped)
       
       if (process.env.NODE_ENV === 'development') {
         console.log(`[AI API] Attempt ${attempt + 1}: Using timeout of ${currentTimeout}ms`)
@@ -728,13 +727,13 @@ What would you like to know?`
         body: JSON.stringify({
           model: modelToUse,
           messages: finalMessages, // Use final verified messages (no images in history)
-          max_tokens: 2000, // Increased to allow for more detailed responses
+          max_tokens: 4000, // Increased significantly for complex questions and research notes
           temperature: 0.7,
           stream: false, // Ensure streaming is off for reliability
         }),
       },
-      2, // Max 2 retries (3 total attempts) - balanced for reliability and timeout
-      18000 // Base 18 second timeout, increases progressively: 18s, 20s, 22s
+      3, // Max 3 retries (4 total attempts) - more retries for better reliability
+      20000 // Base 20 second timeout, increases progressively: 20s, 22s, 24s, 25s
     )
     
     // Log successful request

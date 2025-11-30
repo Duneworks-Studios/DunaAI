@@ -68,6 +68,10 @@ export default function ResearchMode({ user, userPlan, onShowPremiumModal, onBac
     setLoading(true)
 
     try {
+      // Add timeout to client-side fetch
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 60000) // 60 seconds
+      
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -76,12 +80,70 @@ export default function ResearchMode({ user, userPlan, onShowPremiumModal, onBac
           userId: user.id,
           agent: currentAgent,
         }),
+        signal: controller.signal,
       })
 
-      const data = await response.json()
+      clearTimeout(timeoutId)
 
+      // Read response data first (even for errors, API returns JSON with error message)
+      let data
+      try {
+        // Check if response is HTML (common with 504 errors from Netlify)
+        const contentType = response.headers.get('content-type') || ''
+        const text = await response.text()
+        
+        if (contentType.includes('text/html') || text.trim().startsWith('<')) {
+          // Server returned HTML instead of JSON (likely a 504 error page)
+          console.error('[Research] Server returned HTML instead of JSON:', {
+            status: response.status,
+            contentType,
+            preview: text.substring(0, 100)
+          })
+          
+          // Create appropriate error based on status code
+          if (response.status === 504 || response.status === 502 || response.status === 503) {
+            data = {
+              response: '⚠️ The AI service is temporarily unavailable.\n\nThe service took too long to respond or is experiencing issues. This can happen on slower connections or when the service is overloaded.\n\n**What you can do:**\n- Wait 30-60 seconds and try again\n- Check your internet connection\n- Try a simpler, shorter question',
+              statusCode: response.status,
+            }
+          } else {
+            data = {
+              response: '⚠️ The AI service returned an invalid response. Please try again.',
+              statusCode: response.status || 500,
+            }
+          }
+        } else {
+          // Try to parse as JSON
+          data = JSON.parse(text)
+        }
+      } catch (jsonError) {
+        // If JSON parsing fails, create a fallback error response
+        console.error('[Research] Failed to parse response as JSON:', jsonError)
+        
+        // Check status code to provide appropriate error message
+        if (response.status === 504 || response.status === 502 || response.status === 503) {
+          data = {
+            response: '⚠️ The AI service is temporarily unavailable.\n\nThe service took too long to respond or is experiencing issues. This can happen on slower connections or when the service is overloaded.\n\n**What you can do:**\n- Wait 30-60 seconds and try again\n- Check your internet connection\n- Try a simpler, shorter question',
+            statusCode: response.status,
+          }
+        } else {
+          data = {
+            response: '⚠️ The AI service returned an invalid response. Please try again.',
+            statusCode: response.status || 500,
+          }
+        }
+      }
+      
       if (!response.ok) {
-        throw new Error(data.response || 'Failed to get response')
+        // If API returned an error message, use it
+        if (data && data.response) {
+          throw new Error(data.response)
+        }
+        throw new Error(`API error: ${response.status} ${response.statusText}`)
+      }
+      
+      if (!data || !data.response) {
+        throw new Error('Invalid response from API')
       }
 
       const aiMessage = {
@@ -103,11 +165,28 @@ export default function ResearchMode({ user, userPlan, onShowPremiumModal, onBac
         console.warn('Could not record message count:', error)
       }
     } catch (error) {
-      console.error('Error calling AI:', error)
+      console.error('[Research] Error calling AI:', error)
+      
+      let errorContent = '⚠️ The AI service is temporarily unavailable.\n\nPlease wait a moment and try again.'
+      
+      if (error instanceof Error) {
+        // If the error message already contains formatted content from API (starts with ⚠️ or contains markdown),
+        // use it directly as it's already properly formatted
+        if (error.message.includes('⚠️') || error.message.includes('**') || error.message.startsWith('🖼️') || error.message.includes('❌')) {
+          errorContent = error.message
+        } else if (error.name === 'AbortError' || error.message.includes('timeout')) {
+          errorContent = '⚠️ The AI service is temporarily unavailable.\n\nThe request took too long to complete. This can happen on slower connections. Please wait 30-60 seconds and try again.'
+        } else if (error.message.includes('fetch') || error.message.includes('network') || error.message.includes('Failed to fetch')) {
+          errorContent = '⚠️ Network Error\n\nI couldn\'t connect to the AI service. Please check your internet connection and try again.'
+        } else if (error.message.includes('502') || error.message.includes('503') || error.message.includes('504')) {
+          errorContent = '⚠️ The AI service is temporarily unavailable.\n\nThe service gateway is experiencing temporary issues. Please wait 15-30 seconds and try again.'
+        }
+      }
+      
       const errorMessage = {
         id: (Date.now() + 1).toString(),
         role: 'assistant' as const,
-        content: error instanceof Error ? error.message : 'An error occurred. Please try again.',
+        content: errorContent,
         timestamp: new Date(),
       }
       setAiMessages(prev => [...prev, errorMessage])
