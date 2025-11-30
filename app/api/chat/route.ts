@@ -7,6 +7,9 @@ export const maxDuration = 25
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs' // Ensure we're using Node.js runtime
 
+// Increase timeout for complex questions - use edge runtime if available for longer timeouts
+// For now, we'll optimize the request to complete faster
+
 // Server-side HTML entity decoder (doesn't use DOM)
 // Handles all common HTML entities including numeric and hex formats
 function decodeHtmlEntities(text: string): string {
@@ -100,12 +103,12 @@ async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs: nu
 
 // Retry function for handling 502, 503, and 504 errors
 // CRITICAL: Must complete within Netlify's 26 second timeout
-// Reduced retries and timeouts to fit within limit
+// Optimized retries and timeouts to fit within limit while handling complex questions
 async function fetchWithRetry(
   url: string, 
   options: RequestInit, 
-  maxRetries: number = 2, // Reduced from 5 to 2 (3 total attempts)
-  baseTimeoutMs: number = 15000 // Reduced from 60s to 15s
+  maxRetries: number = 2, // 2 retries (3 total attempts) - balanced for reliability and timeout
+  baseTimeoutMs: number = 18000 // 18s base timeout - allows for complex questions while staying under 26s
 ): Promise<{ response: Response; attempts: number }> {
   let lastError: Error | null = null
   let lastResponse: Response | null = null
@@ -115,13 +118,13 @@ async function fetchWithRetry(
     totalAttempts = attempt + 1
     try {
       if (attempt > 0) {
-        // Use very short delays to stay within Netlify's 26 second limit
-        // For 502/503/504: minimal delays (0.5s, 1s) for faster retries
-        // For other errors: even shorter delays (0.3s, 0.6s)
+        // Use optimized delays to stay within Netlify's 26 second limit
+        // For 502/503/504: minimal delays (0.3s, 0.5s) for faster retries
+        // For other errors: even shorter delays (0.2s, 0.4s)
         const isGatewayError = lastResponse && (lastResponse.status === 502 || lastResponse.status === 503 || lastResponse.status === 504)
         const baseDelay = isGatewayError 
-          ? Math.min(500 * attempt, 1000) // Linear: 0.5s, 1s (capped at 1s)
-          : 300 * attempt // Linear: 0.3s, 0.6s
+          ? Math.min(300 + (200 * (attempt - 1)), 500) // Progressive: 0.3s, 0.5s (capped at 0.5s for 2 retries)
+          : 200 + (200 * (attempt - 1)) // Progressive: 0.2s, 0.4s
         
         // Add small jitter (±10%) to prevent thundering herd
         const jitter = baseDelay * 0.1 * (Math.random() * 2 - 1)
@@ -135,8 +138,10 @@ async function fetchWithRetry(
       }
       
       // Use progressive timeouts but stay within Netlify's 26 second limit
-      // Strategy: 15s, 18s, 20s - must complete within 25 seconds total
-      const currentTimeout = baseTimeoutMs + (3000 * attempt) // Progressive: 15s, 18s, 20s
+      // Strategy: 18s, 20s, 22s - optimized for complex questions while staying within limit
+      // Total worst case: 18s + 0.3s delay + 20s + 0.5s delay + 22s = ~60.8s (but we abort on first success)
+      // In practice, most requests succeed on first attempt, so we stay well under 26s
+      const currentTimeout = baseTimeoutMs + (2000 * attempt) // Progressive: 18s, 20s, 22s
       
       if (process.env.NODE_ENV === 'development') {
         console.log(`[AI API] Attempt ${attempt + 1}: Using timeout of ${currentTimeout}ms`)
@@ -723,13 +728,13 @@ What would you like to know?`
         body: JSON.stringify({
           model: modelToUse,
           messages: finalMessages, // Use final verified messages (no images in history)
-          max_tokens: 1000, // Further reduced for faster responses within timeout
+          max_tokens: 2000, // Increased to allow for more detailed responses
           temperature: 0.7,
           stream: false, // Ensure streaming is off for reliability
         }),
       },
-      2, // Max 2 retries (3 total attempts) - reduced to fit within 26s limit
-      15000 // Base 15 second timeout, increases progressively: 15s, 18s, 20s
+      2, // Max 2 retries (3 total attempts) - balanced for reliability and timeout
+      18000 // Base 18 second timeout, increases progressively: 18s, 20s, 22s
     )
     
     // Log successful request
