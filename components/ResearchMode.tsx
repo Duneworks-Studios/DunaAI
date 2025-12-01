@@ -262,9 +262,9 @@ export default function ResearchMode({ user, userPlan, onShowPremiumModal, onBac
             {onBackToChat && (
               <button
                 onClick={onBackToChat}
-                className="px-4 py-2 bg-[var(--accent-primary)] text-white rounded-lg hover:bg-[var(--accent-hover)] transition-colors text-sm font-medium"
+                className="px-4 py-2 bg-[var(--bg-secondary)] border border-[var(--accent-primary)] text-[var(--text-primary)] rounded-lg hover:bg-[var(--bg-hover)] hover:border-[var(--accent-hover)] transition-colors text-sm font-medium"
               >
-                ← Back to Chat
+                Back to Chat
               </button>
             )}
           </div>
