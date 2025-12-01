@@ -8,8 +8,9 @@ export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs' // Ensure we're using Node.js runtime
 
 // DeepSeek API Configuration
-const DEEPSEEK_API_URL = 'https://api.deepseek.com/chat/completions' // Correct endpoint (no /v1/)
-const DEEPSEEK_MODEL = 'deepseek-chat' // Default model
+// CRITICAL: DeepSeek API requires /v1/ in the path
+const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions'
+const DEEPSEEK_MODEL = 'deepseek-chat'
 
 // Server-side HTML entity decoder (doesn't use DOM)
 // Handles all common HTML entities including numeric and hex formats
@@ -300,7 +301,7 @@ The request body is malformed or missing required data.
 
     // Get AI service configuration
     // Support both DeepSeek and OpenAI
-    // CRITICAL: DeepSeek API endpoint should NOT have /v1/ prefix
+    // DeepSeek API requires /v1/ in the path: https://api.deepseek.com/v1/chat/completions
     const AI_ENDPOINT = process.env.AI_ENDPOINT || process.env.DEEPSEEK_API_URL || process.env.OPENAI_API_URL || DEEPSEEK_API_URL
     const AI_TOKEN = process.env.AI_TOKEN || process.env.DEEPSEEK_API_KEY || process.env.OPENAI_API_KEY
     const AI_MODEL = process.env.AI_MODEL || DEEPSEEK_MODEL // Default to DeepSeek

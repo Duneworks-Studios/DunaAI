@@ -268,7 +268,7 @@ export default function ChatWindow({
                         className="max-h-[400px] overflow-y-scroll p-4 promo-codes-scroll"
                         style={{ 
                           scrollbarWidth: 'thin',
-                          scrollbarColor: 'rgba(59, 130, 246, 0.5) rgba(0, 0, 0, 0.1)',
+                          scrollbarColor: 'rgba(229, 166, 75, 0.5) rgba(0, 0, 0, 0.05)',
                           WebkitOverflowScrolling: 'touch',
                           overscrollBehavior: 'contain'
                         }}

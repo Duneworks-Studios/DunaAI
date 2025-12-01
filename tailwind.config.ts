@@ -9,27 +9,34 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Clean Modern Theme Palette
+        // Light Dune / Soft Sand Theme Palette
         background: {
-          primary: '#0a0a0a',
-          secondary: '#111111',
-          tertiary: '#161616',
-          elevated: '#1a1a1a',
-          hover: '#222222',
+          primary: '#f7f3e8',
+          secondary: '#f0ebdd',
+          tertiary: '#efe6d4',
+          elevated: '#fffdf8',
+          hover: '#e8e2d4',
         },
         foreground: {
-          primary: '#fafafa',
-          secondary: '#a1a1aa',
-          tertiary: '#71717a',
+          primary: '#2b2b2b',
+          secondary: '#4a463f',
+          tertiary: '#7a7468',
         },
         border: {
-          primary: '#27272a',
-          secondary: '#3f3f46',
+          primary: '#e2d9c4',
+          secondary: '#d4c9b0',
         },
         accent: {
-          DEFAULT: '#3b82f6',
-          light: '#60a5fa',
-          dark: '#2563eb',
+          DEFAULT: '#e5a64b',
+          light: '#f1b866',
+          dark: '#d48c2f',
+        },
+        dune: {
+          sand: '#f7f3e8',
+          cream: '#fffdf8',
+          warm: '#f0ebdd',
+          orange: '#e5a64b',
+          amber: '#d48c2f',
         },
       },
       fontFamily: {
