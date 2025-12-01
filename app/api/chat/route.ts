@@ -103,12 +103,12 @@ async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs: nu
 
 // Retry function for handling 502, 503, and 504 errors
 // CRITICAL: Must complete within Netlify's 26 second timeout
-// Optimized retries and timeouts to fit within limit while handling complex questions
+// Optimized for speed - we need to succeed fast, not retry many times
 async function fetchWithRetry(
   url: string, 
   options: RequestInit, 
-  maxRetries: number = 3, // 3 retries (4 total attempts) - more retries for better reliability
-  baseTimeoutMs: number = 20000 // 20s base timeout - increased for complex questions
+  maxRetries: number = 1, // 1 retry (2 total attempts) - fast retry if first fails
+  baseTimeoutMs: number = 22000 // 22s timeout - single attempt with one fast retry
 ): Promise<{ response: Response; attempts: number }> {
   let lastError: Error | null = null
   let lastResponse: Response | null = null
@@ -118,17 +118,12 @@ async function fetchWithRetry(
     totalAttempts = attempt + 1
     try {
       if (attempt > 0) {
-        // Use minimal delays for faster retries - we need to retry quickly to succeed
-        // For 502/503/504: very short delays (0.2s, 0.3s, 0.4s) for faster retries
-        // For other errors: even shorter delays (0.1s, 0.2s, 0.3s)
+        // Minimal delay for fast retry - we only have 1 retry so make it instant
         const isGatewayError = lastResponse && (lastResponse.status === 502 || lastResponse.status === 503 || lastResponse.status === 504)
-        const baseDelay = isGatewayError 
-          ? Math.min(200 + (100 * (attempt - 1)), 400) // Progressive: 0.2s, 0.3s, 0.4s (capped)
-          : 100 + (100 * (attempt - 1)) // Progressive: 0.1s, 0.2s, 0.3s
+        const baseDelay = isGatewayError ? 200 : 100 // Very short delay - 0.1s or 0.2s
         
-        // Add small jitter (±10%) to prevent thundering herd
-        const jitter = baseDelay * 0.1 * (Math.random() * 2 - 1)
-        const delay = Math.max(100, baseDelay + jitter) // Minimum 100ms instead of 300ms
+        // Minimal delay - we need to retry immediately
+        const delay = baseDelay // No jitter, just the base delay
         
         if (process.env.NODE_ENV === 'development') {
           console.log(`[AI API] Retrying request (attempt ${attempt + 1}/${maxRetries + 1}) after ${Math.round(delay)}ms delay...`)
@@ -137,10 +132,9 @@ async function fetchWithRetry(
         await new Promise(resolve => setTimeout(resolve, delay))
       }
       
-      // Use progressive timeouts but stay within Netlify's 26 second limit
-      // Strategy: 20s, 22s, 24s, 25s - optimized for complex questions
-      // Most requests succeed on first attempt, so we stay well under 26s
-      const currentTimeout = Math.min(baseTimeoutMs + (2000 * attempt), 25000) // Progressive: 20s, 22s, 24s, 25s (capped)
+      // Use single timeout - we need to succeed fast within Netlify's 26s limit
+      // Strategy: 22s for first attempt, 24s for retry - must complete fast
+      const currentTimeout = Math.min(baseTimeoutMs + (2000 * attempt), 24000) // 22s first, 24s retry
       
       if (process.env.NODE_ENV === 'development') {
         console.log(`[AI API] Attempt ${attempt + 1}: Using timeout of ${currentTimeout}ms`)
@@ -682,11 +676,12 @@ What would you like to know?`
       }
     }
 
-    // Optimize message history for mobile - limit context to reduce request size
-    const optimizedMessages = messagesWithSystem.length > 10 
+    // Optimize message history - limit context to reduce request size and speed up responses
+    // Keep only last 5 messages for faster processing (system prompt + 5 recent messages)
+    const optimizedMessages = messagesWithSystem.length > 6 
       ? [
           messagesWithSystem[0], // Keep system prompt
-          ...messagesWithSystem.slice(-9) // Keep last 9 messages (recent context)
+          ...messagesWithSystem.slice(-5) // Keep last 5 messages (recent context only)
         ]
       : messagesWithSystem
 
@@ -727,13 +722,13 @@ What would you like to know?`
         body: JSON.stringify({
           model: modelToUse,
           messages: finalMessages, // Use final verified messages (no images in history)
-          max_tokens: 4000, // Increased significantly for complex questions and research notes
+          max_tokens: 3000, // Balanced - enough for good responses but fast enough
           temperature: 0.7,
           stream: false, // Ensure streaming is off for reliability
         }),
       },
-      3, // Max 3 retries (4 total attempts) - more retries for better reliability
-      20000 // Base 20 second timeout, increases progressively: 20s, 22s, 24s, 25s
+      1, // Max 1 retry (2 total attempts) - fast single retry if needed
+      22000 // Base 22 second timeout, 24s for retry - optimized for Netlify's 26s limit
     )
     
     // Log successful request
