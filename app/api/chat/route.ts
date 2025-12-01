@@ -2,13 +2,14 @@ import { NextRequest, NextResponse } from 'next/server'
 
 // Configure route timeout
 // CRITICAL: Netlify free tier has 26 second timeout - we must complete within this limit
-// Set to 25 seconds to leave 1 second buffer for processing
-export const maxDuration = 25
+// Set to 60 seconds for Vercel/local, Netlify will enforce its own limit
+export const maxDuration = 60
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs' // Ensure we're using Node.js runtime
 
-// Increase timeout for complex questions - use edge runtime if available for longer timeouts
-// For now, we'll optimize the request to complete faster
+// DeepSeek API Configuration
+const DEEPSEEK_API_URL = 'https://api.deepseek.com/chat/completions' // Correct endpoint (no /v1/)
+const DEEPSEEK_MODEL = 'deepseek-chat' // Default model
 
 // Server-side HTML entity decoder (doesn't use DOM)
 // Handles all common HTML entities including numeric and hex formats
@@ -299,9 +300,10 @@ The request body is malformed or missing required data.
 
     // Get AI service configuration
     // Support both DeepSeek and OpenAI
-    const AI_ENDPOINT = process.env.AI_ENDPOINT || process.env.DEEPSEEK_API_URL || process.env.OPENAI_API_URL || 'https://api.deepseek.com/v1/chat/completions'
+    // CRITICAL: DeepSeek API endpoint should NOT have /v1/ prefix
+    const AI_ENDPOINT = process.env.AI_ENDPOINT || process.env.DEEPSEEK_API_URL || process.env.OPENAI_API_URL || DEEPSEEK_API_URL
     const AI_TOKEN = process.env.AI_TOKEN || process.env.DEEPSEEK_API_KEY || process.env.OPENAI_API_KEY
-    const AI_MODEL = process.env.AI_MODEL || 'deepseek-chat' // Default to DeepSeek
+    const AI_MODEL = process.env.AI_MODEL || DEEPSEEK_MODEL // Default to DeepSeek
 
     // Debug logging (only in development)
     if (process.env.NODE_ENV === 'development') {

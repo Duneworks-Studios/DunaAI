@@ -262,7 +262,7 @@ export default function ResearchMode({ user, userPlan, onShowPremiumModal, onBac
             {onBackToChat && (
               <button
                 onClick={onBackToChat}
-                className="px-4 py-2 bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)] text-white rounded-lg hover:opacity-90 transition-opacity text-sm font-semibold"
+                className="px-4 py-2 bg-[var(--accent-primary)] text-white rounded-lg hover:bg-[var(--accent-hover)] transition-colors text-sm font-medium"
               >
                 ← Back to Chat
               </button>
@@ -354,7 +354,7 @@ export default function ResearchMode({ user, userPlan, onShowPremiumModal, onBac
             <button
               type="submit"
               disabled={loading || !aiInput.trim()}
-              className="px-4 py-2 bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)] text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed text-sm font-semibold"
+              className="px-4 py-2 bg-[var(--accent-primary)] text-white rounded-lg hover:bg-[var(--accent-hover)] disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-colors"
             >
               Send
             </button>

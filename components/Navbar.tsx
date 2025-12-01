@@ -64,11 +64,9 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 h-16 glass border-b border-[var(--accent-primary)]" style={{
-      boxShadow: '0 1px 10px rgba(255, 215, 0, 0.2)'
-    }}>
+    <nav className="fixed top-0 left-0 right-0 z-50 h-16 bg-[var(--bg-primary)] border-b border-[var(--border-primary)]">
       <div className="max-w-7xl mx-auto h-full px-6 sm:px-8 lg:px-12 flex items-center justify-between">
-        {/* Logo - Simple Design */}
+        {/* Logo - Clean Design */}
         <Link 
           href="/" 
           className="flex items-center gap-3"
@@ -85,22 +83,19 @@ export default function Navbar() {
               unoptimized
             />
           </div>
-          <span className="text-xl font-bold text-gradient tracking-tight" style={{
-            textShadow: '0 0 15px rgba(255, 215, 0, 0.6), 0 0 30px rgba(255, 215, 0, 0.4)',
-            filter: 'drop-shadow(0 0 10px rgba(255, 215, 0, 0.5))'
-          }}>
+          <span className="text-xl font-semibold text-[var(--text-primary)] tracking-tight">
             Duna
           </span>
-          <span className="text-[12px] font-medium px-[8px] py-[3px] rounded-[12px] bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 shadow-sm">
+          <span className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] border border-[var(--accent-primary)]/20">
             Beta
           </span>
         </Link>
 
-        {/* Center Navigation - Simple Layout - Always visible */}
-        <div className="hidden md:flex items-center gap-1 opacity-100">
+        {/* Center Navigation - Clean Layout */}
+        <div className="hidden md:flex items-center gap-1">
           <Link
             href="/"
-            className="px-4 py-2 rounded-md text-sm font-medium text-[var(--accent-primary)] hover:text-[var(--accent-primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
+            className="px-4 py-2 rounded-md text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
           >
             Home
           </Link>
@@ -112,13 +107,13 @@ export default function Navbar() {
                 setShowLoginModal(true)
               }
             }}
-            className="px-4 py-2 rounded-md text-sm font-medium text-[var(--accent-primary)] hover:text-[var(--accent-primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
+            className="px-4 py-2 rounded-md text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
           >
             Chat
           </button>
           <Link
             href="/pricing"
-            className="px-4 py-2 rounded-md text-sm font-medium text-[var(--accent-primary)] hover:text-[var(--accent-primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
+            className="px-4 py-2 rounded-md text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
           >
             Pricing
           </Link>
@@ -126,7 +121,7 @@ export default function Navbar() {
             href="https://discord.gg/Duneworks"
             target="_blank"
             rel="noopener noreferrer"
-            className="px-4 py-2 rounded-md text-sm font-medium text-[var(--accent-primary)] hover:text-[var(--accent-primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
+            className="px-4 py-2 rounded-md text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors"
           >
             Discord
           </a>

@@ -9,53 +9,55 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Gray theme palette
-        gray: {
-          dark: '#333333',
-          mid: '#888888',
-          light: '#BBBBBB',
-          'white-gray': '#EEEEEE',
-          accent: '#FFFFFF',
+        // Clean Modern Theme Palette
+        background: {
+          primary: '#0a0a0a',
+          secondary: '#111111',
+          tertiary: '#161616',
+          elevated: '#1a1a1a',
+          hover: '#222222',
         },
-        // Dune-inspired color palette
-        dune: {
-          sand: '#D4A574',
-          'sand-light': '#E8C9A0',
-          'sand-dark': '#B8955A',
-          gold: '#C9A961',
-          'gold-light': '#E5C77E',
-          'gold-dark': '#A68B4F',
-          bronze: '#8B6F47',
-          'bronze-light': '#A6895F',
-          'bronze-dark': '#6B5635',
-          black: '#0d0d0d',
-          'black-soft': '#1A1A1A',
-          'black-lighter': '#2A2A2A',
+        foreground: {
+          primary: '#fafafa',
+          secondary: '#a1a1aa',
+          tertiary: '#71717a',
+        },
+        border: {
+          primary: '#27272a',
+          secondary: '#3f3f46',
+        },
+        accent: {
+          DEFAULT: '#3b82f6',
+          light: '#60a5fa',
+          dark: '#2563eb',
         },
       },
       fontFamily: {
-        sans: ['var(--font-satoshi)', 'var(--font-manrope)', 'Inter', 'system-ui', 'sans-serif'],
-        display: ['var(--font-satoshi)', 'var(--font-manrope)', 'system-ui', 'sans-serif'],
+        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+        mono: ['JetBrains Mono', 'Fira Code', 'Consolas', 'monospace'],
       },
       animation: {
-        'dune-wave': 'dune-wave 20s ease-in-out infinite',
-        'particle-float': 'particle-float 15s ease-in-out infinite',
-        'glow-pulse': 'glow-pulse 3s ease-in-out infinite',
+        'fade-in': 'fadeIn 0.3s ease-in-out',
+        'slide-up': 'slideUp 0.3s ease-out',
+        'pulse-subtle': 'pulseSubtle 2s ease-in-out infinite',
       },
       keyframes: {
-        'dune-wave': {
-          '0%, 100%': { transform: 'translateY(0) scale(1)' },
-          '50%': { transform: 'translateY(-20px) scale(1.05)' },
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
         },
-        'particle-float': {
-          '0%, 100%': { transform: 'translateY(0) translateX(0)' },
-          '33%': { transform: 'translateY(-30px) translateX(20px)' },
-          '66%': { transform: 'translateY(-15px) translateX(-20px)' },
+        slideUp: {
+          '0%': { opacity: '0', transform: 'translateY(10px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
         },
-        'glow-pulse': {
-          '0%, 100%': { opacity: '0.6', transform: 'scale(1)' },
-          '50%': { opacity: '1', transform: 'scale(1.05)' },
+        pulseSubtle: {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.7' },
         },
+      },
+      borderRadius: {
+        'xl': '0.75rem',
+        '2xl': '1rem',
       },
     },
   },
