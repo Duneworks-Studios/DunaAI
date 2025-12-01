@@ -114,8 +114,24 @@ export default function CodingMode({ user, userPlan, onShowPremiumModal, onBackT
     setLoading(true)
 
     try {
+      const fileSummaries = files
+        .map(file => `- ${file.name} (${file.language}, ${file.content.length} chars)`)
+        .join('\n')
+
+      const activeFileContent = files[activeFile]?.content || ''
+      const truncatedContent = activeFileContent.length > 2500
+        ? `${activeFileContent.slice(0, 2500)}...`
+        : activeFileContent
+
+      const contextMessage = {
+        role: 'user' as const,
+        content: `Project context:\nActive file: ${files[activeFile]?.name}\n\nFiles:\n${fileSummaries}\n\nActive file contents:\n${truncatedContent}`,
+      }
+
+      const conversation = [contextMessage, ...aiMessages, userMessage]
+
       const payload = {
-        messages: [...aiMessages, userMessage].map(m => ({ role: m.role, content: m.content })),
+        messages: conversation.map(m => ({ role: m.role, content: m.content })),
         userId: user.id,
         agent: codingAgent,
       }
