@@ -67,6 +67,8 @@ export default function CodingMode({ user, userPlan, onShowPremiumModal, onBackT
   
   // Coding mode always uses Luna agent
   const codingAgent = 'luna'
+  const requestTimeoutMs = Number(process.env.NEXT_PUBLIC_AI_TIMEOUT_MS) || 65000
+  const maxGatewayRetries = Number(process.env.NEXT_PUBLIC_AI_GATEWAY_RETRIES ?? 1)
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -112,89 +114,75 @@ export default function CodingMode({ user, userPlan, onShowPremiumModal, onBackT
     setLoading(true)
 
     try {
-      // Include current file context in the message
-      const contextMessage = `Current file: ${files[activeFile].name}\n\n${files[activeFile].content.substring(0, 500)}...`
-      
-      // Add timeout to client-side fetch
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 60000) // 60 seconds
-      
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: [
-            ...aiMessages.map(m => ({ role: m.role, content: m.content })),
-            { role: 'user', content: `${contextMessage}\n\nUser request: ${aiInput.trim()}` }
-          ],
-          userId: user.id,
-          agent: codingAgent, // Always use Luna agent for coding
-        }),
-        signal: controller.signal,
-      })
+      const payload = {
+        messages: [...aiMessages, userMessage].map(m => ({ role: m.role, content: m.content })),
+        userId: user.id,
+        agent: codingAgent,
+      }
 
-      clearTimeout(timeoutId)
+      const sendAiRequest = async (attempt = 0): Promise<{ response: string }> => {
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), requestTimeoutMs)
 
-      // Read response data first (even for errors, API returns JSON with error message)
-      let data
-      try {
-        // Check if response is HTML (common with 504 errors from Netlify)
-        const contentType = response.headers.get('content-type') || ''
-        const text = await response.text()
-        
-        if (contentType.includes('text/html') || text.trim().startsWith('<')) {
-          // Server returned HTML instead of JSON (likely a 504 error page)
-          console.error('[Coding] Server returned HTML instead of JSON:', {
-            status: response.status,
-            contentType,
-            preview: text.substring(0, 100)
+        try {
+          const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+            signal: controller.signal,
           })
-          
-          // Create appropriate error based on status code
-          if (response.status === 504 || response.status === 502 || response.status === 503) {
+
+          const contentType = response.headers.get('content-type') || ''
+          const text = await response.text()
+          const isHtml = contentType.includes('text/html') || text.trim().startsWith('<')
+          let data: { response?: string; statusCode?: number }
+
+          if (isHtml) {
             data = {
-              response: '⚠️ The AI service is temporarily unavailable.\n\nThe service took too long to respond or is experiencing issues. This can happen on slower connections or when the service is overloaded.\n\n**What you can do:**\n- Wait 30-60 seconds and try again\n- Check your internet connection\n- Try a simpler, shorter question',
-              statusCode: response.status,
+              response: '⚠️ The AI service is temporarily unavailable.\n\nThe service returned an invalid response. Please try again in a moment.',
+              statusCode: response.status || 503,
             }
           } else {
-            data = {
-              response: '⚠️ The AI service returned an invalid response. Please try again.',
-              statusCode: response.status || 500,
+            try {
+              data = JSON.parse(text)
+            } catch (parseError) {
+              console.error('[Coding] Failed to parse JSON response:', parseError)
+              data = {
+                response: '⚠️ The AI service returned an invalid response. Please try again.',
+                statusCode: response.status || 500,
+              }
             }
           }
-        } else {
-          // Try to parse as JSON
-          data = JSON.parse(text)
-        }
-      } catch (jsonError) {
-        // If JSON parsing fails, create a fallback error response
-        console.error('[Coding] Failed to parse response as JSON:', jsonError)
-        
-        // Check status code to provide appropriate error message
-        if (response.status === 504 || response.status === 502 || response.status === 503) {
-          data = {
-            response: '⚠️ The AI service is temporarily unavailable.\n\nThe service took too long to respond or is experiencing issues. This can happen on slower connections or when the service is overloaded.\n\n**What you can do:**\n- Wait 30-60 seconds and try again\n- Check your internet connection\n- Try a simpler, shorter question',
-            statusCode: response.status,
+
+          const statusCode = data?.statusCode || response.status
+          const isGatewayIssue = statusCode === 502 || statusCode === 503 || statusCode === 504
+
+          if (isGatewayIssue && attempt < maxGatewayRetries) {
+            console.warn('[Coding] Gateway error detected, retrying...', { statusCode, attempt })
+            await new Promise(resolve => setTimeout(resolve, 400))
+            return sendAiRequest(attempt + 1)
           }
-        } else {
-          data = {
-            response: '⚠️ The AI service returned an invalid response. Please try again.',
-            statusCode: response.status || 500,
+
+          if (!response.ok) {
+            throw new Error(data?.response || `API error: ${response.status} ${response.statusText}`)
           }
+
+          if (!data || !data.response) {
+            throw new Error('⚠️ The AI service returned an empty response. Please try again.')
+          }
+
+          return data as { response: string }
+        } catch (err) {
+          if (err instanceof DOMException && err.name === 'AbortError') {
+            throw new Error('⚠️ The AI service took too long to respond. Please try again.')
+          }
+          throw err instanceof Error ? err : new Error('⚠️ Unexpected error contacting the AI service.')
+        } finally {
+          clearTimeout(timeoutId)
         }
       }
-      
-      if (!response.ok) {
-        // If API returned an error message, use it
-        if (data && data.response) {
-          throw new Error(data.response)
-        }
-        throw new Error(`API error: ${response.status} ${response.statusText}`)
-      }
-      
-      if (!data || !data.response) {
-        throw new Error('Invalid response from API')
-      }
+
+      const data = await sendAiRequest()
 
       const aiMessage = {
         id: (Date.now() + 1).toString(),
