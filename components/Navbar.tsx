@@ -64,7 +64,7 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 h-16 bg-[var(--bg-secondary)] border-b border-[var(--border-primary)]">
+    <nav className="fixed top-0 left-0 right-0 z-50 h-16 bg-[var(--bg-primary)] border-b border-[var(--border-primary)]">
       <div className="max-w-7xl mx-auto h-full px-6 sm:px-8 lg:px-12 flex items-center justify-between">
         {/* Logo - Clean Design */}
         <Link 

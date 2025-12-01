@@ -9,34 +9,33 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Light Dune / Soft Sand Theme Palette
+        // Dark Professional Theme with Dune Accents
         background: {
-          primary: '#f7f3e8',
-          secondary: '#f0ebdd',
-          tertiary: '#efe6d4',
-          elevated: '#fffdf8',
-          hover: '#e8e2d4',
+          primary: '#0f0f0f',
+          secondary: '#161616',
+          tertiary: '#1b1b1b',
+          elevated: '#1b1b1b',
+          hover: '#252525',
         },
         foreground: {
-          primary: '#2b2b2b',
-          secondary: '#4a463f',
-          tertiary: '#7a7468',
+          primary: '#f3f3f3',
+          secondary: '#c7c7c7',
+          tertiary: '#888888',
         },
         border: {
-          primary: '#e2d9c4',
-          secondary: '#d4c9b0',
+          primary: '#2a2a2a',
+          secondary: '#3a3a3a',
         },
         accent: {
           DEFAULT: '#e5a64b',
           light: '#f1b866',
-          dark: '#d48c2f',
+          dark: '#b98234',
         },
         dune: {
-          sand: '#f7f3e8',
-          cream: '#fffdf8',
-          warm: '#f0ebdd',
-          orange: '#e5a64b',
-          amber: '#d48c2f',
+          primary: '#e5a64b',
+          hover: '#f1b866',
+          muted: '#b98234',
+          dark: '#8a6325',
         },
       },
       fontFamily: {

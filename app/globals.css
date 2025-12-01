@@ -7,30 +7,30 @@
 
 @layer base {
   :root {
-    /* Light Dune / Soft Sand Theme - Warm Desert Aesthetic */
-    --bg-primary: #f7f3e8;
-    --bg-secondary: #f0ebdd;
-    --bg-tertiary: #efe6d4;
-    --bg-elevated: #fffdf8;
-    --bg-hover: #e8e2d4;
-    --text-primary: #2b2b2b;
-    --text-secondary: #4a463f;
-    --text-tertiary: #7a7468;
-    --border-primary: #e2d9c4;
-    --border-secondary: #d4c9b0;
+    /* Dark Professional Theme - Cursor/Vercel Style with Dune Accents */
+    --bg-primary: #0f0f0f;
+    --bg-secondary: #161616;
+    --bg-tertiary: #1b1b1b;
+    --bg-elevated: #1b1b1b;
+    --bg-hover: #252525;
+    --text-primary: #f3f3f3;
+    --text-secondary: #c7c7c7;
+    --text-tertiary: #888888;
+    --border-primary: #2a2a2a;
+    --border-secondary: #3a3a3a;
     --accent-primary: #e5a64b;
-    --accent-secondary: #d48c2f;
+    --accent-secondary: #b98234;
     --accent-hover: #f1b866;
-    --success: #5a9a5a;
-    --warning: #d4a73a;
-    --error: #c45c5c;
-    --shadow-sm: 0 1px 2px 0 rgba(139, 119, 86, 0.04);
-    --shadow-md: 0 4px 6px -1px rgba(139, 119, 86, 0.06);
-    --shadow-lg: 0 10px 15px -3px rgba(139, 119, 86, 0.08);
+    --success: #4ade80;
+    --warning: #fbbf24;
+    --error: #ef4444;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
     
     /* Code editor specific */
-    --code-bg: #faf8f2;
-    --code-border: #e2d9c4;
+    --code-bg: #0a0a0a;
+    --code-border: #2a2a2a;
   }
 
   * {
@@ -61,46 +61,41 @@
 }
 
 @layer components {
-  /* Cards - Warm Dune Style */
+  /* Cards - Dark Professional Style */
   .glass {
     background: var(--bg-elevated);
     border: 1px solid var(--border-primary);
-    box-shadow: var(--shadow-sm);
   }
 
   .glass-strong {
     background: var(--bg-elevated);
     border: 1px solid var(--border-secondary);
-    box-shadow: var(--shadow-sm);
   }
 
   .premium-card {
     @apply relative overflow-hidden rounded-lg;
     background: var(--bg-elevated);
     border: 1px solid var(--border-primary);
-    box-shadow: var(--shadow-sm);
-    transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
   }
 
   .premium-card:hover {
-    border-color: var(--border-secondary);
-    background: var(--bg-secondary);
-    box-shadow: var(--shadow-md);
+    border-color: var(--accent-primary);
+    background: var(--bg-hover);
   }
 
-  /* Buttons - Warm Sand Orange */
+  /* Buttons - Dark with Dune Accent Border */
   .btn-primary {
     @apply relative px-6 py-3 rounded-lg font-medium;
-    background: var(--accent-primary);
-    color: #2b2b2b;
-    border: none;
-    box-shadow: var(--shadow-sm);
-    transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--accent-primary);
+    transition: background-color 0.2s ease, transform 0.1s ease, border-color 0.2s ease;
   }
 
   .btn-primary:hover {
-    background: var(--accent-hover);
-    box-shadow: var(--shadow-md);
+    background: var(--bg-hover);
+    border-color: var(--accent-hover);
   }
 
   .btn-primary:active {
@@ -109,25 +104,24 @@
 
   .btn-secondary {
     @apply relative px-6 py-3 rounded-lg font-medium;
-    @apply bg-[var(--bg-elevated)] border;
-    border-color: var(--border-secondary);
-    @apply text-[var(--text-primary)];
-    @apply transition-all duration-200;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-secondary);
+    color: var(--text-primary);
+    transition: all 0.2s ease;
   }
 
   .btn-secondary:hover {
     border-color: var(--accent-primary);
     background: var(--bg-hover);
-    color: var(--accent-secondary);
   }
 
   .btn-secondary:active {
     transform: scale(0.98);
   }
 
-  /* Text Effects - Warm Gradient */
+  /* Text Effects - Dune Gradient */
   .text-gradient {
-    background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+    background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-hover) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -135,25 +129,33 @@
   }
 
   .text-gradient-gold {
-    @apply text-[var(--accent-primary)];
+    color: var(--accent-primary);
     font-weight: 600;
   }
 
-  /* Navigation Links - Warm Style */
+  /* Navigation Links */
   nav a, nav button {
     color: var(--text-secondary);
     transition: color 0.2s ease;
   }
 
   nav a:hover, nav button:hover {
-    color: var(--accent-secondary);
+    color: var(--accent-primary);
   }
 }
 
 @layer utilities {
-  /* Simple Animations */
+  /* Animations */
   .animate-fade-in {
     animation: fadeIn 0.3s ease-in-out;
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-orbit {
+    animation: orbit 20s linear infinite;
   }
 
   @keyframes fadeIn {
@@ -161,14 +163,24 @@
     to { opacity: 1; }
   }
 
-  /* Warm Dune Scrollbar */
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+
+  @keyframes orbit {
+    from { transform: rotate(0deg) translateX(100px) rotate(0deg); }
+    to { transform: rotate(360deg) translateX(100px) rotate(-360deg); }
+  }
+
+  /* Dark Theme Scrollbar */
   ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
   }
 
   ::-webkit-scrollbar-track {
-    background: var(--bg-secondary);
+    background: var(--bg-primary);
   }
 
   ::-webkit-scrollbar-thumb {
@@ -180,16 +192,16 @@
     background: var(--accent-primary);
   }
 
-  /* Selection - Warm Sand */
+  /* Selection */
   ::selection {
-    background: rgba(229, 166, 75, 0.3);
+    background: rgba(229, 166, 75, 0.25);
     color: var(--text-primary);
   }
 
   /* Touch optimization */
   .touch-manipulation {
     touch-action: manipulation;
-    -webkit-tap-highlight-color: rgba(229, 166, 75, 0.2);
+    -webkit-tap-highlight-color: rgba(229, 166, 75, 0.15);
   }
 
   /* Safe area for mobile devices */
@@ -197,16 +209,14 @@
     padding-bottom: env(safe-area-inset-bottom, 0);
   }
 
-  /* Mobile-specific chat input improvements */
+  /* Mobile-specific improvements */
   @media (max-width: 768px) {
-    /* Ensure buttons are touch-friendly on mobile */
     button[type="submit"],
     button[type="button"] {
-      -webkit-tap-highlight-color: rgba(229, 166, 75, 0.3);
+      -webkit-tap-highlight-color: rgba(229, 166, 75, 0.2);
       touch-action: manipulation;
     }
 
-    /* Prevent text input zoom on iOS */
     input[type="text"],
     input[type="email"],
     input[type="password"],
@@ -214,32 +224,27 @@
       font-size: 16px;
     }
 
-    /* Better spacing for mobile chat input */
     .chat-input-container {
       padding-left: 0.75rem;
       padding-right: 0.75rem;
       padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
     }
 
-    /* Mobile chat layout improvements */
     .chat-header {
       padding-left: 3.5rem;
       min-height: 4rem;
     }
 
-    /* Ensure message bubbles have proper spacing on mobile */
     .chat-message-container {
       margin-left: 0.5rem;
       margin-right: 0.5rem;
     }
 
-    /* Prevent overlapping with fixed elements */
     .chat-messages-area {
       padding-top: 1rem;
       padding-bottom: 1rem;
     }
 
-    /* Safe area for mobile devices */
     .mobile-safe-top {
       padding-top: env(safe-area-inset-top, 0);
     }

@@ -354,7 +354,7 @@ export default function ResearchMode({ user, userPlan, onShowPremiumModal, onBac
             <button
               type="submit"
               disabled={loading || !aiInput.trim()}
-              className="px-4 py-2 bg-[var(--accent-primary)] text-white rounded-lg hover:bg-[var(--accent-hover)] disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-colors"
+              className="px-4 py-2 bg-[var(--bg-secondary)] border border-[var(--accent-primary)] text-[var(--text-primary)] rounded-lg hover:bg-[var(--bg-hover)] hover:border-[var(--accent-hover)] disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition-colors"
             >
               Send
             </button>

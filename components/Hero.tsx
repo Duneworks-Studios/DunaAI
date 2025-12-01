@@ -46,19 +46,19 @@ export default function Hero() {
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
+      {/* Subtle animated background elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-[var(--accent-primary)] opacity-[0.03] blur-3xl animate-float"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full bg-[var(--accent-secondary)] opacity-[0.02] blur-3xl animate-float" style={{ animationDelay: '-3s' }}></div>
+      </div>
+      
       {/* Content */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 md:px-8 text-center">
         <div>
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2 sm:py-3 rounded-full bg-[var(--bg-elevated)] border border-[var(--border-primary)] mb-6 sm:mb-10" style={{
-            boxShadow: '0 0 15px rgba(255, 215, 0, 0.2)'
-          }}>
-            <span className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-[var(--accent-primary)]" style={{
-              boxShadow: '0 0 10px rgba(255, 215, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.5)'
-            }}></span>
-            <span className="text-xs sm:text-sm font-bold text-[var(--text-primary)] tracking-wider uppercase" style={{
-              textShadow: '0 0 8px rgba(255, 255, 255, 0.5)'
-            }}>
+          <div className="inline-flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2 sm:py-3 rounded-full bg-[var(--bg-elevated)] border border-[var(--border-secondary)] mb-6 sm:mb-10">
+            <span className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-[var(--accent-primary)]"></span>
+            <span className="text-xs sm:text-sm font-medium text-[var(--text-secondary)] tracking-wider uppercase">
               Premium AI Browser
             </span>
           </div>
@@ -68,16 +68,12 @@ export default function Hero() {
             <span className="text-gradient block mb-2 sm:mb-4">
               Duna
             </span>
-            <span className="text-[var(--text-primary)] text-3xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-light block" style={{
-              textShadow: '0 0 20px rgba(255, 255, 255, 0.5), 0 0 40px rgba(255, 255, 255, 0.3)'
-            }}>
+            <span className="text-[var(--text-primary)] text-3xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-light block">
               Intelligence
             </span>
           </h1>
           
-          <p className="text-lg sm:text-2xl md:text-3xl lg:text-4xl font-light mb-4 sm:mb-8 text-[var(--accent-primary)] max-w-4xl mx-auto leading-relaxed px-4" style={{
-            textShadow: '0 0 15px rgba(255, 215, 0, 0.6), 0 0 30px rgba(255, 215, 0, 0.4)'
-          }}>
+          <p className="text-lg sm:text-2xl md:text-3xl lg:text-4xl font-light mb-4 sm:mb-8 text-[var(--accent-primary)] max-w-4xl mx-auto leading-relaxed px-4">
             The Premium AI Browser Reimagined
           </p>
           
@@ -106,11 +102,11 @@ export default function Hero() {
           </div>
 
           {/* Trust Indicators */}
-          <div className="flex flex-wrap justify-center items-center gap-6 sm:gap-12 text-sm sm:text-base md:text-lg text-[var(--text-tertiary)] px-4">
+          <div className="flex flex-wrap justify-center items-center gap-6 sm:gap-12 text-sm sm:text-base md:text-lg px-4">
             {[
-              { icon: '✓', text: 'Unlimited Messages' },
-              { icon: '✓', text: 'Premium AI Agents' },
-              { icon: '✓', text: '24/7 Support' },
+              { text: 'Unlimited Messages' },
+              { text: 'Premium AI Agents' },
+              { text: '24/7 Support' },
             ].map((item, index) => (
               <div
                 key={index}
@@ -118,17 +114,14 @@ export default function Hero() {
               >
                 <svg 
                   className="w-5 h-5 sm:w-6 sm:h-6 text-[var(--accent-primary)]" 
-                  fill="currentColor" 
-                  viewBox="0 0 20 20"
-                  style={{
-                    filter: 'drop-shadow(0 0 8px rgba(255, 215, 0, 0.8))'
-                  }}
+                  fill="none" 
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  strokeWidth={2}
                 >
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
-                <span className="font-medium text-[var(--accent-primary)]" style={{
-                  textShadow: '0 0 10px rgba(255, 215, 0, 0.6), 0 0 20px rgba(255, 215, 0, 0.4)'
-                }}>{item.text}</span>
+                <span className="font-medium text-[var(--text-secondary)]">{item.text}</span>
               </div>
             ))}
           </div>

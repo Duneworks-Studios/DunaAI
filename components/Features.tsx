@@ -5,69 +5,37 @@ const features = [
     title: 'AI Assistant',
     description: 'Smart, adaptive, and context-aware. Your intelligent companion for every browsing session.',
     icon: (
-      <svg className="w-16 h-16" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-        {/* Robot Head */}
-        <circle cx="50" cy="35" r="18" fill="#4A90E2" />
-        <circle cx="45" cy="32" r="3" fill="white" />
-        <circle cx="55" cy="32" r="3" fill="white" />
-        <rect x="48" y="38" width="4" height="2" rx="1" fill="black" />
-        <path d="M 35 25 L 30 20 L 25 25" stroke="#FF69B4" strokeWidth="3" strokeLinecap="round" fill="none" />
-        <path d="M 65 25 L 70 20 L 75 25" stroke="#FF69B4" strokeWidth="3" strokeLinecap="round" fill="none" />
-        <rect x="30" y="50" width="40" height="25" rx="5" fill="#2A2A2A" stroke="#4A90E2" strokeWidth="2" />
-        <rect x="38" y="58" width="8" height="8" rx="2" fill="#4A90E2" />
-        <rect x="54" y="58" width="8" height="8" rx="2" fill="#4A90E2" />
+      <svg className="w-14 h-14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
       </svg>
     ),
-    color: 'from-blue-500 to-blue-600',
-    glowColor: 'rgba(74, 144, 226, 0.3)',
   },
   {
     title: 'Performance',
     description: 'Lightweight, fast, and secure. Experience blazing speeds without compromising on security.',
     icon: (
-      <svg className="w-16 h-16" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-        {/* Lightning Bolt */}
-        <path d="M 50 10 L 35 50 L 50 50 L 45 90 L 65 50 L 50 50 Z" fill="#FF6B35" stroke="#FF6B35" strokeWidth="2" />
+      <svg className="w-14 h-14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
       </svg>
     ),
-    color: 'from-orange-500 to-orange-600',
-    glowColor: 'rgba(255, 107, 53, 0.3)',
   },
   {
     title: 'Cloud Sync',
     description: 'Private data sync across all your devices. Seamless continuity, wherever you go.',
     icon: (
-      <svg className="w-16 h-16" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-        {/* Cloud */}
-        <path d="M 30 50 Q 20 50 20 60 Q 20 70 30 70 L 70 70 Q 80 70 80 60 Q 80 50 70 50 Q 70 40 60 40 Q 50 30 40 40 Q 30 40 30 50 Z" 
-              fill="white" 
-              stroke="rgba(147, 51, 234, 0.5)" 
-              strokeWidth="2" />
-        <circle cx="35" cy="55" r="3" fill="rgba(147, 51, 234, 0.3)" />
-        <circle cx="50" cy="50" r="4" fill="rgba(147, 51, 234, 0.4)" />
-        <circle cx="65" cy="55" r="3" fill="rgba(147, 51, 234, 0.3)" />
+      <svg className="w-14 h-14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" />
       </svg>
     ),
-    color: 'from-purple-500 to-purple-600',
-    glowColor: 'rgba(147, 51, 234, 0.3)',
   },
   {
     title: 'Privacy First',
     description: 'Zero tracking. 100% encrypted sessions. Your data belongs to you, always.',
     icon: (
-      <svg className="w-16 h-16" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-        {/* Padlock */}
-        <rect x="35" y="45" width="30" height="35" rx="3" fill="#FF6B35" stroke="#FF6B35" strokeWidth="2" />
-        <path d="M 40 45 L 40 35 Q 40 25 50 25 Q 60 25 60 35 L 60 45" 
-              stroke="#FF6B35" 
-              strokeWidth="3" 
-              strokeLinecap="round" 
-              fill="none" />
-        <circle cx="50" cy="60" r="4" fill="white" />
+      <svg className="w-14 h-14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
       </svg>
     ),
-    color: 'from-orange-500 to-orange-600',
-    glowColor: 'rgba(255, 107, 53, 0.3)',
   },
 ]
 
@@ -88,13 +56,11 @@ export default function Features() {
           {features.map((feature) => (
             <div
               key={feature.title}
-              className="relative h-full bg-[var(--bg-elevated)] border border-[var(--border-primary)] rounded-lg p-6 sm:p-8 hover:border-[var(--border-secondary)] transition-colors"
+              className="relative h-full bg-[var(--bg-elevated)] border border-[var(--border-primary)] rounded-lg p-6 sm:p-8 hover:border-[var(--accent-primary)] transition-colors group"
             >
               {/* Icon Container */}
-              <div className="relative mb-4 sm:mb-6 flex items-center justify-center">
-                <div className="relative">
-                  {feature.icon}
-                </div>
+              <div className="relative mb-4 sm:mb-6 flex items-center justify-center text-[var(--accent-primary)] group-hover:text-[var(--accent-hover)] transition-colors">
+                {feature.icon}
               </div>
 
               {/* Content */}
