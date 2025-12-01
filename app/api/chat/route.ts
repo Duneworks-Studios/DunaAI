@@ -12,6 +12,12 @@ export const runtime = 'nodejs' // Ensure we're using Node.js runtime
 const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions'
 const DEEPSEEK_MODEL = 'deepseek-chat'
 
+// Runtime-aware timeout defaults (Netlify has 26s hard limit)
+const IS_NETLIFY = process.env.NETLIFY === 'true'
+const DEFAULT_REQUEST_TIMEOUT = Number(process.env.AI_REQUEST_TIMEOUT_MS) || (IS_NETLIFY ? 22000 : 45000)
+const DEFAULT_RETRY_TIMEOUT = Number(process.env.AI_REQUEST_RETRY_TIMEOUT_MS) || (IS_NETLIFY ? 24000 : 52000)
+const DEFAULT_MAX_RETRIES = Number(process.env.AI_MAX_RETRIES ?? 1)
+
 // Server-side HTML entity decoder (doesn't use DOM)
 // Handles all common HTML entities including numeric and hex formats
 function decodeHtmlEntities(text: string): string {
@@ -104,13 +110,13 @@ async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs: nu
 }
 
 // Retry function for handling 502, 503, and 504 errors
-// CRITICAL: Must complete within Netlify's 26 second timeout
-// Optimized for speed - we need to succeed fast, not retry many times
+// Default timeouts adapt to Netlify (26s) vs local/Vercel environments
 async function fetchWithRetry(
-  url: string, 
-  options: RequestInit, 
-  maxRetries: number = 1, // 1 retry (2 total attempts) - fast retry if first fails
-  baseTimeoutMs: number = 22000 // 22s timeout - single attempt with one fast retry
+  url: string,
+  options: RequestInit,
+  maxRetries: number = DEFAULT_MAX_RETRIES,
+  baseTimeoutMs: number = DEFAULT_REQUEST_TIMEOUT,
+  maxTimeoutMs: number = DEFAULT_RETRY_TIMEOUT
 ): Promise<{ response: Response; attempts: number }> {
   let lastError: Error | null = null
   let lastResponse: Response | null = null
@@ -134,9 +140,8 @@ async function fetchWithRetry(
         await new Promise(resolve => setTimeout(resolve, delay))
       }
       
-      // Use single timeout - we need to succeed fast within Netlify's 26s limit
-      // Strategy: 22s for first attempt, 24s for retry - must complete fast
-      const currentTimeout = Math.min(baseTimeoutMs + (2000 * attempt), 24000) // 22s first, 24s retry
+      // Use single timeout per attempt. Netlify needs short windows; local/Vercel can allow longer.
+      const currentTimeout = Math.min(baseTimeoutMs + (2000 * attempt), maxTimeoutMs)
       
       if (process.env.NODE_ENV === 'development') {
         console.log(`[AI API] Attempt ${attempt + 1}: Using timeout of ${currentTimeout}ms`)
@@ -725,13 +730,14 @@ What would you like to know?`
         body: JSON.stringify({
           model: modelToUse,
           messages: finalMessages, // Use final verified messages (no images in history)
-          max_tokens: 3000, // Balanced - enough for good responses but fast enough
+          max_tokens: 2000, // Slightly reduced for faster, more reliable responses
           temperature: 0.7,
           stream: false, // Ensure streaming is off for reliability
         }),
       },
-      1, // Max 1 retry (2 total attempts) - fast single retry if needed
-      22000 // Base 22 second timeout, 24s for retry - optimized for Netlify's 26s limit
+      DEFAULT_MAX_RETRIES,
+      DEFAULT_REQUEST_TIMEOUT,
+      DEFAULT_RETRY_TIMEOUT
     )
     
     // Log successful request
