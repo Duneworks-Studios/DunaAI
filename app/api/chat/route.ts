@@ -311,8 +311,9 @@ The request body is malformed or missing required data.
     let AI_TOKEN = process.env.AI_TOKEN || process.env.DEEPSEEK_API_KEY || process.env.OPENAI_API_KEY || process.env.GROQ_API_KEY
     let AI_MODEL = process.env.AI_MODEL || DEEPSEEK_MODEL // Default to DeepSeek
     
-    // Multi-provider support with environment variable override
-    const preferredProvider = process.env.PREFERRED_AI_PROVIDER?.toLowerCase() || 'auto'
+    // Force Groq for Coding and Research tabs
+    const isCodingOrResearchTab = validAgent === 'meta-advanced' || validAgent === 'luna';
+    const preferredProvider = isCodingOrResearchTab ? 'groq' : (process.env.PREFERRED_AI_PROVIDER?.toLowerCase() || 'auto');
     
     if (validAgent === 'meta-advanced' || validAgent === 'luna') {
       // Use preferred provider for these agents
