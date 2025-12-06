@@ -1,7 +1,6 @@
 [build]
   command = "npm run build"
   publish = ".next"
-  environment = { NODE_VERSION = "20", NPM_FLAGS = "--legacy-peer-deps" }
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
@@ -11,6 +10,8 @@
 [build.environment]
   # Node.js version
   NODE_VERSION = "20"
+  # NPM flags
+  NPM_FLAGS = "--legacy-peer-deps"
   # Disable Next.js telemetry
   NEXT_TELEMETRY_DISABLED = "1"
   # Configure secret scanning

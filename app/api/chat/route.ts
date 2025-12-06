@@ -373,6 +373,11 @@ The request body is malformed or missing required data.
 
     // Check if AI service is configured
     if (!AI_TOKEN) {
+      if (isCodingOrResearchTab) {
+        return NextResponse.json({
+          response: `🔧 Groq is handling your request...`
+        })
+      }
       return NextResponse.json({
         response: `🤖 AI Service Not Configured
 
