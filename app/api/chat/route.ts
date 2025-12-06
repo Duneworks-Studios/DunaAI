@@ -311,11 +311,45 @@ The request body is malformed or missing required data.
     let AI_TOKEN = process.env.AI_TOKEN || process.env.DEEPSEEK_API_KEY || process.env.OPENAI_API_KEY || process.env.GROQ_API_KEY
     let AI_MODEL = process.env.AI_MODEL || DEEPSEEK_MODEL // Default to DeepSeek
     
-    // Route meta-advanced and luna agents to Groq
+    // Multi-provider support with environment variable override
+    const preferredProvider = process.env.PREFERRED_AI_PROVIDER?.toLowerCase() || 'auto'
+    
     if (validAgent === 'meta-advanced' || validAgent === 'luna') {
-      AI_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions'
-      AI_TOKEN = process.env.GROQ_API_KEY
-      AI_MODEL = 'llama-3.1-70b-versatile' // Use Groq's LLaMA model
+      // Use preferred provider for these agents
+      switch (preferredProvider) {
+        case 'groq':
+          AI_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions'
+          AI_TOKEN = process.env.GROQ_API_KEY
+          const groqModel = process.env.GROQ_MODEL || 'llama-3.1-70b-versatile'
+          AI_MODEL = validAgent === 'meta-advanced' 
+            ? (process.env.GROQ_META_ADVANCED_MODEL || groqModel)
+            : (process.env.GROQ_LUNA_MODEL || groqModel)
+          break
+        case 'openai':
+          AI_ENDPOINT = 'https://api.openai.com/v1/chat/completions'
+          AI_TOKEN = process.env.OPENAI_API_KEY
+          AI_MODEL = process.env.OPENAI_MODEL || 'gpt-4'
+          break
+        case 'deepseek':
+          AI_ENDPOINT = 'https://api.deepseek.com/v1/chat/completions'
+          AI_TOKEN = process.env.DEEPSEEK_API_KEY
+          AI_MODEL = process.env.DEEPSEEK_MODEL || 'deepseek-chat'
+          break
+        default:
+          // Auto: Try Groq first, fallback to others
+          if (process.env.GROQ_API_KEY) {
+            AI_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions'
+            AI_TOKEN = process.env.GROQ_API_KEY
+            const defaultGroqModel = process.env.GROQ_MODEL || 'llama-3.1-70b-versatile'
+            AI_MODEL = validAgent === 'meta-advanced' 
+              ? (process.env.GROQ_META_ADVANCED_MODEL || defaultGroqModel)
+              : (process.env.GROQ_LUNA_MODEL || defaultGroqModel)
+          } else if (process.env.OPENAI_API_KEY) {
+            AI_ENDPOINT = 'https://api.openai.com/v1/chat/completions'
+            AI_TOKEN = process.env.OPENAI_API_KEY
+            AI_MODEL = process.env.OPENAI_MODEL || 'gpt-4'
+          }
+      }
     }
 
     // Debug logging (only in development)
@@ -360,10 +394,11 @@ What would you like to know?`
     // Auto-detect service type based on endpoint
     const isDeepSeek = AI_ENDPOINT.includes('deepseek.com')
     const isGroq = AI_ENDPOINT.includes('groq.com')
-    const finalModel = AI_MODEL || (isDeepSeek ? 'deepseek-chat' : isGroq ? 'llama-3.1-70b-versatile' : 'gpt-4')
+    const isOpenAI = AI_ENDPOINT.includes('openai.com')
+    const finalModel = AI_MODEL || (isDeepSeek ? 'deepseek-chat' : isGroq ? 'llama-3.1-70b-versatile' : isOpenAI ? 'gpt-4' : 'gpt-4')
     
     if (process.env.NODE_ENV === 'development') {
-      console.log('- Detected service:', isGroq ? 'Groq' : isDeepSeek ? 'DeepSeek' : 'OpenAI')
+      console.log('- Detected service:', isGroq ? 'Groq' : isDeepSeek ? 'DeepSeek' : isOpenAI ? 'OpenAI' : 'Unknown')
       console.log('- Using model:', finalModel)
       console.log('- Agent type:', validAgent)
     }
@@ -690,10 +725,13 @@ What would you like to know?`
       if (isDeepSeek) {
         modelToUse = 'deepseek-chat' // DeepSeek supports vision
       } else if (isGroq) {
-        modelToUse = 'llava-v1.5-7b-4096-preview' // Groq's vision model
-      } else {
+        modelToUse = process.env.GROQ_VISION_MODEL || 'llava-v1.5-7b-4096-preview' // Configurable Groq vision model
+      } else if (isOpenAI) {
         // OpenAI vision models
-        modelToUse = 'gpt-4o' // or 'gpt-4-vision-preview'
+        modelToUse = process.env.OPENAI_VISION_MODEL || 'gpt-4o'
+      } else {
+        // Default to gpt-4o for unknown providers
+        modelToUse = 'gpt-4o'
       }
     }
 
