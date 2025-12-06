@@ -16,12 +16,8 @@
   # Configure secret scanning
   SECRETS_SCAN_OMIT_KEYS = "AI_ENDPOINT,NEXTAUTH_URL"
   SECRETS_SCAN_OMIT_PATHS = ".netlify/**,.next/**,**/node_modules/**"
-
-# Environment variables for AI services (these should be set in Netlify UI)
-[build.environment]
   # AI Provider Configuration
   PREFERRED_AI_PROVIDER = "groq"
-  
   # Groq Configuration
   GROQ_MODEL = "llama-3.1-8b-instant"
   GROQ_META_ADVANCED_MODEL = "llama-3.1-8b-instant"

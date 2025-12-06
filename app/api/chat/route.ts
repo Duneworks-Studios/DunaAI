@@ -316,15 +316,21 @@ The request body is malformed or missing required data.
     const preferredProvider = isCodingOrResearchTab ? 'groq' : (process.env.PREFERRED_AI_PROVIDER?.toLowerCase() || 'auto');
     
     if (validAgent === 'meta-advanced' || validAgent === 'luna') {
-      // Use preferred provider for these agents
+      // Always use Groq for these agents
+      AI_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions'
+      AI_TOKEN = process.env.GROQ_API_KEY
+      const groqModel = process.env.GROQ_MODEL || 'llama3-70b-groq'
+      AI_MODEL = validAgent === 'meta-advanced' 
+        ? (process.env.GROQ_META_ADVANCED_MODEL || groqModel)
+        : (process.env.GROQ_LUNA_MODEL || groqModel)
+    } else {
+      // Use preferred provider for other agents
       switch (preferredProvider) {
         case 'groq':
           AI_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions'
           AI_TOKEN = process.env.GROQ_API_KEY
           const groqModel = process.env.GROQ_MODEL || 'llama-3.1-8b-instant'
-          AI_MODEL = validAgent === 'meta-advanced' 
-            ? (process.env.GROQ_META_ADVANCED_MODEL || groqModel)
-            : (process.env.GROQ_LUNA_MODEL || groqModel)
+          AI_MODEL = groqModel
           break
         case 'openai':
           AI_ENDPOINT = 'https://api.openai.com/v1/chat/completions'
@@ -342,9 +348,7 @@ The request body is malformed or missing required data.
             AI_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions'
             AI_TOKEN = process.env.GROQ_API_KEY
             const defaultGroqModel = process.env.GROQ_MODEL || 'llama-3.1-8b-instant'
-            AI_MODEL = validAgent === 'meta-advanced' 
-              ? (process.env.GROQ_META_ADVANCED_MODEL || defaultGroqModel)
-              : (process.env.GROQ_LUNA_MODEL || defaultGroqModel)
+            AI_MODEL = defaultGroqModel
           } else if (process.env.OPENAI_API_KEY) {
             AI_ENDPOINT = 'https://api.openai.com/v1/chat/completions'
             AI_TOKEN = process.env.OPENAI_API_KEY
