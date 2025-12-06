@@ -4,8 +4,6 @@
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
-  [plugins.inputs]
-    enableNextJsTracing = true
 
 [build.environment]
   # Node.js version
