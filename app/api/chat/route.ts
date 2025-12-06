@@ -319,7 +319,7 @@ The request body is malformed or missing required data.
       // Always use Groq for these agents
       AI_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions'
       AI_TOKEN = process.env.GROQ_API_KEY
-      const groqModel = process.env.GROQ_MODEL || 'llama3-70b-groq'
+      const groqModel = process.env.GROQ_MODEL || 'llama-3.1-8b-instant'
       AI_MODEL = validAgent === 'meta-advanced' 
         ? (process.env.GROQ_META_ADVANCED_MODEL || groqModel)
         : (process.env.GROQ_LUNA_MODEL || groqModel)
