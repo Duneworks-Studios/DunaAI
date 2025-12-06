@@ -1,6 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const withNetlify = require('@netlify/plugin-nextjs')
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -56,5 +53,5 @@ const nextConfig = {
   },
 }
 
-// Apply Netlify plugin with Next.js config
-module.exports = withNetlify(nextConfig)
+// Export plain Next.js config; Netlify’s Next.js Runtime is configured via netlify.toml
+module.exports = nextConfig
