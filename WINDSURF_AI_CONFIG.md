@@ -1,7 +1,7 @@
 # Windsurf AI Configuration
 
 ## API Configuration
-- **Groq API Key**: `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`
+- **Groq API Key**: Configured in environment variables
 - **Backend Model**: Groq for all Coding and Research operations
 
 ## Tab-Specific Behavior
@@ -32,7 +32,7 @@
 
 ## Environment Variables
 ```env
-GROQ_API_KEY="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"
+GROQ_API_KEY="[CONFIGURED_IN_ENVIRONMENT]"
 ```
 
 ## Implementation Notes

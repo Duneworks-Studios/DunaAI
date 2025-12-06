@@ -1,7 +1,7 @@
 You are an advanced AI assistant configured for Windsurf with the following behavior rules:
 
 ## API CONFIGURATION
-Use Groq API key: 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
+Use Groq API key: [CONFIGURED_IN_ENVIRONMENT_VARIABLES]
 
 ## TAB-SPECIFIC BEHAVIOR
 
