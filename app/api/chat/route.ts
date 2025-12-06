@@ -320,7 +320,7 @@ The request body is malformed or missing required data.
         case 'groq':
           AI_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions'
           AI_TOKEN = process.env.GROQ_API_KEY
-          const groqModel = process.env.GROQ_MODEL || 'llama-3.1-70b-versatile'
+          const groqModel = process.env.GROQ_MODEL || 'llama-3.1-8b-instant'
           AI_MODEL = validAgent === 'meta-advanced' 
             ? (process.env.GROQ_META_ADVANCED_MODEL || groqModel)
             : (process.env.GROQ_LUNA_MODEL || groqModel)
@@ -340,7 +340,7 @@ The request body is malformed or missing required data.
           if (process.env.GROQ_API_KEY) {
             AI_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions'
             AI_TOKEN = process.env.GROQ_API_KEY
-            const defaultGroqModel = process.env.GROQ_MODEL || 'llama-3.1-70b-versatile'
+            const defaultGroqModel = process.env.GROQ_MODEL || 'llama-3.1-8b-instant'
             AI_MODEL = validAgent === 'meta-advanced' 
               ? (process.env.GROQ_META_ADVANCED_MODEL || defaultGroqModel)
               : (process.env.GROQ_LUNA_MODEL || defaultGroqModel)
@@ -354,11 +354,16 @@ The request body is malformed or missing required data.
 
     // Debug logging (only in development)
     if (process.env.NODE_ENV === 'development') {
-      console.log('AI Configuration Check:')
-      console.log('- AI_ENDPOINT:', AI_ENDPOINT)
-      console.log('- AI_MODEL:', AI_MODEL)
-      console.log('- AI_TOKEN exists:', !!AI_TOKEN)
-      // Never log full tokens, even in development
+      console.log('DEBUG KEYS:', {
+        hasAI_TOKEN: !!process.env.AI_TOKEN,
+        hasDEEPSEEK: !!process.env.DEEPSEEK_API_KEY,
+        hasGROQ: !!process.env.GROQ_API_KEY,
+        hasOPENAI: !!process.env.OPENAI_API_KEY,
+        preferredProvider: process.env.PREFERRED_AI_PROVIDER,
+        AI_ENDPOINT: AI_ENDPOINT,
+        AI_MODEL: AI_MODEL,
+        AI_TOKEN_exists: !!AI_TOKEN
+      })
     }
 
     // Check if AI service is configured
@@ -395,7 +400,7 @@ What would you like to know?`
     const isDeepSeek = AI_ENDPOINT.includes('deepseek.com')
     const isGroq = AI_ENDPOINT.includes('groq.com')
     const isOpenAI = AI_ENDPOINT.includes('openai.com')
-    const finalModel = AI_MODEL || (isDeepSeek ? 'deepseek-chat' : isGroq ? 'llama-3.1-70b-versatile' : isOpenAI ? 'gpt-4' : 'gpt-4')
+    const finalModel = AI_MODEL || (isDeepSeek ? 'deepseek-chat' : isGroq ? 'llama-3.1-8b-instant' : isOpenAI ? 'gpt-4' : 'gpt-4')
     
     if (process.env.NODE_ENV === 'development') {
       console.log('- Detected service:', isGroq ? 'Groq' : isDeepSeek ? 'DeepSeek' : isOpenAI ? 'OpenAI' : 'Unknown')
