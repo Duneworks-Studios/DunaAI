@@ -308,7 +308,7 @@ The request body is malformed or missing required data.
     // Route meta-advanced and luna agents to Groq, others to default (DeepSeek/OpenAI)
     // DeepSeek API requires /v1/ in the path: https://api.deepseek.com/v1/chat/completions
     let AI_ENDPOINT = process.env.AI_ENDPOINT || process.env.DEEPSEEK_API_URL || process.env.OPENAI_API_URL || DEEPSEEK_API_URL
-    let AI_TOKEN = process.env.AI_TOKEN || process.env.DEEPSEEK_API_KEY || process.env.OPENAI_API_KEY
+    let AI_TOKEN = process.env.AI_TOKEN || process.env.DEEPSEEK_API_KEY || process.env.OPENAI_API_KEY || process.env.GROQ_API_KEY
     let AI_MODEL = process.env.AI_MODEL || DEEPSEEK_MODEL // Default to DeepSeek
     
     // Route meta-advanced and luna agents to Groq
@@ -338,11 +338,14 @@ To enable real AI responses:
 
 1. **Get a DeepSeek API key** from https://platform.deepseek.com/api_keys
    OR **Get an OpenAI API key** from https://platform.openai.com/api-keys
+   OR **Get a Groq API key** from https://console.groq.com/keys
 2. **Add to your .env.local file:**
    \`\`\`
    DEEPSEEK_API_KEY=your_deepseek_api_key_here
    # OR
    OPENAI_API_KEY=sk-your-openai-api-key-here
+   # OR
+   GROQ_API_KEY=gsk_your_groq_api_key_here
    \`\`\`
 3. **Restart the development server** (stop and restart \`npm run dev\`)
 
