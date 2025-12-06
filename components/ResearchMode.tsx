@@ -73,7 +73,7 @@ export default function ResearchMode({ user, userPlan, onShowPremiumModal, onBac
       const payload = {
         messages: [...aiMessages, userMessage].map(m => ({ role: m.role, content: m.content })),
         userId: user.id,
-        agent: currentAgent,
+        agent: 'meta-advanced', // Force Groq usage in Research mode
       }
 
       const sendAiRequest = async (attempt = 0): Promise<{ response: string }> => {

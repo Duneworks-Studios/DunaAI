@@ -305,11 +305,18 @@ The request body is malformed or missing required data.
     })
 
     // Get AI service configuration
-    // Support both DeepSeek and OpenAI
+    // Route meta-advanced and luna agents to Groq, others to default (DeepSeek/OpenAI)
     // DeepSeek API requires /v1/ in the path: https://api.deepseek.com/v1/chat/completions
-    const AI_ENDPOINT = process.env.AI_ENDPOINT || process.env.DEEPSEEK_API_URL || process.env.OPENAI_API_URL || DEEPSEEK_API_URL
-    const AI_TOKEN = process.env.AI_TOKEN || process.env.DEEPSEEK_API_KEY || process.env.OPENAI_API_KEY
-    const AI_MODEL = process.env.AI_MODEL || DEEPSEEK_MODEL // Default to DeepSeek
+    let AI_ENDPOINT = process.env.AI_ENDPOINT || process.env.DEEPSEEK_API_URL || process.env.OPENAI_API_URL || DEEPSEEK_API_URL
+    let AI_TOKEN = process.env.AI_TOKEN || process.env.DEEPSEEK_API_KEY || process.env.OPENAI_API_KEY
+    let AI_MODEL = process.env.AI_MODEL || DEEPSEEK_MODEL // Default to DeepSeek
+    
+    // Route meta-advanced and luna agents to Groq
+    if (validAgent === 'meta-advanced' || validAgent === 'luna') {
+      AI_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions'
+      AI_TOKEN = process.env.GROQ_API_KEY
+      AI_MODEL = 'llama-3.1-70b-versatile' // Use Groq's LLaMA model
+    }
 
     // Debug logging (only in development)
     if (process.env.NODE_ENV === 'development') {
@@ -349,10 +356,11 @@ What would you like to know?`
 
     // Auto-detect service type based on endpoint
     const isDeepSeek = AI_ENDPOINT.includes('deepseek.com')
-    const finalModel = AI_MODEL || (isDeepSeek ? 'deepseek-chat' : 'gpt-4')
+    const isGroq = AI_ENDPOINT.includes('groq.com')
+    const finalModel = AI_MODEL || (isDeepSeek ? 'deepseek-chat' : isGroq ? 'llama-3.1-70b-versatile' : 'gpt-4')
     
     if (process.env.NODE_ENV === 'development') {
-      console.log('- Detected service:', isDeepSeek ? 'DeepSeek' : 'OpenAI')
+      console.log('- Detected service:', isGroq ? 'Groq' : isDeepSeek ? 'DeepSeek' : 'OpenAI')
       console.log('- Using model:', finalModel)
       console.log('- Agent type:', validAgent)
     }
@@ -678,6 +686,8 @@ What would you like to know?`
       // Use vision-capable models
       if (isDeepSeek) {
         modelToUse = 'deepseek-chat' // DeepSeek supports vision
+      } else if (isGroq) {
+        modelToUse = 'llava-v1.5-7b-4096-preview' // Groq's vision model
       } else {
         // OpenAI vision models
         modelToUse = 'gpt-4o' // or 'gpt-4-vision-preview'
