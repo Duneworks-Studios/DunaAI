@@ -200,24 +200,17 @@ export default function CodingMode({ user, userPlan, onShowPremiumModal, onBackT
 
       const data = await sendAiRequest()
 
-      const aiMessage = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant' as const,
-        content: data.response || 'I apologize, but I couldn\'t generate a response.',
-        timestamp: new Date(),
-      }
-
-      setAiMessages(prev => [...prev, aiMessage])
-
       // Try to extract code blocks from the response
       const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g
       const matches = [...data.response.matchAll(codeBlockRegex)]
+      const updatedFileNames: string[] = []
       
       if (matches.length > 0) {
         matches.forEach((match, idx) => {
           const language = match[1] || detectLanguage(files[activeFile].name)
           const code = match[2]
           const fileName = match[1] ? `generated-${idx + 1}.${match[1]}` : `generated-${idx + 1}.txt`
+          updatedFileNames.push(fileName)
           
           // Check if file already exists
           const existingIndex = files.findIndex(f => f.name === fileName)
@@ -233,6 +226,27 @@ export default function CodingMode({ user, userPlan, onShowPremiumModal, onBackT
           }
         })
       }
+
+      // Build a short summary message instead of dumping full code
+      let summaryContent = 'Coding complete.'
+      if (updatedFileNames.length > 0) {
+        const uniqueNames = Array.from(new Set(updatedFileNames))
+        summaryContent = `Coding complete. I created or updated these files: ${uniqueNames.join(', ')}.`
+      } else {
+        // No explicit code blocks detected; provide a brief textual summary
+        const plainText = data.response.replace(/```[\s\S]*?```/g, '').trim()
+        const shortText = plainText.length > 280 ? `${plainText.slice(0, 280)}...` : plainText
+        summaryContent = shortText || 'Coding complete.'
+      }
+
+      const aiMessage = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant' as const,
+        content: summaryContent,
+        timestamp: new Date(),
+      }
+
+      setAiMessages(prev => [...prev, aiMessage])
 
       // Record message count
       try {
