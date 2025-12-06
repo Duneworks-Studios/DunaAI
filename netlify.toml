@@ -1,16 +1,45 @@
 [build]
   command = "npm run build"
   publish = ".next"
+  environment = { NODE_VERSION = "20", NPM_FLAGS = "--legacy-peer-deps" }
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
+  [plugins.inputs]
+    enableNextJsTracing = true
 
 [build.environment]
+  # Node.js version
   NODE_VERSION = "20"
-  # Configure secret scanning - allow public API endpoints (not actual secrets)
+  # Disable Next.js telemetry
+  NEXT_TELEMETRY_DISABLED = "1"
+  # Configure secret scanning
   SECRETS_SCAN_OMIT_KEYS = "AI_ENDPOINT,NEXTAUTH_URL"
-  # Allow build output directories (env vars need to be in build for app to work)
   SECRETS_SCAN_OMIT_PATHS = ".netlify/**,.next/**,**/node_modules/**"
 
-# Note: Next.js API routes are handled automatically by @netlify/plugin-nextjs
-# The maxDuration export in route.ts configures the timeout (60 seconds)
+# Environment variables for AI services (these should be set in Netlify UI)
+[build.environment]
+  # AI Provider Configuration
+  PREFERRED_AI_PROVIDER = "groq"
+  
+  # Groq Configuration
+  GROQ_MODEL = "llama-3.1-8b-instant"
+  GROQ_META_ADVANCED_MODEL = "llama-3.1-8b-instant"
+  GROQ_LUNA_MODEL = "llama-3.1-8b-instant"
+  GROQ_VISION_MODEL = "llava-v1.5-7b-4096-preview"
+
+# Configure Netlify Functions
+[functions]
+  node_bundler = "esbuild"
+  external_node_modules = ["@xenova/transformers"]
+
+# Configure redirects for SPA routing
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Note: 
+# 1. Set GROQ_API_KEY in Netlify UI (Site settings > Build & deploy > Environment)
+# 2. For local development, use .env.local file (not committed to git)
+# 3. The maxDuration export in route.ts configures the API timeout (60 seconds)
