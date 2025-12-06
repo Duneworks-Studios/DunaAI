@@ -51,6 +51,15 @@ function detectLanguage(filename: string): string {
   return LANGUAGE_EXTENSIONS[ext] || 'plaintext'
 }
 
+function createDescriptiveFileName(prompt: string, fallbackBase: string, extension: string, index: number): string {
+  const baseFromPrompt = (prompt || '').split('\n')[0].slice(0, 60)
+  const cleaned = baseFromPrompt.replace(/[^a-zA-Z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim()
+  const base = cleaned || fallbackBase || 'Generated File'
+  const numberedBase = index > 0 ? `${base} ${index + 1}` : base
+  const safeExt = extension || 'txt'
+  return `${numberedBase}.${safeExt}`
+}
+
 export default function CodingMode({ user, userPlan, onShowPremiumModal, onBackToChat }: CodingModeProps) {
   const [files, setFiles] = useState<File[]>([
     { name: 'index.html', content: '<!DOCTYPE html>\n<html>\n<head>\n    <title>My App</title>\n</head>\n<body>\n    <h1>Hello World</h1>\n</body>\n</html>', language: 'html' },
@@ -125,7 +134,7 @@ export default function CodingMode({ user, userPlan, onShowPremiumModal, onBackT
 
       const contextMessage = {
         role: 'user' as const,
-        content: `Project context:\nActive file: ${files[activeFile]?.name}\n\nFiles:\n${fileSummaries}\n\nActive file contents:\n${truncatedContent}`,
+        content: `Project context:\nActive file: ${files[activeFile]?.name}\n\nFiles:\n${fileSummaries}\n\nActive file contents:\n${truncatedContent}\n\nCoding style: Create a premium, modern, highly interactive experience with smooth animations, hover effects, and engaging UI where appropriate. Focus on making this feel like a high-end, polished product.`,
       }
 
       const conversation = [contextMessage, ...aiMessages, userMessage]
@@ -209,7 +218,13 @@ export default function CodingMode({ user, userPlan, onShowPremiumModal, onBackT
         matches.forEach((match, idx) => {
           const language = match[1] || detectLanguage(files[activeFile].name)
           const code = match[2]
-          const fileName = match[1] ? `generated-${idx + 1}.${match[1]}` : `generated-${idx + 1}.txt`
+          const ext = match[1] || files[activeFile]?.name.split('.').pop() || 'txt'
+          const fileName = createDescriptiveFileName(
+            userMessage.content,
+            files[activeFile]?.name.replace(/\.[^.]+$/, '') || 'Generated File',
+            ext,
+            idx
+          )
           updatedFileNames.push(fileName)
           
           // Check if file already exists
@@ -533,7 +548,7 @@ export default function CodingMode({ user, userPlan, onShowPremiumModal, onBackT
               <div className="bg-[var(--bg-primary)] border border-[var(--border-primary)] rounded-lg px-3 py-2">
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-4 border-2 border-[var(--border-secondary)] border-t-[var(--accent-primary)] rounded-full animate-spin"></div>
-                  <span className="text-xs text-[var(--text-secondary)]">Coding...</span>
+                  <span className="text-xs text-[var(--text-secondary)]">Coding for you...</span>
                 </div>
               </div>
             </div>
